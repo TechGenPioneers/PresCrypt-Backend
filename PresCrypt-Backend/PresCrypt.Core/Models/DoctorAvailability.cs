@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
-    public class Doctor_Availability
+    public class DoctorAvailability
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
