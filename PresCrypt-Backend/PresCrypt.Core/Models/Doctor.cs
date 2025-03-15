@@ -32,6 +32,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public long NIC { get; set; }  // Assuming NIC as a numeric value (long)
 
+        public string Description { get; set; }
+
+        public double Charge { get; set; }
+
         [Required]
         public bool EmailVerified { get; set; }
 
