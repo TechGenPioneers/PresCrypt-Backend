@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
@@ -11,16 +12,18 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     public class AdminDoctorController : ControllerBase
     {
         [HttpPost]
-        public ActionResult<DoctorDto> AddDoctor([FromBody] DoctorDto newDoctorDto)
+        public ActionResult<DoctorDto> AddDoctor([FromBody] DoctorAvailabilityDto newDoctor)
         {
-            if (newDoctorDto == null)
+            if (newDoctor == null || newDoctor.doctor == null || newDoctor.availability == null)
             {
-                return BadRequest("Doctor details are required.");
+                return BadRequest("Doctor and availability details are required.");
             }
 
-            Debug.WriteLine(newDoctorDto);
+            //Debug.WriteLine(newDoctorDto);
+            Debug.WriteLine($"Doctor: {newDoctor.doctor}");
+            Debug.WriteLine($"Availability: {newDoctor.availability}");
 
-            return Ok(newDoctorDto);
+            return Ok(newDoctor);
         }
     }
 }
