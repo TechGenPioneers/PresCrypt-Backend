@@ -20,7 +20,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 //Console.WriteLine($"Connection string: {connectionString}");
 
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") 
+                  .AllowAnyMethod() 
+                  .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -28,6 +42,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
