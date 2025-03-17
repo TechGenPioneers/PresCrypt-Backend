@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using System.Collections;
 using System.Diagnostics;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
@@ -19,9 +21,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest("Doctor and availability details are required.");
             }
 
-            //Debug.WriteLine(newDoctorDto);
-            Debug.WriteLine($"Doctor: {newDoctor.doctor}");
-            Debug.WriteLine($"Availability: {newDoctor.availability}");
+            Debug.WriteLine(newDoctor.doctor);
+
+            foreach (var slot in newDoctor.availability)
+            {
+                Debug.WriteLine($"Day: {slot.day}, Start Time: {slot.startTime}, End Time: {slot.endTime}");
+            }
 
             return Ok(newDoctor);
         }

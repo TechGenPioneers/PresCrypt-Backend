@@ -9,16 +9,16 @@
         public string specialization { get; set; }
         public string slmcLicense { get; set; }
         public string contactNumber { get; set; }
-        public string hospital { get; set; }
+        public string [] hospital { get; set; }
 
         public override string ToString()
         {
             return $"Doctor: {doctorId} \n" +
-                   $"Doctor: {firstName}" + $" {lastName}, \n" +
+                   $"Name: {firstName} {lastName}, \n" +
                    $"Specialization: {specialization}, \n" +
                    $"SLMC License: {slmcLicense},\n" +
-                   $" Contact: {contactNumber}, \n" +
-                   $"Hospital: {hospital}, \n" +
+                   $"Contact: {contactNumber}, \n" +
+                   $"Hospital: {string.Join(", ", hospital)}, \n" + // Use string.Join() to display array values
                    $"Email: {email}";
         }
 
