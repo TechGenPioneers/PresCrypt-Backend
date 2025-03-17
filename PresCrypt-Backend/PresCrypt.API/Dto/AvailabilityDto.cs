@@ -4,8 +4,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 {
     public class AvailabilityDto
     {
-        public string day { get; set; }
-        public string startTime { get; set; }
-        public string endTime { get; set; }
+        public string Day { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
+        public string Hospital { get; set; }
     }
 }

@@ -4,7 +4,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 {
     public class DoctorAvailabilityDto
     {
-        public DoctorDto doctor { get; set; }
-        public List<AvailabilityDto> availability { get; set; }
+        public DoctorDto Doctor { get; set; }
+        public List<AvailabilityDto> Availability { get; set; }
     }
 }

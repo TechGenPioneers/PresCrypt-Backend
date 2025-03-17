@@ -2,7 +2,7 @@
 {
     public class AvailabilityArrayDto
     {
-        public string? doctorID { get; set; }
-        public List<AvailabilityDto> availability { get; set; }  // Changed to list of AvailabilitySlot objects
+        public string? DoctorID { get; set; }
+        public List<AvailabilityDto> Availability { get; set; }  // Changed to list of AvailabilitySlot objects
     }
 }

@@ -16,16 +16,16 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [HttpPost]
         public ActionResult<DoctorDto> AddDoctor([FromBody] DoctorAvailabilityDto newDoctor)
         {
-            if (newDoctor == null || newDoctor.doctor == null || newDoctor.availability == null)
+            if (newDoctor == null || newDoctor.Doctor == null || newDoctor.Availability == null)
             {
                 return BadRequest("Doctor and availability details are required.");
             }
 
-            Debug.WriteLine(newDoctor.doctor);
+            Debug.WriteLine(newDoctor.Doctor);
 
-            foreach (var slot in newDoctor.availability)
+            foreach (var slot in newDoctor.Availability)
             {
-                Debug.WriteLine($"Day: {slot.day}, Start Time: {slot.startTime}, End Time: {slot.endTime}");
+                Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.Hospital}");
             }
 
             return Ok(newDoctor);

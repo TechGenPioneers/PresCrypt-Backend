@@ -2,24 +2,24 @@
 {
     public class DoctorDto
     {
-        public string? doctorId { get; set; }
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-        public string email { get; set; }
-        public string specialization { get; set; }
-        public string slmcLicense { get; set; }
-        public string contactNumber { get; set; }
-        public string [] hospital { get; set; }
+        public string? DoctorId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Specialization { get; set; }
+        public string SlmcLicense { get; set; }
+        public string ContactNumber { get; set; }
+        public string Nic { get; set; }
 
         public override string ToString()
         {
-            return $"Doctor: {doctorId} \n" +
-                   $"Name: {firstName} {lastName}, \n" +
-                   $"Specialization: {specialization}, \n" +
-                   $"SLMC License: {slmcLicense},\n" +
-                   $"Contact: {contactNumber}, \n" +
-                   $"Hospital: {string.Join(", ", hospital)}, \n" + // Use string.Join() to display array values
-                   $"Email: {email}";
+            return $"Doctor: {DoctorId} \n" +
+                   $"Name: {FirstName} {LastName}, \n" +
+                   $"Specialization: {Specialization}, \n" +
+                   $"Nic: {Nic}, \n"+
+                   $"SLMC License: {SlmcLicense},\n" +
+                   $"Contact: {ContactNumber}, \n" +
+                   $"Email: {Email}";
         }
 
     }
