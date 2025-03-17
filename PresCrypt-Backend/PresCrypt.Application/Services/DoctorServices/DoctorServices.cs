@@ -18,7 +18,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
         public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName)
         {
-            var query = _context.Doctors.AsQueryable();
+            var query = _context.Doctor.AsQueryable();
 
             if (!string.IsNullOrEmpty(specialization))
             {
