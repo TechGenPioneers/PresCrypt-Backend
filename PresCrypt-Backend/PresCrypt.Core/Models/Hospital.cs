@@ -21,16 +21,12 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [MaxLength(255)]
         public string Address { get; set; }  // Address of the hospital
 
+        public double Charge { get; set; }
         [Required]
         [MaxLength(100)]
         public string City { get; set; }  // City where the hospital is located
 
-        // Foreign Key to Doctor table
-        [Required]
-        public string DoctorId { get; set; }  // Foreign Key property
+        public ICollection<HospitalDoctor> HospitalDoctors { get; set; }
 
-        // Navigation Property for the Doctor relationship
-        [ForeignKey("DoctorId")]
-        public Doctor Doctorid{ get; set; }  // Navigation property to the Doctor class
     }
 }

@@ -28,12 +28,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
             if (!string.IsNullOrEmpty(hospitalName))
             {
                 query = query.Where(d =>
-                    _context.Hospitals.Any(h => h.HospitalName.Contains(hospitalName) && h.DoctorId == d.DoctorId));
+                    _context.HospitalDoctor
+                        .Any(hd => hd.Hospital.HospitalName.Contains(hospitalName) && hd.DoctorId == d.DoctorId));
             }
 
             var doctors = await query
                 .Select(d => new DoctorSearchDto
                 {
+                    DoctorId = d.DoctorId,
                     DoctorName = d.DoctorName,
                     AvailableDates = _context.Doctor_Availability
                         .Where(a => a.DoctorId == d.DoctorId)

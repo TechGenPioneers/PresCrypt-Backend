@@ -23,9 +23,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 .Where(a => a.PatientId == patientId)
                 .Select(a => new
                 {
-                    a.AppointmentId,
+                   
                     a.Date,
-                    a.Time,
+                 
                     a.Status
                 })
                 .ToListAsync();

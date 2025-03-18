@@ -13,4 +13,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Hospital> Hospitals { get; set; }
     public DbSet<DoctorAvailability> Doctor_Availability { get; set; } // This is the correct declaration
+
+    public DbSet<HospitalDoctor> HospitalDoctor { get; set; }
 }
