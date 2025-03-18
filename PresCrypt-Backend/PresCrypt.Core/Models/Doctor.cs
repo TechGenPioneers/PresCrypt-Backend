@@ -30,7 +30,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public byte[] Id { get; set; }  // Image stored as a byte array
 
         [Required]
-        public long NIC { get; set; }  // Assuming NIC as a numeric value (long)
+        public string NIC { get; set; }  // Assuming NIC as a numeric value (long)
 
         [Required]
         public bool EmailVerified { get; set; }

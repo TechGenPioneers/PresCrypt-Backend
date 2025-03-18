@@ -17,8 +17,8 @@ builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-//Console.WriteLine($"Connection string: {connectionString}");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"Connection string: {connectionString}");
 
 var app = builder.Build();
 

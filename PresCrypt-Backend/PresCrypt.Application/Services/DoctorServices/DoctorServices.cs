@@ -18,7 +18,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
         public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName)
         {
-            var query = _context.Doctors.AsQueryable();
+            var query = _context.Doctor.AsQueryable();
 
             if (!string.IsNullOrEmpty(specialization))
             {
@@ -36,11 +36,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 {
                     DoctorName = d.DoctorName,
                     AvailableDates = _context.Doctor_Availability
-                        .Where(a => a.DoctorId == d.DoctorId)
+                        .Where(a => a.Doctor.DoctorId == d.DoctorId)
                         .Select(a => a.AvailableDate.ToDateTime(TimeOnly.MinValue))
                         .ToList(),
                     AvailableTimes = _context.Doctor_Availability
-                        .Where(a => a.DoctorId == d.DoctorId)
+                        .Where(a => a.Doctor.DoctorId == d.DoctorId)
                         .Select(a => a.AvailableTime.ToTimeSpan())
                         .ToList()
                 })

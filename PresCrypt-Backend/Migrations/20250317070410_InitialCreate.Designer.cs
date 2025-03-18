@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250307104458_AddDoctorAvailability")]
-    partial class AddDoctorAvailability
+    [Migration("20250317070410_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -140,8 +140,11 @@ namespace PresCrypt_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AvailabilityId"));
 
-                    b.Property<DateTime>("AvailableDateTime")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("AvailableDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("AvailableTime")
+                        .HasColumnType("time");
 
                     b.Property<string>("DoctorId")
                         .IsRequired()
