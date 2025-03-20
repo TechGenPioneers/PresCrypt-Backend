@@ -54,5 +54,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         // Navigation Property
         public ICollection<Doctor_Availability> Availabilities { get; set; }
+        public ICollection<Appointment> Appointments { get; set; }  // One doctor can have multiple appointments
+
     }
 }

@@ -12,7 +12,26 @@ namespace PresCrypt_Backend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Doctors",
+                name: "Admin",
+                columns: table => new
+                {
+                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AdminName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastLogin = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Admin", x => x.AdminId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Doctor",
                 columns: table => new
                 {
                     DoctorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -21,7 +40,7 @@ namespace PresCrypt_Backend.Migrations
                     Specialization = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     SLMCRegId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Id = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    NIC = table.Column<long>(type: "bigint", nullable: false),
+                    NIC = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EmailVerified = table.Column<bool>(type: "bit", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -32,7 +51,29 @@ namespace PresCrypt_Backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Doctors", x => x.DoctorId);
+                    table.PrimaryKey("PK_Doctor", x => x.DoctorId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Patient",
+                columns: table => new
+                {
+                    PatientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PatientName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DOB = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BloodGroup = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NIC = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastLogin = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ContactNo = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Patient", x => x.PatientId);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,9 +95,30 @@ namespace PresCrypt_Backend.Migrations
                 {
                     table.PrimaryKey("PK_Appointments", x => x.AppointmentId);
                     table.ForeignKey(
-                        name: "FK_Appointments_Doctors_DoctorId",
+                        name: "FK_Appointments_Doctor_DoctorId",
                         column: x => x.DoctorId,
-                        principalTable: "Doctors",
+                        principalTable: "Doctor",
+                        principalColumn: "DoctorId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Doctor_Availability",
+                columns: table => new
+                {
+                    AvailabilityId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DoctorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AvailableDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    AvailableTime = table.Column<TimeOnly>(type: "time", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Doctor_Availability", x => x.AvailabilityId);
+                    table.ForeignKey(
+                        name: "FK_Doctor_Availability_Doctor_DoctorId",
+                        column: x => x.DoctorId,
+                        principalTable: "Doctor",
                         principalColumn: "DoctorId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -76,9 +138,9 @@ namespace PresCrypt_Backend.Migrations
                 {
                     table.PrimaryKey("PK_Hospitals", x => x.HospitalId);
                     table.ForeignKey(
-                        name: "FK_Hospitals_Doctors_DoctorId",
+                        name: "FK_Hospitals_Doctor_DoctorId",
                         column: x => x.DoctorId,
-                        principalTable: "Doctors",
+                        principalTable: "Doctor",
                         principalColumn: "DoctorId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -86,6 +148,11 @@ namespace PresCrypt_Backend.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_DoctorId",
                 table: "Appointments",
+                column: "DoctorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Doctor_Availability_DoctorId",
+                table: "Doctor_Availability",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
@@ -98,13 +165,22 @@ namespace PresCrypt_Backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Admin");
+
+            migrationBuilder.DropTable(
                 name: "Appointments");
+
+            migrationBuilder.DropTable(
+                name: "Doctor_Availability");
 
             migrationBuilder.DropTable(
                 name: "Hospitals");
 
             migrationBuilder.DropTable(
-                name: "Doctors");
+                name: "Patient");
+
+            migrationBuilder.DropTable(
+                name: "Doctor");
         }
     }
 }

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250317102638_AddDoctorNameColumn")]
-    partial class AddDoctorNameColumn
+    [Migration("20250320060510_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,7 +26,7 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Admin", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<string>("AdminId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AdminName")
@@ -58,7 +58,7 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("UserId");
+                    b.HasKey("AdminId");
 
                     b.ToTable("Admin");
                 });
@@ -111,7 +111,7 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<string>("DoctorId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -130,6 +130,7 @@ namespace PresCrypt_Backend.Migrations
                         .HasColumnType("bit");
 
                     b.Property<byte[]>("Id")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime?>("LastLogin")
@@ -165,7 +166,7 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("UserId");
+                    b.HasKey("DoctorId");
 
                     b.ToTable("Doctor");
                 });
@@ -184,13 +185,13 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<TimeOnly>("AvailableTime")
                         .HasColumnType("time");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("DoctorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("AvailabilityId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("DoctorId");
 
                     b.ToTable("Doctor_Availability");
                 });
@@ -233,7 +234,7 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<string>("PatientId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("BloodGroup")
@@ -276,7 +277,7 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("UserId");
+                    b.HasKey("PatientId");
 
                     b.ToTable("Patient");
                 });
@@ -284,7 +285,7 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Appointment", b =>
                 {
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", "Doctor")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -296,7 +297,7 @@ namespace PresCrypt_Backend.Migrations
                 {
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", "Doctor")
                         .WithMany("Availabilities")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -316,6 +317,8 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("Availabilities");
                 });
 #pragma warning restore 612, 618

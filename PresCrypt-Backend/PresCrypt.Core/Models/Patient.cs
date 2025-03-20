@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 
 {
     public class Patient
     {
         [Key]
-        public required string PatientId { get; set; } // Primary Key
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public required string PatientId { get; set; } = string.Empty; // Primary Key
 
         [Required]
         public required string PatientName { get; set; }
