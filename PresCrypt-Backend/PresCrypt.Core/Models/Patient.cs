@@ -22,6 +22,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public string NIC { get; set; }
 
+        public byte[] ProfileImage { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
