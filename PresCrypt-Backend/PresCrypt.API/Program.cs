@@ -28,10 +28,20 @@ builder.Services.AddCors(options =>
         });
 });
 
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") 
+                  .AllowAnyMethod() 
+                  .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
-
-
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -39,7 +49,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowReactApp");
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
