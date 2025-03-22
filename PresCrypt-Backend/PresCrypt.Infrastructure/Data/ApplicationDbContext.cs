@@ -10,7 +10,8 @@ public class ApplicationDbContext : DbContext
 
     // DbSets for your entities
     public DbSet<Doctor> Doctors { get; set; }
+    public DbSet<Patient> Patients { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Hospital> Hospitals { get; set; }
-    public DbSet<Doctor_Availability> Doctor_Availability { get; set; } // This is the correct declaration
+    public DbSet<DoctorAvailability> Doctor_Availability { get; set; } // This is the correct declaration
 }

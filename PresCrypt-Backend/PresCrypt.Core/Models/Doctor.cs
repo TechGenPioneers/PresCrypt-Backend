@@ -53,6 +53,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime? LastLogin { get; set; }  // Nullable, as it may not always be available
 
         // Navigation Property
-        public ICollection<Doctor_Availability> Availabilities { get; set; }
+        public ICollection<DoctorAvailability> Availabilities { get; set; }
     }
 }

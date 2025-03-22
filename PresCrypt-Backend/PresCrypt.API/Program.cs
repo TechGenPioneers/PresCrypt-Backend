@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost3000", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // Allow requests from this origin
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -21,6 +33,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 //Console.WriteLine($"Connection string: {connectionString}");
 
 var app = builder.Build();
+
+// Apply CORS middleware
+app.UseCors("AllowLocalhost3000");
 
 if (app.Environment.IsDevelopment())
 {

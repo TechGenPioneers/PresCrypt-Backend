@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
-    public class Doctor_Availability
+    public class DoctorAvailability
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -14,7 +14,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string DoctorId { get; set; }  // Foreign Key referencing Doctor
 
         [Required]
-        public DateOnly AvailableDate { get; set; }  // Stores only Date
+        //public DateOnly AvailableDate { get; set; }  // Stores only Date
+        public string AvailableDay { get; set; }  // Stores only Day
 
         [Required]
         public TimeOnly AvailableTime { get; set; }  // Stores only Time

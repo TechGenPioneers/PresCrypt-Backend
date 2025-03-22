@@ -13,6 +13,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public string PatientId { get; set; }  // Assuming this references a Patient table
 
+        [ForeignKey("PatientId")]
+        public Patient Patient { get; set; }
+
         [Required]
         public string DoctorId { get; set; }  // Foreign Key referencing Doctor table
 

@@ -31,17 +31,32 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                     _context.Hospitals.Any(h => h.HospitalName.Contains(hospitalName) && h.DoctorId == d.DoctorId));
             }
 
+            //var doctors = await query
+            //    .Select(d => new DoctorSearchDto
+            //    {
+            //        DoctorName = d.DoctorName,
+            //        AvailableDates = _context.Doctor_Availability
+            //            .Where(a => a.DoctorId == d.DoctorId)
+            //            .Select(a => a.AvailableDate.ToDateTime(TimeOnly.MinValue))
+            //            .ToList(),
+            //        AvailableTimes = _context.Doctor_Availability
+            //            .Where(a => a.DoctorId == d.DoctorId)
+            //            .Select(a => a.AvailableTime.ToTimeSpan())
+            //            .ToList()
+            //    })
+            //    .ToListAsync();
+
             var doctors = await query
                 .Select(d => new DoctorSearchDto
                 {
                     DoctorName = d.DoctorName,
-                    AvailableDates = _context.Doctor_Availability
+                    AvailableDays = _context.Doctor_Availability
                         .Where(a => a.DoctorId == d.DoctorId)
-                        .Select(a => a.AvailableDate.ToDateTime(TimeOnly.MinValue))
+                        .Select(a => a.AvailableDay)  // Use AvailableDay directly as string
                         .ToList(),
                     AvailableTimes = _context.Doctor_Availability
                         .Where(a => a.DoctorId == d.DoctorId)
-                        .Select(a => a.AvailableTime.ToTimeSpan())
+                        .Select(a => a.AvailableTime.ToTimeSpan())  // Convert TimeOnly to TimeSpan
                         .ToList()
                 })
                 .ToListAsync();
