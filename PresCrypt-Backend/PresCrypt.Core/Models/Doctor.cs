@@ -1,58 +1,57 @@
-﻿using System.Collections.Generic;
+﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace PresCrypt_Backend.PresCrypt.Core.Models
+public class Doctor
 {
-    public class Doctor
-    {
-        internal object Hospitals;
+    [Key]
+    [Required]
+    public string DoctorId { get; set; }
 
-        [Key]
-        [Required]
-        public string DoctorId { get; set; }  // Primary Key
+    [Required]
+    [MaxLength(100)]
+    public string DoctorName { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string DoctorName { get; set; }
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string Specialization { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string Specialization { get; set; }
+    [Required]
+    [MaxLength(50)]
+    public string SLMCRegId { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string SLMCRegId { get; set; }  // SLMC Registration ID
+    public byte[] Id { get; set; }
 
-        public byte[] Id { get; set; }  // Image stored as a byte array
+    [Required]
+    public long NIC { get; set; }
 
-        [Required]
-        public long NIC { get; set; }  // Assuming NIC as a numeric value (long)
+    public string Description { get; set; }
 
-        [Required]
-        public bool EmailVerified { get; set; }
+    public double Charge { get; set; }
 
-        [Required]
-        public string Role { get; set; }
+    [Required]
+    public bool EmailVerified { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Default to current UTC time
+    [Required]
+    public string Role { get; set; }
 
-        public DateTime? UpdatedAt { get; set; }  // Nullable, since it may not always be updated
+    [Required]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        [Required]
-        public string PasswordHash { get; set; }  // Storing hashed password
+    public DateTime? UpdatedAt { get; set; }
 
-        [Required]
-        [MaxLength(20)]
-        public string Status { get; set; }  // Active, Inactive, etc.
+    [Required]
+    public string PasswordHash { get; set; }
 
-        public DateTime? LastLogin { get; set; }  // Nullable, as it may not always be available
+    [Required]
+    [MaxLength(20)]
+    public string Status { get; set; }
 
-        // Navigation Property
-        public ICollection<Doctor_Availability> Availabilities { get; set; }
-    }
+    public DateTime? LastLogin { get; set; }
+
+    // Navigation property for the HospitalDoctor relationship
+    public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
 }
