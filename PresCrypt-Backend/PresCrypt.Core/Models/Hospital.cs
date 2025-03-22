@@ -26,7 +26,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [MaxLength(100)]
         public string City { get; set; }  // City where the hospital is located
 
-        public ICollection<HospitalDoctor> HospitalDoctors { get; set; }
+        public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
 
     }
 }

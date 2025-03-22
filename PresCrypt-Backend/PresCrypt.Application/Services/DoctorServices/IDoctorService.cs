@@ -2,6 +2,6 @@
 {
     public interface IDoctorService
     {
-        Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName);//Task is the return type and returns a List of doctors 
+        Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName);
     }
 }

@@ -53,5 +53,5 @@ public class Doctor
     public DateTime? LastLogin { get; set; }
 
     // Navigation property for the HospitalDoctor relationship
-    public ICollection<HospitalDoctor> HospitalDoctors { get; set; }
+    public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
 }

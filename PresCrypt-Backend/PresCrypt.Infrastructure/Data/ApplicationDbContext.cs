@@ -14,5 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Hospital> Hospitals { get; set; }
     public DbSet<DoctorAvailability> Doctor_Availability { get; set; } // This is the correct declaration
 
-    public DbSet<HospitalDoctor> HospitalDoctor { get; set; }
+    //public DbSet<HospitalDoctor> HospitalDoctor { get; set; }
+
+    public DbSet<Patient> Patient { get; set; }
 }
