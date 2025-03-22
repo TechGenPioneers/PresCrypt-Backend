@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 
@@ -15,6 +15,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -26,16 +27,41 @@ builder.Services.AddCors(options =>
     });
 });
 
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-//Console.WriteLine($"Connection string: {connectionString}");
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();  // ✅ Allow credentials if needed
+        });
+});
+
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") 
+                  .AllowAnyMethod() 
+                  .AllowAnyHeader();
+        });
+});
 
 var app = builder.Build();
 
+
 // Apply CORS middleware
 app.UseCors("AllowLocalhost3000");
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -43,6 +69,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
