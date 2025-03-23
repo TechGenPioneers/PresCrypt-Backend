@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using PresCrypt_Backend.PresCrypt.API.Dto;
-using System.Text;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -12,98 +13,79 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     [ApiController]
     public class PatientController : ControllerBase
     {
-        private readonly ApplicationDbContext applicationDbContext;
+        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly PasswordHasher<Patient> _passwordHasher;
+
         public PatientController(ApplicationDbContext applicationDbContext)
         {
-            this.applicationDbContext = applicationDbContext;
-
+            _applicationDbContext = applicationDbContext;
+            _passwordHasher = new PasswordHasher<Patient>(); // ✅ Properly initialize password hasher
         }
 
-
-[HttpPost]
-    [Route("Registration")]
-    public IActionResult Registration(PatientRegDTO patientRegDTO)
-    {
-        if (!ModelState.IsValid)
+        // ✅ PATIENT REGISTRATION
+        [HttpPost]
+        [Route("Registration")]
+        public IActionResult Registration([FromBody] PatientRegDTO patientRegDTO)
         {
-            return BadRequest(new { message = "Invalid input data", errors = ModelState });
-        }
-            var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { message = "Invalid input data", errors = ModelState });
+            }
 
+            if (string.IsNullOrEmpty(patientRegDTO.BloodGroup))
+            {
+                return BadRequest(new { message = "Blood Group is required." });
+            }
+
+            // ✅ Password validation
+            var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
             if (string.IsNullOrEmpty(patientRegDTO.Password) || !Regex.IsMatch(patientRegDTO.Password, passwordPattern))
             {
-                return BadRequest(new { error = "Password must be at least 6 characters long, include 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character." });
+                return BadRequest(new { message = "Password must be at least 6 characters long, include 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character." });
             }
 
-            //  Check if passwords match
             if (patientRegDTO.Password != patientRegDTO.ConfirmPassword)
             {
-                return BadRequest(new { error = "Passwords do not match." });
+                return BadRequest(new { message = "Passwords do not match." });
             }
-            // Normalize email to ensure case-insensitive uniqueness
+
+            // ✅ Convert email to lowercase & check if it already exists
             string emailLower = patientRegDTO.Email.ToLower();
-
-        // Check if the email already exists
-        var existingUser = applicationDbContext.Patient.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-        if (existingUser != null)
-        {
-            return BadRequest(new { message = "Email already exists" });
-        }
-
-        // Get the latest Patient ID
-        var lastPatient = applicationDbContext.Patient
-            .OrderByDescending(p => p.PatientId)
-            .FirstOrDefault();
-
-        int newId = 1; // Default first ID
-        if (lastPatient != null)
-        {
-            string lastId = lastPatient.PatientId.Replace("P", ""); // Remove "P"
-            if (int.TryParse(lastId, out int lastNum))
+            if (_applicationDbContext.Patient.Any(x => x.Email == emailLower))
             {
-                newId = lastNum + 1; // Increment last number
+                return BadRequest(new { message = "Email already exists." });
             }
+
+            // ✅ Generate new Patient ID
+            var lastPatient = _applicationDbContext.Patient.OrderByDescending(p => p.PatientId).FirstOrDefault();
+            int newId = (lastPatient != null) ? int.Parse(lastPatient.PatientId.Replace("P", "")) + 1 : 1;
+            string newPatientId = $"P{newId:D3}";
+
+            // ✅ Hash the password securely
+            string hashedPassword = _passwordHasher.HashPassword(null, patientRegDTO.Password);
+
+            var newPatient = new Patient
+            {
+                PatientId = newPatientId,
+                PatientName = patientRegDTO.FullName,
+                Email = emailLower,
+                PasswordHash = hashedPassword,
+                ContactNo = patientRegDTO.ContactNumber,
+                NIC = patientRegDTO.NIC,
+                BloodGroup = patientRegDTO.BloodGroup,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Status = patientRegDTO.Status
+            };
+
+            _applicationDbContext.Patient.Add(newPatient);
+            _applicationDbContext.SaveChanges();
+
+            return Ok(new { message = "Patient registered successfully", patientId = newPatientId });
         }
 
-        string newPatientId = $"P{newId:D3}";
-
-        // Hash the password before saving
-        string hashedPassword = HashPassword(patientRegDTO.Password);
-
-        // Create new patient record
-        var newPatient = new Patient
-        {
-            PatientId = newPatientId,
-            PatientName = patientRegDTO.FullName,
-            Email = emailLower,
-            PasswordHash = hashedPassword,
-            ContactNo = patientRegDTO.ContactNumber,
-            NIC = patientRegDTO.NIC,
-            BloodGroup = patientRegDTO.BloodGroup,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Status = patientRegDTO.Status
-        };
-
-        applicationDbContext.Patient.Add(newPatient);
-        applicationDbContext.SaveChanges();
-
-        return Ok(new { message = "Patient registered successfully", patientId = newPatientId });
-    }
-
-    // Password hashing function
-    private string HashPassword(string password)
-    {
-        using (SHA256 sha256 = SHA256.Create())
-        {
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(bytes);
-        }
-    }
-
-
-
-    [HttpPost]
+        // ✅ PATIENT LOGIN
+        [HttpPost]
         [Route("login")]
         public IActionResult Login([FromBody] LoginDTO patientLoginDTO)
         {
@@ -112,56 +94,53 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest(new { message = "Email and Password are required." });
             }
 
-            Patient? objUser = applicationDbContext.Patient.FirstOrDefault(x => x.Email == patientLoginDTO.Email);
-
-            if (objUser == null)
+            // ✅ Find the user by email
+            var user = _applicationDbContext.Patient.FirstOrDefault(x => x.Email.ToLower() == patientLoginDTO.Email.ToLower());
+            if (user == null)
             {
-                return BadRequest(new { message = "Invalid Email." });
+                return BadRequest(new { message = "Invalid email or password." });
             }
 
-            if (objUser.PasswordHash != patientLoginDTO.Password)
+            // ✅ Verify the hashed password
+            var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, patientLoginDTO.Password);
+            if (result != PasswordVerificationResult.Success)
             {
-                return BadRequest(new { message = "Invalid Password." });
+                return BadRequest(new { message = "Invalid email or password." });
             }
 
             return Ok(new
             {
+                success = true,
                 message = "Login Successful",
                 user = new
                 {
-                    id = objUser.PatientId,
-                    email = objUser.Email,
-                    name = objUser.PatientName
+                    id = user.PatientId,
+                    email = user.Email,
+                    name = user.PatientName
                 }
             });
         }
 
-
-
-
+        // ✅ GET PATIENT BY ID
         [HttpGet]
         [Route("GetPatientById/{id}")]
         public IActionResult GetPatientById(string id)
         {
-            var patient = applicationDbContext.Patient.FirstOrDefault(x => x.PatientId == id);
-            if (patient != null)
+            var patient = _applicationDbContext.Patient.FirstOrDefault(x => x.PatientId == id);
+            if (patient == null)
             {
-                return Ok(patient);
+                return NotFound(new { message = "Patient not found" });
             }
-            else
-            {
-                return BadRequest("Patient Not Found");
-            }
-
+            return Ok(patient);
         }
 
+        // ✅ GET ALL PATIENTS
         [HttpGet]
         [Route("GetPatients")]
         public IActionResult GetPatients()
         {
-            return Ok(applicationDbContext.Patient.ToList());
+            var patients = _applicationDbContext.Patient.ToList();
+            return Ok(patients);
         }
-
-
     }
 }
