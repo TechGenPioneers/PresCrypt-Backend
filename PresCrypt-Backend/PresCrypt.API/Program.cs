@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

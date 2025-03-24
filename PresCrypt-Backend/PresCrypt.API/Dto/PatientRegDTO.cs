@@ -29,6 +29,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         [Required]
         public string NIC { get; set; }
 
-        public string BloodGroup { get; set; }
+        
     }
 }

@@ -19,7 +19,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [EmailAddress]
         public string Email { get; set; }
 
-        public string BloodGroup { get; set; }
+        public string? BloodGroup { get; set; }
 
         [Required]
         public string NIC { get; set; }
@@ -36,5 +36,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
         public string ContactNo { get; set; }
+
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
+
     }
 }
