@@ -6,6 +6,7 @@
         public string DoctorName { get; set; }
         public string Specialization { get; set; }
 
+        public double Charge { get; set; }
         public string Description { get; set; }
         public byte[] Id { get; set; }
 
