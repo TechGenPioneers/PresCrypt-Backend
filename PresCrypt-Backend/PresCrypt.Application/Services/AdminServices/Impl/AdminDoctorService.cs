@@ -39,6 +39,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     DoctorId = d.DoctorId,
                     FirstName = d.FirstName,
                     LastName = d.LastName,
+                    Gender=d.Gender,
                     Specialization = d.Specialization,
                     ProfilePhoto = d.ProfilePhoto
                 })
@@ -59,6 +60,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     DoctorId = newDoctorId,
                     FirstName = newDoctorDto.Doctor.FirstName,
                     LastName = newDoctorDto.Doctor.LastName,
+                    Gender = newDoctorDto.Doctor.Gender,
                     Email = newDoctorDto.Doctor.Email,
                     Specialization = newDoctorDto.Doctor.Specialization,
                     SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
