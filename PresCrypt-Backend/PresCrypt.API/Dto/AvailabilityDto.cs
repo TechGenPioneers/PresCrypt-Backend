@@ -12,5 +12,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         public string EndTime { get; set; }//want to change timedate
 
         public string HospitalId { get; set; }
+
+        public string HospitalName { get; set; }
     }
 }

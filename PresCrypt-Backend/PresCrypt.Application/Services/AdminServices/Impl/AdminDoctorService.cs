@@ -19,7 +19,17 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             _context = context;
             _adminDoctorUtil = adminDoctorUtil;
         }
-
+        public async Task<List<HospitalDto>> getAllHospitals()
+        {
+            var hospitals = await _context.Hospitals
+                .Select(d => new HospitalDto
+                {
+                    HospitalId = d.HospitalId,
+                    HospitalName = d.HospitalName
+                })
+                .ToListAsync();
+            return hospitals;
+        }
         public async Task<List<AdminAllDoctorsDto>> GetAllDoctor()
         {
             Debug.WriteLine("doctors");
@@ -37,9 +47,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             return doctors;
         }
 
-        public async Task<string> SaveDoctor(AdminDoctorDto newDoctorDto)
+        public async Task<string> SaveDoctor(DoctorAvailabilityDto newDoctorDto)
         {
-            Debug.WriteLine("SAVEDOCTOR SERVICE \n");
             try
             {
                 
@@ -48,15 +57,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 var newDoctor = new Doctor
                 {
                     DoctorId = newDoctorId,
-                    FirstName = newDoctorDto.FirstName,
-                    LastName = newDoctorDto.LastName,
-                    Email = newDoctorDto.Email,
-                    Specialization = newDoctorDto.Specialization,
-                    SLMCRegId = newDoctorDto.SlmcLicense,
+                    FirstName = newDoctorDto.Doctor.FirstName,
+                    LastName = newDoctorDto.Doctor.LastName,
+                    Email = newDoctorDto.Doctor.Email,
+                    Specialization = newDoctorDto.Doctor.Specialization,
+                    SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
                     SLMCIdPhoto = new byte[0], // want to Implement
                     ProfilePhoto = new byte[0], // want to Implement
                     IdPhoto = new byte[0], // want to Implement
-                    NIC = newDoctorDto.NIC,
+                    NIC = newDoctorDto.Doctor.NIC,
                     EmailVerified = true, // want to Implement
                     CreatedAt = DateTime.Now,  // Set current date
                     UpdatedAt = null,
@@ -66,6 +75,23 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
                 // Add to DbContext
                 await _context.Doctors.AddAsync(newDoctor);
+
+                // Now, save the doctor's availability
+                foreach (var availability in newDoctorDto.Availability)
+                {
+                    var newAvailability = new Doctor_Availability
+                    {
+                        DoctorId = newDoctorId,
+                        AvailableDay = availability.Day, 
+                        AvailableStartTime = TimeOnly.Parse(availability.StartTime),
+                        AvailableEndTime = TimeOnly.Parse(availability.EndTime),
+                        HospitalId = availability.HospitalId
+                    };
+
+                    // Add Availability to DbContext
+                    await _context.Doctor_Availability.AddAsync(newAvailability);
+                }
+
 
                 // Save changes and check result
                 int result = await _context.SaveChangesAsync();

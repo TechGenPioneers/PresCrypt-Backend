@@ -37,12 +37,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
             }
 
-            var savedDoctor = await _adminDoctorServices.SaveDoctor(newDoctor.Doctor);
+            var savedDoctor = await _adminDoctorServices.SaveDoctor(newDoctor);
             Debug.WriteLine($"save : {savedDoctor}");
 
-           if(savedDoctor == "Success")
+            if (savedDoctor == "Success")
             {
-                return Created(savedDoctor,newDoctor.Doctor);
+                return Created(savedDoctor, newDoctor);
             }
             else
             {
@@ -50,7 +50,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
-        [HttpGet ("getAllDoctors")]
+        [HttpGet("getAllDoctors")]
         public async Task<IActionResult> GetAllDoctors()
         {
             var doctors = await _adminDoctorServices.GetAllDoctor();
@@ -59,6 +59,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(doctors);
         }
 
+        [HttpGet("{doctorId}")]
+        public async Task<IActionResult> GetDoctorDetails()
+        {
+            var doctors = await _adminDoctorServices.GetAllDoctor();
+            if (doctors == null || !doctors.Any())
+                return NotFound("No doctors found.");
+            return Ok(doctors);
 
+        }
+
+        [HttpGet("getAllHospitals")]
+        public async Task<IActionResult> getAllHospitals()
+        {
+            var hospitals = await _adminDoctorServices.getAllHospitals();
+            if (hospitals == null || !hospitals.Any())
+                return NotFound("No doctors found.");
+            return Ok(hospitals);
+
+        }
     }
 }
