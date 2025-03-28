@@ -4,7 +4,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
 {
     public interface IAdminDoctorService
     {
-       public Task<List<AdminDoctorDto>> GetAllDoctor();
+       public Task<List<AdminAllDoctorsDto>> GetAllDoctor();
 
         public Task<string> SaveDoctor(AdminDoctorDto dto);
     }

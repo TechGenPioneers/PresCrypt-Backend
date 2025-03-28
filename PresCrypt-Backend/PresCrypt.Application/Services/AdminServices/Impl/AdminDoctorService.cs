@@ -5,38 +5,32 @@ using System.Threading.Tasks;
 using System.Reflection.Metadata.Ecma335;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Diagnostics;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 {
     public class AdminDoctorService : IAdminDoctorService
     {
-        public readonly ApplicationDbContext _context;
-        public AdminDoctorService() { }
-        public AdminDoctorService(ApplicationDbContext context)
+        private readonly ApplicationDbContext _context;
+        private readonly AdminDoctorUtil _adminDoctorUtil;
+        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil)
         {
             _context = context;
+            _adminDoctorUtil = adminDoctorUtil;
         }
 
-        public async Task<List<AdminDoctorDto>> GetAllDoctor()
+        public async Task<List<AdminAllDoctorsDto>> GetAllDoctor()
         {
             Debug.WriteLine("doctors");
             var doctors = await _context.Doctors
-                .Select(d => new AdminDoctorDto
+                .Select(d => new AdminAllDoctorsDto
                 {
                     DoctorId = d.DoctorId,
                     FirstName = d.FirstName,
                     LastName = d.LastName,
-                    Email = d.Email,
                     Specialization = d.Specialization,
-                    SlmcLicense = d.SLMCRegId,
-                    ProfilePhoto = d.ProfilePhoto,
-                    NIC = d.NIC,
-                    EmailVerified = d.EmailVerified,
-                    CreatedAt = d.CreatedAt,
-                    UpdatedAt = d.UpdatedAt,
-                    Status = d.Status,
-                    LastLogin = d.LastLogin
+                    ProfilePhoto = d.ProfilePhoto
                 })
                 .ToListAsync();
             Debug.WriteLine(doctors);
@@ -48,10 +42,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             Debug.WriteLine("SAVEDOCTOR SERVICE \n");
             try
             {
-                // Map DTO to Entity
+                
+                string newDoctorId = await _adminDoctorUtil.GenerateDoctorId();
+
                 var newDoctor = new Doctor
                 {
-                    DoctorId = "D009",
+                    DoctorId = newDoctorId,
                     FirstName = newDoctorDto.FirstName,
                     LastName = newDoctorDto.LastName,
                     Email = newDoctorDto.Email,
@@ -75,9 +71,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 int result = await _context.SaveChangesAsync();
                 return result > 0 ? "Success" : "Error";
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return $"Error: {ex.Message}";
+                return $"Error: {e.Message}";
             }
 
         }

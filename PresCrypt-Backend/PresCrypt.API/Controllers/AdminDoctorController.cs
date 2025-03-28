@@ -30,12 +30,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest("Doctor and availability details are required.");
             }
 
-            //Debug.WriteLine(newDoctor.Doctor);
+            Debug.WriteLine(newDoctor.Doctor);
 
-            //foreach (var slot in newDoctor.Availability)
-            //{
-            //    Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
-            //}
+            foreach (var slot in newDoctor.Availability)
+            {
+                Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
+            }
 
             var savedDoctor = await _adminDoctorServices.SaveDoctor(newDoctor.Doctor);
             Debug.WriteLine($"save : {savedDoctor}");
@@ -50,10 +50,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet ("getAllDoctors")]
         public async Task<IActionResult> GetAllDoctors()
         {
-            var doctors = await _adminDoctorServices.GetAllDoctor();  // Ensure we await the task
+            var doctors = await _adminDoctorServices.GetAllDoctor();
             if (doctors == null || !doctors.Any())
                 return NotFound("No doctors found.");
             return Ok(doctors);
