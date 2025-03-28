@@ -35,13 +35,13 @@
 
   <ItemGroup>
     <Folder Include=".gitignore\" />
-    <Folder Include="Migrations\" />
     <Folder Include="PresCrypt.API\Middlewares\" />
     <Folder Include="PresCrypt.API\Filters\" />
     <Folder Include="PresCrypt.API\Configuration\" />
     <Folder Include="PresCrypt.Application\Abstractions\" />
     <Folder Include="PresCrypt.Application\Commands &amp; Queries\" />
     <Folder Include="PresCrypt.Application\Mappings\" />
+    <Folder Include="PresCrypt.Application\Services\AdminServices\Util\" />
     <Folder Include="PresCrypt.Application\Services\NewFolder2\" />
     <Folder Include="PresCrypt.Core\Enums\" />
     <Folder Include="PresCrypt.Core\ValueObjects\" />

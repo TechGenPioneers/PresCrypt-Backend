@@ -27,22 +27,22 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
             if (!string.IsNullOrEmpty(hospitalName))
             {
-                query = query.Where(d =>
-                    _context.Hospitals.Any(h => h.HospitalName.Contains(hospitalName) && h.DoctorId == d.DoctorId));
+                //query = query.Where(d =>
+                //    _context.Hospitals.Any(h => h.HospitalName.Contains(hospitalName) && h.DoctorId == d.DoctorId));
             }
 
             var doctors = await query
                 .Select(d => new DoctorSearchDto
                 {
-                    DoctorName = d.DoctorName,
+                    DoctorName = d.FirstName,
                     AvailableDates = _context.Doctor_Availability
                         .Where(a => a.DoctorId == d.DoctorId)
-                        .Select(a => a.AvailableDate.ToDateTime(TimeOnly.MinValue))
+                        .Select(a => a.AvailableDay.ToDateTime(TimeOnly.MinValue))
                         .ToList(),
-                    AvailableTimes = _context.Doctor_Availability
-                        .Where(a => a.DoctorId == d.DoctorId)
-                        .Select(a => a.AvailableTime.ToTimeSpan())
-                        .ToList()
+                    //AvailableTimes = _context.Doctor_Availability
+                    //    .Where(a => a.DoctorId == d.DoctorId)
+                    //    .Select(a => a.AvailableTime.ToTimeSpan())
+                    //    .ToList()
                 })
                 .ToListAsync();
 

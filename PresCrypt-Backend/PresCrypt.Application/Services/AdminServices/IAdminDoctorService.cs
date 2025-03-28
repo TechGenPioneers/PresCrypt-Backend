@@ -1,7 +1,11 @@
-﻿namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
+﻿using PresCrypt_Backend.PresCrypt.API.Dto;
+
+namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
 {
     public interface IAdminDoctorService
     {
-        public bool AddDoctor( string hello);
+       public Task<List<AdminDoctorDto>> GetAllDoctor();
+
+        public Task<string> SaveDoctor(AdminDoctorDto dto);
     }
 }

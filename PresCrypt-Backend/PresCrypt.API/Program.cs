@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,13 +14,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
+builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-//Console.WriteLine($"Connection string: {connectionString}");
+//Console.WriteLine($"Connection string: {connectionString} || {connction}");
 
 
 // Configure CORS

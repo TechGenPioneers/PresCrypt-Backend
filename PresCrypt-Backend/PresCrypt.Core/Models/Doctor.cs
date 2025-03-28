@@ -5,15 +5,18 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class Doctor
     {
-        internal object Hospitals;
 
         [Key]
         [Required]
-        public string DoctorId { get; set; }  // Primary Key
+        public string DoctorId { get; set; }  
 
         [Required]
         [MaxLength(100)]
-        public string DoctorName { get; set; }
+        public string FirstName { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string LastName { get; set; }
 
         [Required]
         [EmailAddress]
@@ -25,34 +28,32 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         [MaxLength(50)]
-        public string SLMCRegId { get; set; }  // SLMC Registration ID
+        public string SLMCRegId { get; set; } 
 
-        public byte[] Id { get; set; }  // Image stored as a byte array
+        public byte[] SLMCIdPhoto { get; set; }
+
+        public byte[] ProfilePhoto { get; set; }
+
+        public byte[] IdPhoto { get; set; }
 
         [Required]
-        public long NIC { get; set; }  // Assuming NIC as a numeric value (long)
+        public string NIC { get; set; }  
 
         [Required]
         public bool EmailVerified { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public DateTime CreatedAt { get; set; } 
 
-        [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Default to current UTC time
-
-        public DateTime? UpdatedAt { get; set; }  // Nullable, since it may not always be updated
-
-        [Required]
-        public string PasswordHash { get; set; }  // Storing hashed password
+        public DateTime? UpdatedAt { get; set; } 
 
         [Required]
         [MaxLength(20)]
-        public string Status { get; set; }  // Active, Inactive, etc.
+        public bool Status { get; set; }  
 
-        public DateTime? LastLogin { get; set; }  // Nullable, as it may not always be available
+        public DateTime? LastLogin { get; set; }
 
         // Navigation Property
-        public ICollection<Doctor_Availability> Availabilities { get; set; }
+        //public ICollection<Doctor_Availability> Availabilities { get; set; }
     }
 }
