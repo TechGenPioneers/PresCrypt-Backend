@@ -7,7 +7,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int AvailabilityId { get; set; }
+        public int AvailabilityId { get; set; } // should be changed to string but may have conflict with the current table
 
         [Required]
         [ForeignKey("Doctor")]
