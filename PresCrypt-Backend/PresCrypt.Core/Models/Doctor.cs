@@ -41,7 +41,13 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public byte[] IdPhoto { get; set; }
 
         [Required]
-        public string NIC { get; set; }  
+        public string NIC { get; set; }
+
+        [MaxLength(500)]
+        public string Description { get; set; }
+
+        [MaxLength(20)]
+        public string ContactNumber { get; set; }
 
         [Required]
         public bool EmailVerified { get; set; }

@@ -26,7 +26,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public TimeOnly AvailableEndTime { get; set; }
 
         [Required]
-        [ForeignKey("HospitalId")]
+        [ForeignKey("Hospital")]
         public string HospitalId { get; set; }
 
         // Navigation property for Hospital

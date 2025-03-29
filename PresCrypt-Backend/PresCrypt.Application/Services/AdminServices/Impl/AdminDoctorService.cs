@@ -6,6 +6,7 @@ using System.Reflection.Metadata.Ecma335;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Diagnostics;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
+using System.Linq;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -32,7 +33,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         }
         public async Task<List<AdminAllDoctorsDto>> GetAllDoctor()
         {
-            Debug.WriteLine("doctors");
+        //    Debug.WriteLine("doctors");
             var doctors = await _context.Doctors
                 .Select(d => new AdminAllDoctorsDto
                 {
@@ -44,7 +45,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     ProfilePhoto = d.ProfilePhoto
                 })
                 .ToListAsync();
-            Debug.WriteLine(doctors);
+            //Debug.WriteLine(doctors);
             return doctors;
         }
 
@@ -63,6 +64,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Gender = newDoctorDto.Doctor.Gender,
                     Email = newDoctorDto.Doctor.Email,
                     Specialization = newDoctorDto.Doctor.Specialization,
+                    ContactNumber = newDoctorDto.Doctor.ContactNumber,
+                    Description = newDoctorDto.Doctor.Description,
                     SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
                     SLMCIdPhoto = new byte[0], // want to Implement
                     ProfilePhoto = new byte[0], // want to Implement
@@ -102,6 +105,69 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             catch (Exception e)
             {
                 return $"Error: {e.Message}";
+            }
+
+        }
+
+        public async Task<DoctorAvailabilityDto> getDoctorById(string doctorID)
+        {
+            // Fetch doctor details
+            var getDoctor = await _context.Doctors
+                .Where(d => d.DoctorId == doctorID)
+                .Select(d => new AdminDoctorDto
+                {
+                    DoctorId = d.DoctorId,
+                    FirstName = d.FirstName,
+                    LastName = d.LastName,
+                    Gender = d.Gender,
+                    ProfilePhoto = d.ProfilePhoto,
+                    Email = d.Email,
+                    Specialization = d.Specialization,
+                    SlmcLicense = d.SLMCRegId,
+                    NIC = d.NIC,
+                    Description = d.Description,
+                    EmailVerified = d.EmailVerified,
+                    Status = d.Status,
+                    CreatedAt = d.CreatedAt,
+                    UpdatedAt = d.UpdatedAt,
+                    LastLogin = d.LastLogin,
+                    ContactNumber = d.ContactNumber
+                })
+                .FirstOrDefaultAsync();
+
+            // If doctor not found, return null
+            if (getDoctor != null)
+            {
+
+                // Fetch doctor availability along with hospital names
+                var getDoctorAvailability = await _context.Doctor_Availability
+                    .Where(d => d.DoctorId == doctorID)
+                    .Join(
+                        _context.Hospitals,
+                        a => a.HospitalId,// Foreign key in Doctor_Availability
+                        h => h.HospitalId,// Primary key in Hospital tablev
+                        (a, h) => new AvailabilityDto
+                        {
+                            Day = a.AvailableDay,
+                            StartTime = a.AvailableStartTime.ToString(),
+                            EndTime = a.AvailableEndTime.ToString(),
+                            HospitalName = h.HospitalName,
+                            HospitalId = h.HospitalId
+                        }
+                    )
+                    .ToListAsync();
+
+                // Combine doctor details and availability
+                var doctorAndAvailability = new DoctorAvailabilityDto()
+                {
+                    Doctor = getDoctor,
+                    Availability = getDoctorAvailability
+                };
+                return doctorAndAvailability;
+            }
+            else
+            {
+                return null;
             }
 
         }
