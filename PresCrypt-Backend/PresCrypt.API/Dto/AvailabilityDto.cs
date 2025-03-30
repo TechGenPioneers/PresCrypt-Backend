@@ -5,7 +5,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 {
     public class AvailabilityDto
     {
+        public string? AvailabilityId { get; set; }
+
         public string Day { get; set; }
+
+        public String? DoctorId { get; set; }
 
         public string StartTime { get; set; }//want to change timedate
 

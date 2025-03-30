@@ -36,9 +36,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public byte[] SLMCIdPhoto { get; set; }
 
-        public byte[] ProfilePhoto { get; set; }
+        public byte[]? ProfilePhoto { get; set; }
 
-        public byte[] IdPhoto { get; set; }
 
         [Required]
         public string NIC { get; set; }
@@ -55,7 +54,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public DateTime CreatedAt { get; set; } 
 
-        public DateTime? UpdatedAt { get; set; } 
+        public DateTime UpdatedAt { get; set; } 
 
         [Required]
         [MaxLength(20)]

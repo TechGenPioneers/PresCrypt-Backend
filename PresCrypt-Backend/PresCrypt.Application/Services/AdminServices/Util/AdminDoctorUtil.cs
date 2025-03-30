@@ -27,5 +27,22 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util
             return $"D{(lastNumber + 1):D3}"; // Format as D001, D002, etc.
         }
 
+        public async Task<string> GenerateAvailabilityId()
+        {
+            // Get the last inserted Availability ID
+            var lastAvailability = await _context.Doctor_Availability
+                .OrderByDescending(d => d.AvailabilityId)
+                .FirstOrDefaultAsync();
+
+            if (lastAvailability == null)
+                return "AV001"; // Start with AV001 if no availability exists
+
+            // Extract the numeric part and increment it
+            int lastNumber = int.Parse(lastAvailability.AvailabilityId.Substring(2)); // assuming AVXXX format
+
+            // Format the new availability ID with leading zeros to ensure 3 digits
+            return $"AV{(lastNumber + 1):D3}"; // Format as AV001, AV002, etc.
+        }
+
     }
 }

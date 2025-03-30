@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections;
@@ -32,19 +33,39 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest("Doctor and availability details are required.");
             }
 
-            Debug.WriteLine(newDoctor.Doctor);
+            //Debug.WriteLine(newDoctor.Doctor);
 
-            foreach (var slot in newDoctor.Availability)
-            {
-                Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
-            }
+            //foreach (var slot in newDoctor.Availability)
+            //{
+            //    Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
+            //}
 
             var savedDoctor = await _adminDoctorServices.SaveDoctor(newDoctor);
-            Debug.WriteLine($"save : {savedDoctor}");
+            //Debug.WriteLine($"save : {savedDoctor}");
 
             if (savedDoctor == "Success")
             {
                 return Created(savedDoctor, newDoctor);
+            }
+            else
+            {
+                return StatusCode(500, "Error");
+            }
+        }
+
+        [HttpPatch]
+        public async Task<IActionResult> UpdateDoctor([FromBody] DoctorAvailabilityDto updatedDoctor)
+        {
+            if (updatedDoctor == null || updatedDoctor.Doctor == null || updatedDoctor.Availability == null)
+            {
+                return BadRequest("Doctor and availability details are required.");
+            }
+
+            var updated = await _adminDoctorServices.UpdateDoctor(updatedDoctor);
+
+            if(updated == "Success")
+            {
+                return Ok(updated);
             }
             else
             {
@@ -74,7 +95,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(getDoctorAndAvailability);
         }
 
-
         [HttpGet("getAllHospitals")]
         public async Task<IActionResult> getAllHospitals()
         {
@@ -83,6 +103,20 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return NotFound("No doctors found.");
             return Ok(hospitals);
 
+        }
+
+        [HttpDelete ("{doctorId}")]
+        public async Task<IActionResult> deleteDoctorById(string doctorId)
+        {
+            if(doctorId != null)
+            {
+                var deleted = await _adminDoctorServices.deleteDoctorById(doctorId);
+                return Ok(deleted);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

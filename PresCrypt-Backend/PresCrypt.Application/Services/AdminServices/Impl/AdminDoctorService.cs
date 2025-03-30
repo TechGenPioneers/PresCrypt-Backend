@@ -69,11 +69,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
                     SLMCIdPhoto = new byte[0], // want to Implement
                     ProfilePhoto = new byte[0], // want to Implement
-                    IdPhoto = new byte[0], // want to Implement
                     NIC = newDoctorDto.Doctor.NIC,
                     EmailVerified = true, // want to Implement
                     CreatedAt = DateTime.Now,  // Set current date
-                    UpdatedAt = null,
+                    UpdatedAt = DateTime.Now,
                     Status = true, // want to Implement
                     LastLogin = null
                 };
@@ -81,31 +80,35 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 // Add to DbContext
                 await _context.Doctors.AddAsync(newDoctor);
 
-                // Now, save the doctor's availability
+                int result = 0;
                 foreach (var availability in newDoctorDto.Availability)
                 {
+                    string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
+                    Debug.WriteLine(newAvailabilityId);
+
                     var newAvailability = new Doctor_Availability
                     {
+                        AvailabilityId = newAvailabilityId,
                         DoctorId = newDoctorId,
-                        AvailableDay = availability.Day, 
+                        AvailableDay = availability.Day,
                         AvailableStartTime = TimeOnly.Parse(availability.StartTime),
                         AvailableEndTime = TimeOnly.Parse(availability.EndTime),
                         HospitalId = availability.HospitalId
                     };
 
-                    // Add Availability to DbContext
-                    await _context.Doctor_Availability.AddAsync(newAvailability);
+                    await _context.Doctor_Availability.AddRangeAsync(newAvailability);
+                    result = await _context.SaveChangesAsync();
                 }
 
-
-                // Save changes and check result
-                int result = await _context.SaveChangesAsync();
                 return result > 0 ? "Success" : "Error";
+
             }
             catch (Exception e)
             {
                 return $"Error: {e.Message}";
             }
+
+
 
         }
 
@@ -128,9 +131,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Description = d.Description,
                     EmailVerified = d.EmailVerified,
                     Status = d.Status,
-                    CreatedAt = d.CreatedAt,
-                    UpdatedAt = d.UpdatedAt,
-                    LastLogin = d.LastLogin,
+                    CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    UpdatedAt = d.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    LastLogin = d.LastLogin.HasValue ? d.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+
                     ContactNumber = d.ContactNumber
                 })
                 .FirstOrDefaultAsync();
@@ -148,9 +152,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         h => h.HospitalId,// Primary key in Hospital tablev
                         (a, h) => new AvailabilityDto
                         {
+                            AvailabilityId = a.AvailabilityId.ToString(),
                             Day = a.AvailableDay,
-                            StartTime = a.AvailableStartTime.ToString(),
-                            EndTime = a.AvailableEndTime.ToString(),
+                            StartTime = a.AvailableStartTime.ToString("HH:mm"),  // Formats as HH:mm
+                            EndTime = a.AvailableEndTime.ToString("HH:mm"), 
                             HospitalName = h.HospitalName,
                             HospitalId = h.HospitalId
                         }
@@ -170,6 +175,124 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 return null;
             }
 
+        }
+
+       public async Task<string> UpdateDoctor(DoctorAvailabilityDto dto)
+{
+    try
+    {
+        if (dto == null || dto.Doctor == null)
+        {
+            return "Invalid input data";
+        }
+
+        var getDoctor = await _context.Doctors
+            .FirstOrDefaultAsync(d => d.DoctorId == dto.Doctor.DoctorId);
+
+        if (getDoctor == null)
+        {
+            return "Doctor not found";
+        }
+
+        // Update only if values are changed
+        getDoctor.FirstName = dto.Doctor.FirstName ?? getDoctor.FirstName;
+        getDoctor.LastName = dto.Doctor.LastName ?? getDoctor.LastName;
+        getDoctor.Gender = dto.Doctor.Gender ?? getDoctor.Gender;
+        getDoctor.Email = dto.Doctor.Email ?? getDoctor.Email;
+        getDoctor.Specialization = dto.Doctor.Specialization ?? getDoctor.Specialization;
+        getDoctor.SLMCRegId = dto.Doctor.SlmcLicense ?? getDoctor.SLMCRegId;
+        getDoctor.NIC = dto.Doctor.NIC ?? getDoctor.NIC;
+        getDoctor.Description = dto.Doctor.Description ?? getDoctor.Description;
+        getDoctor.Status = dto.Doctor.Status ?? getDoctor.Status;
+        getDoctor.UpdatedAt = DateTime.Now;
+        getDoctor.ContactNumber = dto.Doctor.ContactNumber ?? getDoctor.ContactNumber;
+
+        // Fetch existing availabilities
+        var existingAvailabilities = await _context.Doctor_Availability
+            .Where(a => a.DoctorId == dto.Doctor.DoctorId)
+            .ToListAsync();
+
+        var newAvailabilityIds = dto.Availability
+            .Where(a => a.AvailabilityId != null)
+            .Select(a => a.AvailabilityId)
+            .ToHashSet();
+
+        // DELETE: Remove availabilities not in the new list
+        var availabilitiesToDelete = existingAvailabilities
+            .Where(a => !string.IsNullOrEmpty(a.AvailabilityId) && !newAvailabilityIds.Contains(a.AvailabilityId))
+            .ToList();
+
+        if (availabilitiesToDelete.Any())
+        {
+            _context.Doctor_Availability.RemoveRange(availabilitiesToDelete);
+        }
+
+                int result = 0;
+        foreach (var availability in dto.Availability.Where(a => a.AvailabilityId == null))
+        {
+            string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
+            Debug.WriteLine(newAvailabilityId);
+           var newAvailabilities = new Doctor_Availability
+            {
+                AvailabilityId = newAvailabilityId,
+                DoctorId = dto.Doctor.DoctorId,
+                AvailableDay = availability.Day,
+                AvailableStartTime = TimeOnly.Parse(availability.StartTime),
+                AvailableEndTime = TimeOnly.Parse(availability.EndTime),
+                HospitalId = availability.HospitalId
+            };
+                     await _context.Doctor_Availability.AddRangeAsync(newAvailabilities);
+                     result =  await _context.SaveChangesAsync();
+
+        }
+                result =  await _context.SaveChangesAsync();
+                return result > 0 ? "Success" : "Error";
+    }
+    catch (DbUpdateException ex)
+    {
+        return $"Database update error: {ex.Message} \nStackTrace: {ex.StackTrace}";
+    }
+    catch (Exception e)
+    {
+        return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+    }
+}
+
+        public async Task<string> deleteDoctorById(string doctorId)
+        {
+            if (string.IsNullOrEmpty(doctorId))
+            {
+                return "doctorId is null";
+            }
+
+            try
+            {
+                // Fetch the doctor
+                var doctor = await _context.Doctors
+                    .FirstOrDefaultAsync(d => d.DoctorId == doctorId);
+
+                if (doctor == null)
+                {
+                    return "Doctor not found";
+                }
+
+                // Remove doctor from the database
+                _context.Doctors.Remove(doctor);
+
+                // Remove related doctor availability records
+                var doctorAvailabilities = _context.Doctor_Availability
+                    .Where(a => a.DoctorId == doctorId);
+                _context.Doctor_Availability.RemoveRange(doctorAvailabilities);
+
+                // Save changes
+                await _context.SaveChangesAsync();
+
+                return "Doctor deleted successfully";
+            }
+            catch (Exception e)
+            {
+                return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+            }
         }
 
     }

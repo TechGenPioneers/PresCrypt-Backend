@@ -14,9 +14,9 @@
         public string? Description { get; set; }
         public bool? EmailVerified { get; set; }
         public bool? Status { get; set; }
-        public DateTime? CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? LastLogin  { get; set; }
+        public string? CreatedAt { get; set; }
+        public string? UpdatedAt { get; set; }
+        public string? LastLogin  { get; set; }
         public string ContactNumber { get; set; }
        
 
