@@ -72,8 +72,18 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<string>("DoctorId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ContactNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -92,10 +102,6 @@ namespace PresCrypt_Backend.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<byte[]>("IdPhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
 
@@ -109,7 +115,6 @@ namespace PresCrypt_Backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("ProfilePhoto")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("SLMCIdPhoto")
@@ -130,7 +135,7 @@ namespace PresCrypt_Backend.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("DoctorId");
@@ -140,11 +145,8 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor_Availability", b =>
                 {
-                    b.Property<int>("AvailabilityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AvailabilityId"));
+                    b.Property<string>("AvailabilityId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AvailableDay")
                         .IsRequired()
