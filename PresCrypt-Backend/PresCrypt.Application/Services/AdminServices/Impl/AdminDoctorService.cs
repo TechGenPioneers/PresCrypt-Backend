@@ -42,7 +42,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     LastName = d.LastName,
                     Gender=d.Gender,
                     Specialization = d.Specialization,
-                    ProfilePhoto = d.ProfilePhoto
+                    ProfilePhoto = d.ProfilePhoto,
+                    Status = d.Status
                 })
                 .ToListAsync();
             //Debug.WriteLine(doctors);
