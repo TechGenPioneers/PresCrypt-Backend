@@ -230,7 +230,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 int result = 0;
         foreach (var availability in dto.Availability.Where(a => a.AvailabilityId == null))
         {
-            string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
+                    
+                    result =  await _context.SaveChangesAsync();
+                    string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
             Debug.WriteLine(newAvailabilityId);
            var newAvailabilities = new Doctor_Availability
             {
@@ -241,10 +243,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 AvailableEndTime = TimeOnly.Parse(availability.EndTime),
                 HospitalId = availability.HospitalId
             };
-                     await _context.Doctor_Availability.AddRangeAsync(newAvailabilities);
-                     result =  await _context.SaveChangesAsync();
+                    await _context.Doctor_Availability.AddRangeAsync(newAvailabilities);
 
-        }
+                }
                 result =  await _context.SaveChangesAsync();
                 return result > 0 ? "Success" : "Error";
     }
