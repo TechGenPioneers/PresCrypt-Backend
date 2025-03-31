@@ -79,14 +79,17 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 )
                 .Select(dh => new DoctorSearchDto
                 {
+                    DoctorId = dh.doctor.DoctorId,
                     DoctorName = dh.doctor.DoctorName,
                     AvailableDates = new List<DateTime> { dh.availability.AvailableDate.ToDateTime(TimeOnly.MinValue) },
-                    AvailableTimes = new List<TimeSpan> { dh.availability.AvailableTime.ToTimeSpan() }
+                    AvailableTimes = new List<TimeSpan> { dh.availability.AvailableTime.ToTimeSpan() },
+                    Charge = dh.hospital.Charge // Include the hospital's charge here
 
                 })
                 .ToListAsync();
 
             return doctors;
         }
+
     }
 }
