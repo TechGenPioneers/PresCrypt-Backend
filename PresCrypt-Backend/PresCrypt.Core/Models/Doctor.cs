@@ -11,6 +11,7 @@ public class Doctor
     [MaxLength(100)]
     public string DoctorName { get; set; }
 
+
     [Required]
     [EmailAddress]
     public string Email { get; set; }
@@ -36,7 +37,7 @@ public class Doctor
     public bool EmailVerified { get; set; }
 
     [Required]
-    public string Role { get; set; }
+    public string Role { get; set; } //should be removed
 
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
