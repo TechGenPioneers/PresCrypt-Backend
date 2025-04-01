@@ -15,13 +15,8 @@ public class Appointment
 
     public Patient Patient { get; set; }  // Navigation Property for Patient
 
-
-        [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
-
-        [Required]
-        public string DoctorId { get; set; }  // Foreign Key referencing Doctor table
-
+    [Required]
+    public string DoctorId { get; set; }  // DoctorId remains a normal field
 
     public Doctor Doctor { get; set; }  // Navigation Property for Doctor (not a foreign key)
 
