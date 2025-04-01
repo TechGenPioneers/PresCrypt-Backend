@@ -6,9 +6,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public string PatientId { get; set; }
 
-        public DateTime Time { get; set; }
+        public TimeOnly Time { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateOnly Date { get; set; }
 
         public string Status { get; set; }
         
@@ -16,7 +16,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         
         public string DoctorName { get; set; }
 
-        public string Gender { get; set; }
+        public char Gender { get; set; }
 
         public DateTime DOB { get; set; }
 

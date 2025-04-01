@@ -19,6 +19,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime DOB { get; set; }
 
         [Required]
+        public char Gender { get; set; }
+
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
 
