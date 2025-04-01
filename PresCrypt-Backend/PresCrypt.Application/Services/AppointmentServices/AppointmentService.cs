@@ -20,7 +20,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsForTodayAsync(string doctorId)
         {
-            var today = DateTime.Today;
+            var today = DateOnly.FromDateTime(DateTime.Today);
 
             var appointments = await _context.Appointments
                 .Where(a => a.DoctorId == doctorId && a.Date == today)
@@ -44,13 +44,13 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsByDateAsync(string date, string doctorId)
         {
-            if (!DateTime.TryParse(date, out var parsedDate))
+            if (!DateOnly.TryParse(date, out var parsedDate))
             {
                 throw new ArgumentException("Invalid date format. Please provide a date in the format YYYY-MM-DD.");
             }
 
             var appointments = await _context.Appointments
-                .Where(a => a.DoctorId == doctorId && a.Date == parsedDate.Date)
+                .Where(a => a.DoctorId == doctorId && a.Date == parsedDate)
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                 .ToListAsync();
