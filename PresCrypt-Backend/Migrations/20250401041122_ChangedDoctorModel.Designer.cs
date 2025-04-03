@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250401041122_ChangedDoctorModel")]
+    partial class ChangedDoctorModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,14 +162,10 @@ namespace PresCrypt_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AvailabilityId"));
 
-                    b.Property<string>("AvailableDay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateOnly>("AvailableDate")
+                        .HasColumnType("date");
 
-                    b.Property<TimeOnly>("AvailableEndTime")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly>("AvailableStartTime")
+                    b.Property<TimeOnly>("AvailableTime")
                         .HasColumnType("time");
 
                     b.Property<string>("DoctorId")
@@ -242,22 +241,18 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NIC")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PatientName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

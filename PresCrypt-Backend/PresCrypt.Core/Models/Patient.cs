@@ -8,7 +8,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public required string PatientId { get; set; } // Primary Key
 
         [Required]
-        public required string PatientName { get; set; }
+        public required string FirstName { get; set; }
+
+        [Required]
+        public required string LastName { get; set; }
 
         [Required]
         public DateTime DOB { get; set; }
@@ -35,6 +38,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
-        public string ContactNo { get; set; }
+        public string ContactNo { get; set; }//should be removed because have another tble
     }
 }

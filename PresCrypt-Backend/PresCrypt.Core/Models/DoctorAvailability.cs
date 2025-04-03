@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
@@ -17,10 +18,12 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string HospitalId { get; set; }  // Foreign Key referencing Hospital
 
         [Required]
-        public DateOnly AvailableDate { get; set; }  // Stores only Date
+        public string AvailableDay { get; set; }  // Stores the day of the week
 
         [Required]
-        public TimeOnly AvailableTime { get; set; }  // Stores only Time
+        public TimeOnly AvailableStartTime { get; set; }  // Stores only Time
+
+        public TimeOnly AvailableEndTime { get; set; }
 
         // Navigation Properties
         public Doctor Doctor { get; set; }
