@@ -56,7 +56,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return NotFound(new { Message = "Profile image not found." });
             }
 
-            return File(patient.ProfileImage, "image/jpeg", patient.PatientName);
+            return File(patient.ProfileImage, "image/jpeg", patient.FirstName);
         }
 
         // POST: Add a new patient with profile image
