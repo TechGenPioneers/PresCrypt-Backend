@@ -1,5 +1,6 @@
 ﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 public class Doctor
 {
@@ -23,6 +24,9 @@ public class Doctor
     [Required]
     [EmailAddress]
     public string Email { get; set; }
+
+    [Required]
+    public string ContactNo { get; set; } 
 
     [Required]
     [MaxLength(100)]
@@ -53,7 +57,7 @@ public class Doctor
 
     [Required]
     [MaxLength(20)]
-    public string Status { get; set; }//should be changed to boolean
+    public bool Status { get; set; }
 
     public DateTime? LastLogin { get; set; }
 
