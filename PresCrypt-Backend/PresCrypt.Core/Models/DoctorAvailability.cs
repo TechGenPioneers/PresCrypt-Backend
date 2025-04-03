@@ -8,21 +8,16 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int AvailabilityId { get; set; } // should be changed to string but may have conflict with the current table
+        public string AvailabilityId { get; set; } 
 
         [Required]
         [ForeignKey("Doctor")]
         public string DoctorId { get; set; }  // Foreign Key referencing Doctor
 
         [Required]
-        //public DateOnly AvailableDate { get; set; }  // Stores only Date
         public string AvailableDay { get; set; }  // Stores only Day
 
         public string HospitalId { get; set; }  // Foreign Key referencing Hospital
-
-        [Required]
-        public string AvailableDay { get; set; }  // Stores the day of the week
-
 
         [Required]
         public TimeOnly AvailableStartTime { get; set; }  // Stores only Time

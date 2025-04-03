@@ -33,9 +33,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 AppointmentId = a.AppointmentId,
                 Time = a.Time,
                 Status = a.Status,
-                PatientName = a.Patient.PatientName,
+                PatientName = a.Patient.FirstName,
                 PatientId = a.Patient.PatientId,
-                DoctorName = a.Doctor.DoctorName,
+                DoctorName = a.Doctor.FirstName,
                 Gender = a.Patient.Gender,
                 DOB = a.Patient.DOB
                 //ProfilePictureUrl = a.Patient.ProfilePictureUrl
@@ -60,9 +60,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 AppointmentId = a.AppointmentId,
                 Time = a.Time,
                 Status = a.Status,
-                PatientName = a.Patient.PatientName,
+                PatientName = a.Patient.FirstName,
                 PatientId = a.Patient.PatientId,
-                DoctorName = a.Doctor.DoctorName,
+                DoctorName = a.Doctor.FirstName,
                 Gender = a.Patient.Gender,
                 DOB = a.Patient.DOB
                 //ProfilePictureUrl = a.Patient.ProfilePictureUrl
@@ -84,10 +84,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
             return availabilities.Select(a => new AvailabilityDisplayDto
             {
-                AvailabilityId = a.AvailabilityId,
+                AvailabilityId = int.Parse(a.AvailabilityId), // Fix: Convert string to int
                 DoctorId = a.DoctorId,
                 AvailableDay = a.AvailableDay,
-                AvailableTime = a.AvailableTime
+                AvailableTime = a.AvailableStartTime
             }).ToList();
         }
     }
