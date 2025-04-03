@@ -55,7 +55,10 @@ public class Doctor
     [MaxLength(20)]
     public string Status { get; set; }//should be changed to boolean
 
-    public DateTime? LastLogin { get; set; }
+
+        // Navigation Property
+        public ICollection<DoctorAvailability> Availabilities { get; set; }
+    
 
     // Navigation property for the HospitalDoctor relationship
     public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }

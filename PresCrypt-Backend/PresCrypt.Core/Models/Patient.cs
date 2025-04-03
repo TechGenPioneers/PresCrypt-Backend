@@ -1,10 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 
 {
     public class Patient
     {
-        [Key]
+        
         public required string PatientId { get; set; } // Primary Key
 
         [Required]
@@ -15,6 +20,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         public DateTime DOB { get; set; }
+
+        [Required]
+        public char Gender { get; set; }
 
         [Required]
         [EmailAddress]
@@ -39,5 +47,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
         public string ContactNo { get; set; }//should be removed because have another tble
+      // Relationship with Appointments
+        public ICollection<Appointment> Appointments { get; set; }
     }
 }
+
