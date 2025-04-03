@@ -7,7 +7,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     public class DoctorAvailability
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string AvailabilityId { get; set; } 
 
         [Required]

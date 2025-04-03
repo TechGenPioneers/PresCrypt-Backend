@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250403054031_RemovePasswordHashwithSomeOtherModification")]
-    partial class RemovePasswordHashwithSomeOtherModification
+    [Migration("20250403123940_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -80,6 +80,10 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<double>("Charge")
                         .HasColumnType("float");
 
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -133,10 +137,9 @@ namespace PresCrypt_Backend.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<bool>("Status")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -148,11 +151,9 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>
                 {
-                    b.Property<int>("AvailabilityId")
+                    b.Property<string>("AvailabilityId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AvailabilityId"));
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AvailableDay")
                         .IsRequired()
@@ -241,6 +242,10 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(1)");
+
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
 
@@ -281,7 +286,7 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired();
 
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Patient", "Patient")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -294,7 +299,7 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>
                 {
                     b.HasOne("Doctor", "Doctor")
-                        .WithMany("DoctorAvailabilities")
+                        .WithMany("Availabilities")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -312,12 +317,17 @@ namespace PresCrypt_Backend.Migrations
 
             modelBuilder.Entity("Doctor", b =>
                 {
-                    b.Navigation("DoctorAvailabilities");
+                    b.Navigation("Availabilities");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
                 {
                     b.Navigation("DoctorAvailabilities");
+                });
+
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 #pragma warning restore 612, 618
         }

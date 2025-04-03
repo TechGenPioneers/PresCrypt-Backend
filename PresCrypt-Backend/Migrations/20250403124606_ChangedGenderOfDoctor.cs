@@ -5,27 +5,27 @@
 namespace PresCrypt_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class FixSpecialNote : Migration
+    public partial class ChangedGenderOfDoctor : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "SpecialNote",
-                table: "Appointments",
+                name: "Gender",
+                table: "Doctor",
                 type: "nvarchar(max)",
                 nullable: false,
-                oldClrType: typeof(byte[]),
-                oldType: "varbinary(max)");
+                oldClrType: typeof(string),
+                oldType: "nvarchar(1)");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<byte[]>(
-                name: "SpecialNote",
-                table: "Appointments",
-                type: "varbinary(max)",
+            migrationBuilder.AlterColumn<string>(
+                name: "Gender",
+                table: "Doctor",
+                type: "nvarchar(1)",
                 nullable: false,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");

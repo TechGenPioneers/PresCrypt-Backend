@@ -17,7 +17,7 @@ public class Doctor
     public string LastName { get; set; }
 
     [Required]
-    public char Gender { get; set; }
+    public string Gender { get; set; }
 
     public byte[] DoctorImage { get; set; }
 
@@ -58,6 +58,8 @@ public class Doctor
     [Required]
     [MaxLength(20)]
     public bool Status { get; set; }
+
+    public DateTime? LastLogin { get; set; }
 
 
     // Navigation Property
