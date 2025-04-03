@@ -130,6 +130,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Specialization = d.Specialization,
                     SlmcLicense = d.SLMCRegId,
                     NIC = d.NIC,
+                    Charge=d.Charge,
                     Description = d.Description,
                     EmailVerified = d.EmailVerified,
                     Status = d.Status,
