@@ -30,7 +30,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util
         public async Task<string> GenerateAvailabilityId()
         {
             // Get the last inserted Availability ID
-            var lastAvailability = await _context.Doctor_Availability
+            var lastAvailability = await _context.DoctorAvailability
                 .OrderByDescending(d => d.AvailabilityId)
                 .FirstOrDefaultAsync();
 

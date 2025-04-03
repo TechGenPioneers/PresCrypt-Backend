@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PresCrypt_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initialcreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,8 +22,9 @@ namespace PresCrypt_Backend.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Specialization = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     SLMCRegId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SLMCIdPhoto = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    ProfilePhoto = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    SLMCIdImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    DoctorImage = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Charge = table.Column<double>(type: "float", nullable: false),
                     NIC = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ContactNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
@@ -45,6 +46,7 @@ namespace PresCrypt_Backend.Migrations
                     HospitalId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     HospitalName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Number = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    Charge = table.Column<double>(type: "float", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
@@ -80,7 +82,7 @@ namespace PresCrypt_Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Doctor_Availability",
+                name: "DoctorAvailability",
                 columns: table => new
                 {
                     AvailabilityId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -92,15 +94,15 @@ namespace PresCrypt_Backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Doctor_Availability", x => x.AvailabilityId);
+                    table.PrimaryKey("PK_DoctorAvailability", x => x.AvailabilityId);
                     table.ForeignKey(
-                        name: "FK_Doctor_Availability_Doctors_DoctorId",
+                        name: "FK_DoctorAvailability_Doctors_DoctorId",
                         column: x => x.DoctorId,
                         principalTable: "Doctors",
                         principalColumn: "DoctorId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Doctor_Availability_Hospitals_HospitalId",
+                        name: "FK_DoctorAvailability_Hospitals_HospitalId",
                         column: x => x.HospitalId,
                         principalTable: "Hospitals",
                         principalColumn: "HospitalId",
@@ -113,13 +115,13 @@ namespace PresCrypt_Backend.Migrations
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Doctor_Availability_DoctorId",
-                table: "Doctor_Availability",
+                name: "IX_DoctorAvailability_DoctorId",
+                table: "DoctorAvailability",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Doctor_Availability_HospitalId",
-                table: "Doctor_Availability",
+                name: "IX_DoctorAvailability_HospitalId",
+                table: "DoctorAvailability",
                 column: "HospitalId");
         }
 
@@ -130,7 +132,7 @@ namespace PresCrypt_Backend.Migrations
                 name: "Appointments");
 
             migrationBuilder.DropTable(
-                name: "Doctor_Availability");
+                name: "DoctorAvailability");
 
             migrationBuilder.DropTable(
                 name: "Doctors");

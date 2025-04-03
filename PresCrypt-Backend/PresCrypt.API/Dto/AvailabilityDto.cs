@@ -11,9 +11,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public String? DoctorId { get; set; }
 
-        public string StartTime { get; set; }//want to change timedate
+        public string StartTime { get; set; }
 
-        public string EndTime { get; set; }//want to change timedate
+        public string EndTime { get; set; }
 
         public string HospitalId { get; set; }
 

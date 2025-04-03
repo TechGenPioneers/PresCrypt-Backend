@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250329184305_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20250403063625_Initialcreate")]
+    partial class Initialcreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,9 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<string>("DoctorId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<double>("Charge")
+                        .HasColumnType("float");
+
                     b.Property<string>("ContactNumber")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -87,6 +90,10 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<byte[]>("DoctorImage")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -117,11 +124,7 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte[]>("ProfilePhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<byte[]>("SLMCIdPhoto")
+                    b.Property<byte[]>("SLMCIdImage")
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
@@ -147,7 +150,7 @@ namespace PresCrypt_Backend.Migrations
                     b.ToTable("Doctors");
                 });
 
-            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor_Availability", b =>
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>
                 {
                     b.Property<string>("AvailabilityId")
                         .HasColumnType("nvarchar(450)");
@@ -176,7 +179,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("HospitalId");
 
-                    b.ToTable("Doctor_Availability");
+                    b.ToTable("DoctorAvailability");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
@@ -188,6 +191,9 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<double>("Charge")
+                        .HasColumnType("float");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -220,7 +226,7 @@ namespace PresCrypt_Backend.Migrations
                     b.Navigation("Doctor");
                 });
 
-            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor_Availability", b =>
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>
                 {
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", "Doctor")
                         .WithMany("Availabilities")

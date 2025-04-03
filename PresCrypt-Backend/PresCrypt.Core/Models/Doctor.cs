@@ -34,10 +34,12 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [MaxLength(50)]
         public string SLMCRegId { get; set; } 
 
-        public byte[] SLMCIdPhoto { get; set; }
+        public byte[] SLMCIdImage { get; set; }
 
-        public byte[]? ProfilePhoto { get; set; }
-
+        public byte[] DoctorImage { get; set; }
+        
+        [Required]
+        public double Charge { get; set; }
 
         [Required]
         public string NIC { get; set; }
@@ -63,6 +65,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime? LastLogin { get; set; }
 
         //Navigation Property
-        public ICollection<Doctor_Availability> Availabilities { get; set; }
+        public ICollection<DoctorAvailability> Availabilities { get; set; }
     }
 }

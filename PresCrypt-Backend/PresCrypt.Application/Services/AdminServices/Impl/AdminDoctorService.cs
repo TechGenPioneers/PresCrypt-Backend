@@ -42,7 +42,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     LastName = d.LastName,
                     Gender=d.Gender,
                     Specialization = d.Specialization,
-                    ProfilePhoto = d.ProfilePhoto,
+                    ProfilePhoto = d.DoctorImage,
                     Status = d.Status
                 })
                 .ToListAsync();
@@ -66,10 +66,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Email = newDoctorDto.Doctor.Email,
                     Specialization = newDoctorDto.Doctor.Specialization,
                     ContactNumber = newDoctorDto.Doctor.ContactNumber,
+                    Charge = newDoctorDto.Doctor.Charge,
                     Description = newDoctorDto.Doctor.Description,
                     SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
-                    SLMCIdPhoto = new byte[0], // want to Implement
-                    ProfilePhoto = new byte[0], // want to Implement
+                    SLMCIdImage = new byte[0], // want to Implement
+                    DoctorImage = new byte[0], // want to Implement
                     NIC = newDoctorDto.Doctor.NIC,
                     EmailVerified = true, // want to Implement
                     CreatedAt = DateTime.Now,  // Set current date
@@ -87,7 +88,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
                     Debug.WriteLine(newAvailabilityId);
 
-                    var newAvailability = new Doctor_Availability
+                    var newAvailability = new DoctorAvailability
                     {
                         AvailabilityId = newAvailabilityId,
                         DoctorId = newDoctorId,
@@ -97,7 +98,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         HospitalId = availability.HospitalId
                     };
 
-                    await _context.Doctor_Availability.AddRangeAsync(newAvailability);
+                    await _context.DoctorAvailability.AddRangeAsync(newAvailability);
                     result = await _context.SaveChangesAsync();
                 }
 
@@ -124,7 +125,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     FirstName = d.FirstName,
                     LastName = d.LastName,
                     Gender = d.Gender,
-                    ProfilePhoto = d.ProfilePhoto,
+                    ProfilePhoto = d.DoctorImage,
                     Email = d.Email,
                     Specialization = d.Specialization,
                     SlmcLicense = d.SLMCRegId,
@@ -145,7 +146,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             {
 
                 // Fetch doctor availability along with hospital names
-                var getDoctorAvailability = await _context.Doctor_Availability
+                var getDoctorAvailability = await _context.DoctorAvailability
                     .Where(d => d.DoctorId == doctorID)
                     .Join(
                         _context.Hospitals,
@@ -200,6 +201,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         getDoctor.LastName = dto.Doctor.LastName ?? getDoctor.LastName;
         getDoctor.Gender = dto.Doctor.Gender ?? getDoctor.Gender;
         getDoctor.Email = dto.Doctor.Email ?? getDoctor.Email;
+        getDoctor.Charge = (dto.Doctor.Charge != getDoctor.Charge) ? dto.Doctor.Charge : getDoctor.Charge ;
         getDoctor.Specialization = dto.Doctor.Specialization ?? getDoctor.Specialization;
         getDoctor.SLMCRegId = dto.Doctor.SlmcLicense ?? getDoctor.SLMCRegId;
         getDoctor.NIC = dto.Doctor.NIC ?? getDoctor.NIC;
@@ -209,7 +211,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         getDoctor.ContactNumber = dto.Doctor.ContactNumber ?? getDoctor.ContactNumber;
 
         // Fetch existing availabilities
-        var existingAvailabilities = await _context.Doctor_Availability
+        var existingAvailabilities = await _context.DoctorAvailability
             .Where(a => a.DoctorId == dto.Doctor.DoctorId)
             .ToListAsync();
 
@@ -225,7 +227,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
         if (availabilitiesToDelete.Any())
         {
-            _context.Doctor_Availability.RemoveRange(availabilitiesToDelete);
+            _context.DoctorAvailability.RemoveRange(availabilitiesToDelete);
         }
 
                 int result = 0;
@@ -235,7 +237,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     result =  await _context.SaveChangesAsync();
                     string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
             Debug.WriteLine(newAvailabilityId);
-           var newAvailabilities = new Doctor_Availability
+           var newAvailabilities = new DoctorAvailability
             {
                 AvailabilityId = newAvailabilityId,
                 DoctorId = dto.Doctor.DoctorId,
@@ -244,7 +246,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 AvailableEndTime = TimeOnly.Parse(availability.EndTime),
                 HospitalId = availability.HospitalId
             };
-                    await _context.Doctor_Availability.AddRangeAsync(newAvailabilities);
+                    await _context.DoctorAvailability.AddRangeAsync(newAvailabilities);
 
                 }
                 result =  await _context.SaveChangesAsync();
@@ -282,9 +284,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 _context.Doctors.Remove(doctor);
 
                 // Remove related doctor availability records
-                var doctorAvailabilities = _context.Doctor_Availability
+                var doctorAvailabilities = _context.DoctorAvailability
                     .Where(a => a.DoctorId == doctorId);
-                _context.Doctor_Availability.RemoveRange(doctorAvailabilities);
+                _context.DoctorAvailability.RemoveRange(doctorAvailabilities);
 
                 // Save changes
                 await _context.SaveChangesAsync();

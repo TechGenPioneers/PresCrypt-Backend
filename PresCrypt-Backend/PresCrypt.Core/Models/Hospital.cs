@@ -15,7 +15,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         [MaxLength(15)]
-        public string Number { get; set; }  
+        public string Number { get; set; }
+
+        [Required]
+        public double Charge { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -24,7 +27,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         [MaxLength(100)]
         public string City { get; set; }
-        public ICollection<Doctor_Availability> DoctorAvailabilities { get; set; }
+        public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
 
     }
 }
