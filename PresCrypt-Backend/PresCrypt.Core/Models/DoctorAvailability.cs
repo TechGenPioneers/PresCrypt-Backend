@@ -28,6 +28,5 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         // Navigation Properties
         public Doctor Doctor { get; set; }
         public Hospital Hospital { get; set; }
-
     }
 }

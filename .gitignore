@@ -133,8 +133,8 @@ FodyWeavers.xsd
 # NuGet-generated files
 *.nuget.dgspec.json
 *.nuget.g.props
+*.nuget.g.targets
 project.assets.json
 project.nuget.cache
+/obj
 
-
-obj/

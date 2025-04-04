@@ -36,6 +36,7 @@ public class Doctor
     [MaxLength(50)]
     public string SLMCRegId { get; set; }
 
+
     public byte[] SLMCIdImage { get; set; }
 
     [Required]
@@ -63,6 +64,4 @@ public class Doctor
     // Navigation Property
     public ICollection<DoctorAvailability> Availabilities { get; set; }
     
-
-   
 }
