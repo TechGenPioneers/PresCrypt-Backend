@@ -1,5 +1,6 @@
 ﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 public class Doctor
 {
@@ -9,12 +10,23 @@ public class Doctor
 
     [Required]
     [MaxLength(100)]
-    public string DoctorName { get; set; }
+    public string FirstName{ get; set; }
 
+    [Required]
+    [MaxLength(100)]
+    public string LastName { get; set; }
+
+    [Required]
+    public string Gender { get; set; }
+
+    public byte[] DoctorImage { get; set; }
 
     [Required]
     [EmailAddress]
     public string Email { get; set; }
+
+    [Required]
+    public string ContactNo { get; set; } 
 
     [Required]
     [MaxLength(100)]
@@ -24,10 +36,10 @@ public class Doctor
     [MaxLength(50)]
     public string SLMCRegId { get; set; }
 
-    public byte[] Id { get; set; }
+    public byte[] SLMCIdImage { get; set; }
 
     [Required]
-    public long NIC { get; set; }
+    public string NIC { get; set; }
 
     public string Description { get; set; }
 
@@ -36,26 +48,23 @@ public class Doctor
     [Required]
     public bool EmailVerified { get; set; }
 
-    [Required]
-    public string Role { get; set; } //should be removed
 
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAt { get; set; }
 
-    [Required]
-    public string PasswordHash { get; set; }
 
     [Required]
     [MaxLength(20)]
-    public string Status { get; set; }
+    public bool Status { get; set; }
+
+    public DateTime? LastLogin { get; set; }
 
 
-        // Navigation Property
-        public ICollection<DoctorAvailability> Availabilities { get; set; }
+    // Navigation Property
+    public ICollection<DoctorAvailability> Availabilities { get; set; }
     
 
-    // Navigation property for the HospitalDoctor relationship
-    public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
+   
 }
