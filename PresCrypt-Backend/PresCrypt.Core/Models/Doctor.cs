@@ -26,7 +26,7 @@ public class Doctor
     public string Email { get; set; }
 
     [Required]
-    public string ContactNo { get; set; } 
+    public string ContactNumber { get; set; } 
 
     [Required]
     [MaxLength(100)]
@@ -50,13 +50,11 @@ public class Doctor
 
 
     [Required]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
-
+    public DateTime UpdatedAt { get; set; }
 
     [Required]
-    [MaxLength(20)]
     public bool Status { get; set; }
 
     public DateTime? LastLogin { get; set; }
