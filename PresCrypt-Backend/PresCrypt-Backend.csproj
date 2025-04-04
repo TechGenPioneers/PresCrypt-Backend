@@ -41,7 +41,8 @@
     <Folder Include="PresCrypt.Application\Abstractions\" />
     <Folder Include="PresCrypt.Application\Commands &amp; Queries\" />
     <Folder Include="PresCrypt.Application\Mappings\" />
-    <Folder Include="PresCrypt.Application\Services\NewFolder2\" />
+
+    <Folder Include="PresCrypt.Application\Services\PatientServices\" />
     <Folder Include="PresCrypt.Core\Enums\" />
     <Folder Include="PresCrypt.Core\ValueObjects\" />
     <Folder Include="PresCrypt.Infrastructure\Identity\" />

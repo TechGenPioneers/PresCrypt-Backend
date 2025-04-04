@@ -9,7 +9,9 @@ public class ApplicationDbContext : DbContext
     }
 
     // DbSets for your entities
-    public DbSet<Doctor> Doctors { get; set; }
+
+    public DbSet<Doctor> Doctor { get; set; }
+    public DbSet<Patient> Patient { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Hospital> Hospitals { get; set; }
     public DbSet<DoctorAvailability> DoctorAvailability { get; set; } 

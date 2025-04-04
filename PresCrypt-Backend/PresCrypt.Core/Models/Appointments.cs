@@ -1,41 +1,41 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
-namespace PresCrypt_Backend.PresCrypt.Core.Models
+public class Appointment
 {
-    public class Appointment
-    {
-        [Key]
-        [Required]
-        public string AppointmentId { get; set; }  // Primary Key
+    [Key]
+    [Required]
+    public string AppointmentId { get; set; }  // Primary Key
 
-        [Required]
-        public string PatientId { get; set; }  // Assuming this references a Patient table
+    [Required]
+    [ForeignKey(nameof(Patient))]  // Foreign Key referencing Patient.UserId
+    public string PatientId { get; set; }
 
-        [Required]
-        public string DoctorId { get; set; }  // Foreign Key referencing Doctor table
+    public Patient Patient { get; set; }  // Navigation Property for Patient
 
-        [ForeignKey("DoctorId")]
-        public Doctor Doctor { get; set; }  // Navigation Property
+    [Required]
+    public string DoctorId { get; set; }  // DoctorId remains a normal field
 
-        [Required]
-        public DateTime Time { get; set; }
+    public Doctor Doctor { get; set; }  // Navigation Property for Doctor (not a foreign key)
 
-        [Required]
-        public DateTime Date { get; set; }
+    [Required]
+    public DateOnly Date { get; set; }
 
-        [Required]
-        [MaxLength(20)]  // Assuming limited status values like "Pending", "Completed"
-        public string Status { get; set; }
+    [Required]
+    public TimeOnly Time { get; set; }
 
-        public byte[] SpecialNote { get; set; }  // File stored as a byte array
+    [Required]
+    [MaxLength(20)]
+    public string Status { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string TypeOfAppointment { get; set; }  // Example: "Consultation", "Surgery"
+    public string SpecialNote { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-    }
+    [Required]
+    [MaxLength(50)]
+    public string TypeOfAppointment { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
 }

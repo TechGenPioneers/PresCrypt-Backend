@@ -1,70 +1,67 @@
-﻿using System.Collections.Generic;
+﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
-namespace PresCrypt_Backend.PresCrypt.Core.Models
+public class Doctor
 {
-    public class Doctor
-    {
+    [Key]
+    [Required]
+    public string DoctorId { get; set; }
 
-        [Key]
-        [Required]
-        public string DoctorId { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string FirstName{ get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string FirstName { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string LastName { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string LastName { get; set; }
+    [Required]
+    public string Gender { get; set; }
 
-        [Required]
-        public string Gender { get; set; }
+    public byte[] DoctorImage { get; set; }
 
-        public byte[] DoctorImage { get; set; }
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+    [Required]
+    public string ContactNumber { get; set; } 
 
-        [Required]
-        public string ContactNumber { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string Specialization { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string Specialization { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string SLMCRegId { get; set; }
-
-        public byte[] SLMCIdImage { get; set; }
-
-        [Required]
-        public string NIC { get; set; }
-
-        public string Description { get; set; }
-
-        public double Charge { get; set; }
-
-        [Required]
-        public bool EmailVerified { get; set; }
+    [Required]
+    [MaxLength(50)]
+    public string SLMCRegId { get; set; }
 
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
+    public byte[] SLMCIdImage { get; set; }
 
-        public DateTime UpdatedAt { get; set; }
+    [Required]
+    public string NIC { get; set; }
 
-        [Required]
-        public bool Status { get; set; }
+    public string Description { get; set; }
 
-        public DateTime? LastLogin { get; set; }
+    public double Charge { get; set; }
 
-
-        // Navigation Property
-        public ICollection<DoctorAvailability> Availabilities { get; set; }
+    [Required]
+    public bool EmailVerified { get; set; }
 
 
-    }
+    [Required]
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+
+    [Required]
+    public bool Status { get; set; }
+
+    public DateTime? LastLogin { get; set; }
+
+
+    // Navigation Property
+    public ICollection<DoctorAvailability> Availabilities { get; set; }
+    
 }

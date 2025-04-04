@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
-using PresCrypt_Backend.PresCrypt.Core.Models;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 {
@@ -18,35 +18,36 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
         public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName)
         {
-            var query = _context.Doctors.AsQueryable();
 
-            if (!string.IsNullOrEmpty(specialization))
-            {
-                query = query.Where(d => d.Specialization.Contains(specialization));
-            }
-
-            if (!string.IsNullOrEmpty(hospitalName))
-            {
-                //query = query.Where(d =>
-                //    _context.Hospitals.Any(h => h.HospitalName.Contains(hospitalName) && h.DoctorId == d.DoctorId));
-            }
-
-            var doctors = await query
-                .Select(d => new DoctorSearchDto
+            var doctors = await _context.Doctor
+                .Join(
+                    _context.Doctor_Availability,
+                    doctor => doctor.DoctorId,
+                    availability => availability.DoctorId,
+                    (doctor, availability) => new { doctor, availability }
+                )
+                .Join(
+                    _context.Hospitals,
+                    da => da.availability.HospitalId,
+                    hospital => hospital.HospitalId,
+                    (da, hospital) => new { da.doctor, da.availability, hospital }
+                )
+                .Where(dh =>
+                    (string.IsNullOrEmpty(specialization) || dh.doctor.Specialization.Contains(specialization)) &&
+                    (string.IsNullOrEmpty(hospitalName) || dh.hospital.HospitalName.Contains(hospitalName))
+                )
+                .Select(dh => new DoctorSearchDto
                 {
-                    DoctorName = d.FirstName,
-                    AvailableDates = _context.Doctor_Availability
-                        .Where(a => a.DoctorId == d.DoctorId)
-                        .Select(a => a.AvailableDay.ToDateTime(TimeOnly.MinValue))
-                        .ToList(),
-                    //AvailableTimes = _context.Doctor_Availability
-                    //    .Where(a => a.DoctorId == d.DoctorId)
-                    //    .Select(a => a.AvailableTime.ToTimeSpan())
-                    //    .ToList()
+                    DoctorId = dh.doctor.DoctorId,
+                    FirstName = dh.doctor.FirstName,
+                    AvailableDay = new List<string> { dh.availability.AvailableDay },
+                    AvailableTime = new List<TimeSpan> { dh.availability.AvailableStartTime.ToTimeSpan() },
+                    Charge = dh.hospital.Charge // Include the hospital's charge here
                 })
                 .ToListAsync();
 
             return doctors;
         }
+
     }
 }

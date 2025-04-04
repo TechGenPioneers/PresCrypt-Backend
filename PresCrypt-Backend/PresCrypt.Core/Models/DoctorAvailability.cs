@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class DoctorAvailability
     {
         [Key]
-        public string AvailabilityId { get; set; }
+        public string AvailabilityId { get; set; } 
 
         [Required]
         [ForeignKey("Doctor")]
