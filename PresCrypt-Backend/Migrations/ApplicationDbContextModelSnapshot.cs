@@ -79,9 +79,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.Property<string>("ContactNumber")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -108,9 +106,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
@@ -139,7 +135,6 @@ namespace PresCrypt_Backend.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("Status")
-                        .HasMaxLength(20)
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -178,8 +173,8 @@ namespace PresCrypt_Backend.Migrations
                     b.HasIndex("DoctorId");
 
                     b.HasIndex("HospitalId");
-                    b.ToTable("DoctorAvailability");
 
+                    b.ToTable("DoctorAvailability");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
@@ -328,11 +323,6 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>
                 {
                     b.Navigation("Appointments");
-                });
-
-            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
-                {
-                    b.Navigation("DoctorAvailabilities");
                 });
 #pragma warning restore 612, 618
         }

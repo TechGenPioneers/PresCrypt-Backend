@@ -34,7 +34,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         public async Task<List<AdminAllDoctorsDto>> GetAllDoctor()
         {
         //    Debug.WriteLine("doctors");
-            var doctors = await _context.Doctors
+            var doctors = await _context.Doctor
                 .Select(d => new AdminAllDoctorsDto
                 {
                     DoctorId = d.DoctorId,
@@ -80,7 +80,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 };
 
                 // Add to DbContext
-                await _context.Doctors.AddAsync(newDoctor);
+                await _context.Doctor.AddAsync(newDoctor);
 
                 int result = 0;
                 foreach (var availability in newDoctorDto.Availability)
@@ -117,7 +117,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         public async Task<DoctorAvailabilityDto> getDoctorById(string doctorID)
         {
             // Fetch doctor details
-            var getDoctor = await _context.Doctors
+            var getDoctor = await _context.Doctor
                 .Where(d => d.DoctorId == doctorID)
                 .Select(d => new AdminDoctorDto
                 {
@@ -189,7 +189,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             return "Invalid input data";
         }
 
-        var getDoctor = await _context.Doctors
+        var getDoctor = await _context.Doctor
             .FirstOrDefaultAsync(d => d.DoctorId == dto.Doctor.DoctorId);
 
         if (getDoctor == null)
@@ -273,7 +273,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             try
             {
                 // Fetch the doctor
-                var doctor = await _context.Doctors
+                var doctor = await _context.Doctor
                     .FirstOrDefaultAsync(d => d.DoctorId == doctorId);
 
                 if (doctor == null)
@@ -282,7 +282,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 }
 
                 // Remove doctor from the database
-                _context.Doctors.Remove(doctor);
+                _context.Doctor.Remove(doctor);
 
                 // Remove related doctor availability records
                 var doctorAvailabilities = _context.DoctorAvailability

@@ -13,7 +13,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util
         public async Task<string> GenerateDoctorId()
         {
             // Get the last inserted doctor ID
-            var lastDoctor = await _context.Doctors
+            var lastDoctor = await _context.Doctor
                 .OrderByDescending(d => d.DoctorId)
                 .FirstOrDefaultAsync();
 
