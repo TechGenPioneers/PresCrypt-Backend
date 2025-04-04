@@ -8,7 +8,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Key]
         [Required]
-        public string DoctorId { get; set; }  
+        public string DoctorId { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -19,12 +19,16 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string LastName { get; set; }
 
         [Required]
-        [MaxLength(20)]
         public string Gender { get; set; }
+
+        public byte[] DoctorImage { get; set; }
 
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        [Required]
+        public string ContactNumber { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -32,39 +36,35 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         [MaxLength(50)]
-        public string SLMCRegId { get; set; } 
+        public string SLMCRegId { get; set; }
 
         public byte[] SLMCIdImage { get; set; }
-
-        public byte[] DoctorImage { get; set; }
-        
-        [Required]
-        public double Charge { get; set; }
 
         [Required]
         public string NIC { get; set; }
 
-        [MaxLength(500)]
         public string Description { get; set; }
 
-        [MaxLength(20)]
-        public string ContactNumber { get; set; }
+        public double Charge { get; set; }
 
         [Required]
         public bool EmailVerified { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; } 
-
-        public DateTime UpdatedAt { get; set; } 
 
         [Required]
-        [MaxLength(20)]
-        public bool Status { get; set; }  
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+
+        [Required]
+        public bool Status { get; set; }
 
         public DateTime? LastLogin { get; set; }
 
-        //Navigation Property
+
+        // Navigation Property
         public ICollection<DoctorAvailability> Availabilities { get; set; }
+
+
     }
 }

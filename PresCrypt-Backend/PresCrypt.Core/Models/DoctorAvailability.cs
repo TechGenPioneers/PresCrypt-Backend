@@ -10,25 +10,22 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         [ForeignKey("Doctor")]
-        public string DoctorId { get; set; }
-
-        // Navigation property for Doctor
-        public Doctor Doctor { get; set; }
+        public string DoctorId { get; set; }  // Foreign Key referencing Doctor
 
         [Required]
-        public string AvailableDay { get; set; }
-
-        [Required]
-        public TimeOnly AvailableStartTime { get; set; }
-
-        [Required]
-        public TimeOnly AvailableEndTime { get; set; }
+        public string AvailableDay { get; set; }  // Stores only Day
 
         [Required]
         [ForeignKey("Hospital")]
-        public string HospitalId { get; set; }
+        public string HospitalId { get; set; }  // Foreign Key referencing Hospital
 
-        // Navigation property for Hospital
+        [Required]
+        public TimeOnly AvailableStartTime { get; set; }  // Stores only Time
+
+        public TimeOnly AvailableEndTime { get; set; }
+
+        // Navigation Properties
+        public Doctor Doctor { get; set; }
         public Hospital Hospital { get; set; }
     }
 }
