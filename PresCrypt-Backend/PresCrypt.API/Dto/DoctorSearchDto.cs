@@ -1,5 +1,6 @@
 ﻿public class DoctorSearchDto
 {
+
     public string DoctorId { get; set; }
     public string FirstName { get; set; }
 

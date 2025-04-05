@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250403123940_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250404185914_AdminInit")]
+    partial class AdminInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -80,7 +80,7 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<double>("Charge")
                         .HasColumnType("float");
 
-                    b.Property<string>("ContactNo")
+                    b.Property<string>("ContactNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -109,7 +109,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nvarchar(1)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
@@ -138,10 +138,9 @@ namespace PresCrypt_Backend.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("Status")
-                        .HasMaxLength(20)
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("DoctorId");
@@ -152,7 +151,6 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>
                 {
                     b.Property<string>("AvailabilityId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AvailableDay")
@@ -179,7 +177,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("HospitalId");
 
-                    b.ToTable("Doctor_Availability");
+                    b.ToTable("DoctorAvailability");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
