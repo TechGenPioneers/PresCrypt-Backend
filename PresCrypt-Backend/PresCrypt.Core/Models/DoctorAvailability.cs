@@ -17,6 +17,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public string AvailableDay { get; set; }  // Stores only Day
 
+
         public string HospitalId { get; set; }  // Foreign Key referencing Hospital
 
         [Required]

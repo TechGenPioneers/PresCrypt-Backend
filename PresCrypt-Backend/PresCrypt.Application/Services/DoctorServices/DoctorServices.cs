@@ -39,6 +39,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 {
                     DoctorId = dh.doctor.DoctorId,
                     FirstName = dh.doctor.FirstName,
+                    LastName = dh.doctor.LastName,
                     AvailableDay = new List<string> { dh.availability.AvailableDay },
                     AvailableTime = new List<TimeSpan> { dh.availability.AvailableStartTime.ToTimeSpan() },
                     Charge = dh.hospital.Charge // Include the hospital's charge here
