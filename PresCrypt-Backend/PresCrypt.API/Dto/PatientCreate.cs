@@ -6,7 +6,9 @@
 //    public string PatientId { get; set; }
 
 //    [Required]
-//    public string PatientName { get; set; }
+//    public string FirstName { get; set; }
+//    [Required]
+//    public string LastName { get; set; }
 
 //    [Required]
 //    public DateTime DOB { get; set; }

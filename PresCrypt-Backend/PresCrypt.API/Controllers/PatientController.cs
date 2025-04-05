@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using PresCrypt_Backend.PresCrypt.Core.Models;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -59,48 +60,49 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return File(patient.ProfileImage, "image/jpeg", patient.FirstName);
         }
 
-        // POST: Add a new patient with profile image
-        //[HttpPost]
-        //public async Task<IActionResult> AddPatient([FromForm] PatientCreateModel model)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);  // Return validation errors if any
-        //    }
+        
+       //[HttpPost]
+       // public async Task<IActionResult> AddPatient([FromForm] PatientCreateModel model)
+       // {
+       //     if (!ModelState.IsValid)
+       //     {
+       //         return BadRequest(ModelState);  // Return validation errors if any
+       //     }
 
-        //    byte[] imageData = null;
+       //     byte[] imageData = null;
 
-        //    // Handle Profile Image Upload (if present)
-        //    if (model.ProfileImage != null && model.ProfileImage.Length > 0)
-        //    {
-        //        using (var ms = new MemoryStream())
-        //        {
-        //            await model.ProfileImage.CopyToAsync(ms);
-        //            imageData = ms.ToArray();
-        //        }
-        //    }
+       //     // Handle Profile Image Upload (if present)
+       //     if (model.ProfileImage != null && model.ProfileImage.Length > 0)
+       //     {
+       //         using (var ms = new MemoryStream())
+       //         {
+       //             await model.ProfileImage.CopyToAsync(ms);
+       //             imageData = ms.ToArray();
+       //         }
+       //     }
 
-        //    var patient = new Patient
-        //    {
-        //        PatientId = model.PatientId,
-        //        PatientName = model.PatientName,
-        //        DOB = model.DOB,
-        //        Email = model.Email,
-        //        BloodGroup = model.BloodGroup,
-        //        NIC = model.NIC,
-        //        ProfileImage = imageData,  // Save image as byte[]
-        //        PasswordHash = model.PasswordHash,
-        //        ContactNo = model.ContactNo,
-        //        Status = "Active",  // Default status
-        //        CreatedAt = DateTime.UtcNow,
-        //        UpdatedAt = DateTime.UtcNow,
-        //        LastLogin = null
-        //    };
+       //     var patient = new Patient
+       //     {
+       //         PatientId = model.PatientId,
+       //         FirstName = model.FirstName,
+       //         LastName = model.LastName,
+       //         DOB = model.DOB,
+       //         Email = model.Email,
+       //         BloodGroup = model.BloodGroup,
+       //         NIC = model.NIC,
+       //         ProfileImage = imageData,  // Save image as byte[]
+       //         PasswordHash = model.PasswordHash,
+       //         ContactNo = model.ContactNo,
+       //         Status = "Active",  // Default status
+       //         CreatedAt = DateTime.UtcNow,
+       //         UpdatedAt = DateTime.UtcNow,
+       //         LastLogin = null
+       //     };
 
-        //    await _context.Patient.AddAsync(patient);
-        //    await _context.SaveChangesAsync();
+       //     await _context.Patient.AddAsync(patient);
+       //     await _context.SaveChangesAsync();
 
-        //    return Ok(new { Message = "Patient added successfully!", Patient = patient });
-        //}
+       //     return Ok(new { Message = "Patient added successfully!", Patient = patient });
+       // }
     }
 }
