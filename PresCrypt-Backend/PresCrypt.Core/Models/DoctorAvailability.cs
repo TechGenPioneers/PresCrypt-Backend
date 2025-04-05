@@ -7,7 +7,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     public class DoctorAvailability
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string AvailabilityId { get; set; } 
 
         [Required]
@@ -16,8 +15,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         public string AvailableDay { get; set; }  // Stores only Day
-
-
+      
+        [Required]
+        [ForeignKey("Hospital")]
         public string HospitalId { get; set; }  // Foreign Key referencing Hospital
 
         [Required]
@@ -25,10 +25,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public TimeOnly AvailableEndTime { get; set; }
 
-
         // Navigation Properties
         public Doctor Doctor { get; set; }
         public Hospital Hospital { get; set; }
-
     }
 }

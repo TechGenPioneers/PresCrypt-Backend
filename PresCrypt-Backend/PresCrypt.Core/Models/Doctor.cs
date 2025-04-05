@@ -36,6 +36,7 @@ public class Doctor
     [MaxLength(50)]
     public string SLMCRegId { get; set; }
 
+
     public byte[] SLMCIdImage { get; set; }
 
     [Required]
@@ -48,12 +49,10 @@ public class Doctor
     [Required]
     public bool EmailVerified { get; set; }
 
-
     [Required]
     public DateTime CreatedAt { get; set; } 
 
-    public DateTime? UpdatedAt { get; set; }
-
+    public DateTime UpdatedAt { get; set; }
 
     [Required]
     public bool Status { get; set; }
@@ -64,6 +63,4 @@ public class Doctor
     // Navigation Property
     public ICollection<DoctorAvailability> Availabilities { get; set; }
     
-
-   
 }
