@@ -20,7 +20,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
         {
             var doctors = await _context.Doctor
                 .Join(
-                    _context.Doctor_Availability,
+                    _context.DoctorAvailability,
                     doctor => doctor.DoctorId,
                     availability => availability.DoctorId,
                     (doctor, availability) => new { doctor, availability }

@@ -78,7 +78,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
             var dayOfWeek = parsedDate.DayOfWeek.ToString();
 
-            var availabilities = await _context.Doctor_Availability
+            var availabilities = await _context.DoctorAvailability
                 .Where(a => a.DoctorId == doctorId && a.AvailableDay == dayOfWeek)
                 .ToListAsync();
 
