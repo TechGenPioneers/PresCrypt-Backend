@@ -21,6 +21,12 @@ public class Appointment
     public Doctor Doctor { get; set; }  // Navigation Property for Doctor (not a foreign key)
 
     [Required]
+    [ForeignKey(nameof(Hospital))]
+    public string HospitalId { get; set; }
+
+    public Hospital Hospital { get; set; }
+
+    [Required]
     public DateOnly Date { get; set; }
 
     [Required]
