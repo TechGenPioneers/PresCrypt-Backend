@@ -18,6 +18,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
         public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName)
         {
+
             var doctors = await _context.Doctor
                 .Join(
                     _context.DoctorAvailability,

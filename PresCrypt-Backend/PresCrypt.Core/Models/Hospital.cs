@@ -7,25 +7,27 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     {
         [Key]
         [Required]
-        public string HospitalId { get; set; }  // Primary Key
+        public string HospitalId { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string HospitalName { get; set; }  // Name of the hospital
+        public string HospitalName { get; set; }  
 
         [Required]
         [MaxLength(15)]
-        public string Number { get; set; }  // Phone number or contact number
+        public string Number { get; set; }
 
+        [Required]
+        public double Charge { get; set; }
+      
         [Required]
         [MaxLength(255)]
-        public string Address { get; set; }  // Address of the hospital
-
-        public double Charge { get; set; }
+        public string Address { get; set; }  
+      
         [Required]
         [MaxLength(100)]
-        public string City { get; set; }  // City where the hospital is located
-
+        public string City { get; set; }
+      
         public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
 
     }
