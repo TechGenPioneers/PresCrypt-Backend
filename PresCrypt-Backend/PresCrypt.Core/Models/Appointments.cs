@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 public class Appointment
 {
     [Key]
-    [Required]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public string AppointmentId { get; set; }  // Primary Key
 
     [Required]
@@ -33,10 +33,13 @@ public class Appointment
     public TimeOnly Time { get; set; }
 
     [Required]
+    public double Charge { get; set; }
+
+    [Required]
     [MaxLength(20)]
     public string Status { get; set; }
 
-    public string SpecialNote { get; set; }
+    public string? SpecialNote { get; set; }
 
     [Required]
     [MaxLength(50)]

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using Mapster;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,6 +67,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
             // Query availability
             var availability = await _context.DoctorAvailability
+
                 .Where(a => a.DoctorId == doctorId && a.AvailableDay == dayOfWeek)
                 .Select(a => new AvailabilityDisplayDto
                 {
@@ -78,6 +80,18 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .ToListAsync();
 
             return availability;
+        }
+
+        public async Task<Appointment> CreateAppointmentAsync(AppointmentSave dto)
+        {
+            var appointment = dto.Adapt<Appointment>();
+            appointment.CreatedAt = DateTime.UtcNow;
+
+            _context.Appointments.Add(appointment);
+            await _context.SaveChangesAsync();
+
+            return appointment;
+
         }
     }
 }

@@ -52,5 +52,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(availabilities);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAppointment([FromBody] AppointmentSave dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var appointment = await _appointmentService.CreateAppointmentAsync(dto);
+            return Ok(appointment);
+        }
     }
 }
