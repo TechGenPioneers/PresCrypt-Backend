@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 public class Appointment
 {
     [Key]
-    [Required]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public string AppointmentId { get; set; }  // Primary Key
 
     [Required]
@@ -21,16 +21,24 @@ public class Appointment
     public Doctor Doctor { get; set; }  // Navigation Property for Doctor (not a foreign key)
 
     [Required]
+    [ForeignKey(nameof(Hospital))]
+    public string HospitalId { get; set; }
+    public Hospital Hospital { get; set; }
+
+    [Required]
     public DateOnly Date { get; set; }
 
     [Required]
     public TimeOnly Time { get; set; }
 
     [Required]
+    public double Charge { get; set; }
+
+    [Required]
     [MaxLength(20)]
     public string Status { get; set; }
 
-    public string SpecialNote { get; set; }
+    public string? SpecialNote { get; set; }
 
     [Required]
     [MaxLength(50)]

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250406112110_AddedChargeForAppointments")]
+    partial class AddedChargeForAppointments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,7 +27,6 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("Appointment", b =>
                 {
                     b.Property<string>("AppointmentId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<double>("Charge")
@@ -40,15 +42,12 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("HospitalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("PatientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SpecialNote")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
@@ -70,8 +69,6 @@ namespace PresCrypt_Backend.Migrations
                     b.HasKey("AppointmentId");
 
                     b.HasIndex("DoctorId");
-
-                    b.HasIndex("HospitalId");
 
                     b.HasIndex("PatientId");
 
@@ -290,12 +287,6 @@ namespace PresCrypt_Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", "Hospital")
-                        .WithMany()
-                        .HasForeignKey("HospitalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
@@ -303,8 +294,6 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Doctor");
-
-                    b.Navigation("Hospital");
 
                     b.Navigation("Patient");
                 });

@@ -10,6 +10,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsByDateAsync(string date, string doctorId);
         Task<IEnumerable<AvailabilityDisplayDto>> GetAvailabilityByDateAsync(string day, string doctorId);
 
+        Task<Appointment> CreateAppointmentAsync(AppointmentSave dto);
+
     }
 
 }

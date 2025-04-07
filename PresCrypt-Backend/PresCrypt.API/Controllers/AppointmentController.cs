@@ -38,5 +38,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             // If the service returns null, return 404, otherwise 200
             return availabilities == null ? NotFound($"No availability found for the date: {date}.") : Ok(availabilities);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAppointment([FromBody] AppointmentSave dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var appointment = await _appointmentService.CreateAppointmentAsync(dto);
+            return Ok(appointment);
+        }
     }
 }
