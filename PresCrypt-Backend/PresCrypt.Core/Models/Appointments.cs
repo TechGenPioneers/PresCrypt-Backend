@@ -23,6 +23,7 @@ public class Appointment
     [Required]
     [ForeignKey(nameof(Hospital))]
     public string HospitalId { get; set; }
+
     public Hospital Hospital { get; set; }
 
     [Required]
