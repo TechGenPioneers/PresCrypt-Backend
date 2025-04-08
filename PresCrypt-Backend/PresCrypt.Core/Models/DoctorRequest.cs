@@ -48,13 +48,12 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Range(0, 100000)]
         public double Charge { get; set; }
 
-        public string? RequestStatus { get; set; }
+        public string RequestStatus { get; set; }
 
         public bool EmailVerified { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
-        public string Status { get; set; }
 
         public ICollection<RequestAvailability> AvailabilityRequest { get; set; }
     }
