@@ -21,6 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
+builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
 builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
 
