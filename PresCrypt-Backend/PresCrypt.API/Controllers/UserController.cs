@@ -121,172 +121,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        //[HttpPost]
-        //[Route("DoctorRegistration")]
-        //public async Task<IActionResult> RegisterDoctor([FromForm] DoctorRegDTO doctorRegDTO)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(new { message = "Invalid input data", errors = ModelState });
-        //    }
-
-        //    // Validate SLMC Image
-        //    if (doctorRegDTO.SLMCIdImage == null || doctorRegDTO.SLMCIdImage.Length == 0)
-        //    {
-        //        return BadRequest(new { message = "SLMC Registration Image is required." });
-        //    }
-
-        //    // Convert SLMC image to byte array
-        //    byte[] slmcImageBytes;
-        //    using (var ms = new MemoryStream())
-        //    {
-        //        await doctorRegDTO.SLMCIdImage.CopyToAsync(ms);
-        //        slmcImageBytes = ms.ToArray();
-        //    }
-
-        //    // Password validation
-        //    var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
-        //    if (!Regex.IsMatch(doctorRegDTO.Password, passwordPattern))
-        //    {
-        //        return BadRequest(new { message = "Password must be at least 6 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character." });
-        //    }
-
-        //    if (doctorRegDTO.Password != doctorRegDTO.ConfirmPassword)
-        //    {
-        //        return BadRequest(new { message = "Passwords do not match." });
-        //    }
-
-        //    string emailLower = doctorRegDTO.Email.Trim().ToLower();
-
-        //    // Check for existing user
-        //    if (await _applicationDbContext.User.AnyAsync(x => x.UserName == emailLower))
-        //    {
-        //        return BadRequest(new { message = "Email already exists." });
-        //    }
-
-        //    using var transaction = await _applicationDbContext.Database.BeginTransactionAsync();
-        //    {
-        //        try
-        //        {
-        //            // Step 1: Create User
-        //            string hashedPassword = _passwordHasher.HashPassword(null, doctorRegDTO.Password);
-
-        //            var lastUser = await _applicationDbContext.User
-        //                .OrderByDescending(p => p.UserId)
-        //                .FirstOrDefaultAsync();
-
-        //            int newId = lastUser != null && int.TryParse(lastUser.UserId.Substring(1), out int lastId)
-        //                ? lastId + 1 : 1;
-        //            string newUserId = $"U{newId:D3}";
-
-        //            var newUser = new User
-        //            {
-        //                UserId = newUserId,
-        //                UserName = emailLower,
-        //                PasswordHash = hashedPassword,
-        //                Role = "DoctorPending", // Changed  to "DoctorPending"
-        //                Patient = new List<Patient>(),
-        //                Doctor = new List<Doctor>(),
-        //                Admin = new List<Admin>()
-        //            };
-
-        //            await _applicationDbContext.User.AddAsync(newUser);
-
-        //            // Step 2: Create DoctorRequest
-        //            var lastRequest = await _applicationDbContext.DoctorRequest
-        //                .OrderByDescending(d => d.RequestId)
-        //                .FirstOrDefaultAsync();
-
-        //            int newRequestId = lastRequest != null &&
-        //                int.TryParse(lastRequest.RequestId.Substring(2), out int lastReqId)
-        //                ? lastReqId + 1 : 1;
-        //            string newDoctorRequestId = $"DR{newRequestId:D3}";
-
-        //            var doctorRequest = new DoctorRequest
-        //            {
-        //                RequestId = newDoctorRequestId,
-        //                FirstName = doctorRegDTO.FirstName,
-        //                LastName = doctorRegDTO.LastName,
-        //                Gender = doctorRegDTO.Gender, // Convert string to char
-        //                Email = emailLower,
-        //                ContactNo = doctorRegDTO.ContactNumber,
-        //                Specialization = doctorRegDTO.Specialization,
-        //                SLMCRegId = doctorRegDTO.SLMCRegId, // Using correct property name
-        //                SLMCIdImage = slmcImageBytes,
-        //                NIC = doctorRegDTO.NIC,
-        //                Charge = doctorRegDTO.Charge,
-        //                RequestStatus = "Pending",
-        //                EmailVerified = false,
-
-
-        //            };
-
-        //            await _applicationDbContext.DoctorRequest.AddAsync(doctorRequest);
-
-        //            // Step 3: Simplified Availability Requests Creation
-        //            if (doctorRegDTO.hospitalSchedules?.Count > 0)
-        //            {
-        //                var availabilityRequests = new List<RequestAvailability>();
-        //                int counter = 1;
-
-        //                // First ensure the doctor request is saved
-        //                await _applicationDbContext.DoctorRequest.AddAsync(doctorRequest);
-        //                await _applicationDbContext.SaveChangesAsync();
-
-        //                foreach (var schedule in doctorRegDTO.hospitalSchedules)
-        //                {
-        //                    if (schedule.availability == null) continue;
-
-        //                    var hospital = await _applicationDbContext.Hospitals
-        //                        .FirstOrDefaultAsync(h => h.HospitalId == schedule.hospitalId);
-
-        //                    if (hospital == null) continue;
-
-        //                    foreach (var dayEntry in schedule.availability)
-        //                    {
-        //                        if (dayEntry.Value == null) continue;
-
-        //                        if (TimeOnly.TryParse(dayEntry.Value.startTime, out var startTime) &&
-        //                            TimeOnly.TryParse(dayEntry.Value.endTime, out var endTime))
-        //                        {
-        //                            availabilityRequests.Add(new RequestAvailability
-        //                            {
-        //                                AvailabilityRequestId = $"AR{counter++}",
-        //                                DoctorRequestId = doctorRequest.RequestId,
-        //                                AvailableDay = dayEntry.Key,
-        //                                AvailableStartTime = startTime,
-        //                                AvailableEndTime = endTime,
-        //                                HospitalId = schedule.hospitalId
-        //                            });
-        //                        }
-        //                    }
-        //                }
-
-        //                if (availabilityRequests.Count > 0)
-        //                {
-        //                    await _applicationDbContext.RequestAvailability.AddRangeAsync(availabilityRequests);
-        //                }
-        //            }
-
-        //            // SINGLE SaveChanges call for all operations
-        //            await _applicationDbContext.SaveChangesAsync();
-        //            await transaction.CommitAsync();
-
-        //            return Ok(new
-        //            {
-        //                message = "Registration successful",
-        //                requestId = doctorRequest.RequestId,
-
-        //            });
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            await transaction.RollbackAsync();
-        //            _logger.LogError(ex, "Registration failed");
-        //            return StatusCode(500, new { message = "Registration failed", error = ex.Message });
-        //        }
-        //    }
-        //}
+        
         [HttpPost]
         [Route("DoctorRegistration")]
         public async Task<IActionResult> RegisterDoctor([FromForm] DoctorRegDTO doctorRegDTO)
@@ -551,7 +386,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
-
         [HttpPost]
         [Route("Login")]
         public IActionResult Login([FromBody] LoginDTO loginDTO)
@@ -563,6 +397,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             // Normalize email
             string emailLower = loginDTO.Email.Trim().ToLower();
+
+            // Check User table for the role
+            var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
+            if (user != null && user.Role == "DoctorPending")
+            {
+                return BadRequest(new { message = "Your doctor account is pending approval. Please wait for confirmation." });
+            }
 
             // Check Patient table
             var patient = _applicationDbContext.Patient.FirstOrDefault(x => x.Email.ToLower() == emailLower);
@@ -588,7 +429,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return BadRequest(new { message = "Invalid email or password." });
         }
 
-     
+
+
+
+
 
         private IActionResult HandleLogin(Patient patient, string password, string role)
         {
