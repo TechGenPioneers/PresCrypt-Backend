@@ -14,29 +14,14 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _adminDoctorRequestService = adminDoctorRequestService;
         }
 
-        [HttpGet("getAllPendingRequests")]
+        [HttpGet("getAllDoctorRequest")]
         public async Task<IActionResult> GetAllPendingRequest()
         {
-            var pendingDoctors = await _adminDoctorRequestService.GetAllPendingDoctors();
-            if (pendingDoctors == null || !pendingDoctors.Any())
+            var doctorRequests = await _adminDoctorRequestService.GetAllDoctorRequest();
+            if (doctorRequests == null || !doctorRequests.Any())
                 return NotFound("No Request found.");
-            return Ok(pendingDoctors);
+            return Ok(doctorRequests);
         }
-        [HttpGet("getAllApprovedRequests")]
-        public async Task<IActionResult> GetAllApprovedDoctors()
-        {
-            var approvedDoctors = await _adminDoctorRequestService.GetAllApprovedDoctors();
-            if (approvedDoctors == null || !approvedDoctors.Any())
-                return NotFound("No Request found.");
-            return Ok(approvedDoctors);
-        }
-        [HttpGet("getAllRejectedRequests")]
-        public async Task<IActionResult> GetAllRejectedRequest()
-        {
-            var rejectedDoctors = await _adminDoctorRequestService.GetAllRejectedDoctors();
-            if (rejectedDoctors == null || !rejectedDoctors.Any())
-                return NotFound("No Request found.");
-            return Ok(rejectedDoctors);
-        }
+       
     }
 }
