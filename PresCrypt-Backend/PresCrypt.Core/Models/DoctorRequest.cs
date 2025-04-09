@@ -54,6 +54,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public DateTime CreatedAt { get; set; }
 
+        public DateTime CheckedAt { get; set; }
+
 
         public ICollection<RequestAvailability> AvailabilityRequest { get; set; }
     }
