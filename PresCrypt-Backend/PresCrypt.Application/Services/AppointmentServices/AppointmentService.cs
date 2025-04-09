@@ -26,6 +26,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             var query = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
+                .Include(a => a.Hospital)
                 .Where(a => a.DoctorId == doctorId);
 
             // Apply date filter if specified, otherwise get future appointments
@@ -45,6 +46,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                     Status = a.Status,
                     PatientId = a.Patient.PatientId,
                     HospitalId = a.HospitalId,
+                    HospitalName = a.Hospital.HospitalName,
                     PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
                     Gender = a.Patient.Gender,
                     DOB = a.Patient.DOB, // Format DOB consistently
