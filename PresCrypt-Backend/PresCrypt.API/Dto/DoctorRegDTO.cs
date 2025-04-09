@@ -3,29 +3,26 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 {
     public class DoctorRegDTO
     {
-        [Required]
-        [MaxLength(100)]
-        public string DoctorName { get; set; }
-
-        [Required]
-        [MaxLength(100)]
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Gender { get; set; }
         public string Specialization { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        
-        public string SLMCRegId { get; set; } // Medical License Number Validation
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        [Required]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
-        public string Password { get; set; }
-        [Required]
+        public string SLMCRegId { get; set; }
+        public IFormFile SLMCIdImage { get; set; }
         public string NIC { get; set; }
+        public string ContactNumber { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public double Charge { get; set; }
+        public string ConfirmPassword { get; set; }
+        public string hospitalSchedules { get; set; }
 
 
+
+        //public List<HospitalScheduleDTO> hospitalSchedules { get; set; }
     }
+
+   
+
+    
 }

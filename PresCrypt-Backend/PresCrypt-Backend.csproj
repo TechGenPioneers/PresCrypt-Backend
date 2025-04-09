@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.11.0" />
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
@@ -22,6 +23,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="7.3.1" />
@@ -43,7 +45,6 @@
     <Folder Include="PresCrypt.Infrastructure\Abstractions\" />
     <Folder Include="PresCrypt.Infrastructure\Payments\" />
     <Folder Include="PresCrypt.Infrastructure\OpenMRSIntegration\" />
-    <Folder Include="PresCrypt.Infrastructure\Repositories\" />
     <Folder Include="PresCrypt.Integration\PaymentGateway\" />
     <Folder Include="PresCrypt.Integration\OpenMRS\" />
     <Folder Include="PresCrypt.Shared\Helpers\" />

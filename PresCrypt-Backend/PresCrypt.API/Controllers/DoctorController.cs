@@ -105,7 +105,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 _ = _context.Doctor.Add(new Doctor
                 {
                     DoctorId = Guid.NewGuid().ToString(),
-                    DoctorName = doctorRegDTO.DoctorName,
+                    FirstName = doctorRegDTO.FirstName,
+                    LastName = doctorRegDTO.LastName,
                     Email = doctorRegDTO.Email,
                     Specialization = doctorRegDTO.Specialization,
                     SLMCRegId = doctorRegDTO.SLMCRegId,

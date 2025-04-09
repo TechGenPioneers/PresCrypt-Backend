@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250408185902_FixRequestAvailability")]
+    partial class FixRequestAvailability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,10 +194,10 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan>("AvailableEndTime")
+                    b.Property<TimeOnly>("AvailableEndTime")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan>("AvailableStartTime")
+                    b.Property<TimeOnly>("AvailableStartTime")
                         .HasColumnType("time");
 
                     b.Property<string>("DoctorId")
@@ -380,23 +383,21 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan>("AvailableEndTime")
+                    b.Property<TimeOnly>("AvailableEndTime")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan>("AvailableStartTime")
+                    b.Property<TimeOnly>("AvailableStartTime")
                         .HasColumnType("time");
 
                     b.Property<string>("DoctorRequestId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("HospitalId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("AvailabilityRequestId");
-
-                    b.HasIndex("DoctorRequestId");
 
                     b.HasIndex("HospitalId");
 
@@ -504,14 +505,14 @@ namespace PresCrypt_Backend.Migrations
                 {
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.DoctorRequest", "DoctorRequest")
                         .WithMany("RequestAvailability")
-                        .HasForeignKey("DoctorRequestId")
+                        .HasForeignKey("AvailabilityRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", "Hospital")
                         .WithMany("RequestAvailability")
                         .HasForeignKey("HospitalId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DoctorRequest");

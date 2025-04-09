@@ -29,13 +29,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 _ = applicationDbContext.Admin.Add(new Admin
                 {
                     AdminId = Guid.NewGuid().ToString(), 
-                    AdminName = adminRegDTO.FullName,
+                    FirstName = adminRegDTO.FirstName,
+                    LastName = adminRegDTO.LastName,
                     Email = adminRegDTO.Email,
                     PasswordHash = adminRegDTO.Password,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    Status = adminRegDTO.Status,
-                    Role = adminRegDTO.Role
+                   
                 });
                 applicationDbContext.SaveChanges();
                 return Ok("Admin Registered Successfully");

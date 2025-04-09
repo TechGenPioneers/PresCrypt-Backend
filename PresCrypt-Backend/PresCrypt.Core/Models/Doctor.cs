@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class Doctor
     {
-        internal object Hospitals;
 
         [Key]
         [Required]
@@ -13,11 +13,21 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         [MaxLength(100)]
-        public string DoctorName { get; set; }
+        public string FirstName { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string LastName { get; set; }
 
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+        [ForeignKey("Email")]
+        public User User { get; set; }
+
+        [Required]
+        [Phone]
+        public string ContactNumber { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -25,9 +35,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         [MaxLength(50)]
-        public string SLMCRegId { get; set; }  // SLMC Registration ID
+        public string SLMCRegId { get; set; }  
 
-        public byte[] Id { get; set; }  // Image stored as a byte array
+        public byte[] SLMCIdImage { get; set; }  // Image stored as a byte array
 
         [Required]
         public string NIC { get; set; }  // Assuming NIC as a numeric value (long)
@@ -35,8 +45,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public bool EmailVerified { get; set; }
 
-        [Required]
-        public string Role { get; set; }
+        public string Gender { get; set; }
+
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Default to current UTC time
@@ -45,16 +55,16 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         public string PasswordHash { get; set; }  // Storing hashed password
+        //public string ConfirmPassword { get; set; }  
 
         [Required]
-        [MaxLength(20)]
-        public string Status { get; set; }  // Active, Inactive, etc.
+        
+        public bool Status { get; set; }  // Active, Inactive, etc.
 
         public DateTime? LastLogin { get; set; }  // Nullable, as it may not always be available
 
         // Navigation Property
-        public ICollection<Doctor_Availability> Availabilities { get; set; }
-        public ICollection<Appointment> Appointments { get; set; }  // One doctor can have multiple appointments
-
+        public ICollection<DoctorAvailability> Availabilities { get; set; }
+        
     }
 }

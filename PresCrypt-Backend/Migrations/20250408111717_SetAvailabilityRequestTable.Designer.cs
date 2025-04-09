@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250408111717_SetAvailabilityRequestTable")]
+    partial class SetAvailabilityRequestTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -108,6 +111,36 @@ namespace PresCrypt_Backend.Migrations
                     b.ToTable("Appointments");
                 });
 
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.AvailabilityRequest", b =>
+                {
+                    b.Property<string>("AvailabilityRequestId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AvailableDay")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeOnly>("AvailableEndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("AvailableStartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("DoctorRequestId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HospitalId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("AvailabilityRequestId");
+
+                    b.HasIndex("HospitalId");
+
+                    b.ToTable("AvailabilityRequest");
+                });
+
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", b =>
                 {
                     b.Property<string>("DoctorId")
@@ -131,10 +164,6 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
@@ -191,10 +220,10 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan>("AvailableEndTime")
+                    b.Property<TimeOnly>("AvailableEndTime")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan>("AvailableStartTime")
+                    b.Property<TimeOnly>("AvailableStartTime")
                         .HasColumnType("time");
 
                     b.Property<string>("DoctorId")
@@ -243,7 +272,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(1)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -256,7 +285,6 @@ namespace PresCrypt_Backend.Migrations
                         .HasColumnType("nvarchar(12)");
 
                     b.Property<string>("RequestStatus")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("SLMCIdImage")
@@ -371,38 +399,6 @@ namespace PresCrypt_Backend.Migrations
                     b.ToTable("Patient");
                 });
 
-            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.RequestAvailability", b =>
-                {
-                    b.Property<string>("AvailabilityRequestId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AvailableDay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<TimeSpan>("AvailableEndTime")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan>("AvailableStartTime")
-                        .HasColumnType("time");
-
-                    b.Property<string>("DoctorRequestId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("HospitalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("AvailabilityRequestId");
-
-                    b.HasIndex("DoctorRequestId");
-
-                    b.HasIndex("HospitalId");
-
-                    b.ToTable("RequestAvailability");
-                });
-
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.User", b =>
                 {
                     b.Property<string>("UserId")
@@ -449,12 +445,31 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Appointment", b =>
                 {
                     b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", "Doctor")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.AvailabilityRequest", b =>
+                {
+                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.DoctorRequest", "DoctorRequest")
+                        .WithMany("AvailabilityRequest")
+                        .HasForeignKey("AvailabilityRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", "Hospital")
+                        .WithMany("AvailabilityRequest")
+                        .HasForeignKey("HospitalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DoctorRequest");
+
+                    b.Navigation("Hospital");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", b =>
@@ -500,40 +515,23 @@ namespace PresCrypt_Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.RequestAvailability", b =>
-                {
-                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.DoctorRequest", "DoctorRequest")
-                        .WithMany("RequestAvailability")
-                        .HasForeignKey("DoctorRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", "Hospital")
-                        .WithMany("RequestAvailability")
-                        .HasForeignKey("HospitalId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DoctorRequest");
-
-                    b.Navigation("Hospital");
-                });
-
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("Availabilities");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorRequest", b =>
                 {
-                    b.Navigation("RequestAvailability");
+                    b.Navigation("AvailabilityRequest");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
                 {
-                    b.Navigation("DoctorAvailability");
+                    b.Navigation("AvailabilityRequest");
 
-                    b.Navigation("RequestAvailability");
+                    b.Navigation("DoctorAvailability");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.User", b =>

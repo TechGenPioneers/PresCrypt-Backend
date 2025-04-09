@@ -7,8 +7,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
     public class PatientRegDTO
     {
         [Required]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
 
+        [Required] public string LastName { get; set; }
         [Required]
         [EmailAddress]
         public string Email { get; set; }
@@ -21,7 +22,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
         [Required]
-        public string Status { get; set; }
+        public bool Status { get; set; }
 
         [Required]
         [Phone]

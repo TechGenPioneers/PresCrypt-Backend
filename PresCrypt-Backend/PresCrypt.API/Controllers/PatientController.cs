@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using System.Text.RegularExpressions;
-using System.Linq;
-using System;
-using System.Threading.Tasks;
+
 using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
@@ -64,7 +62,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var newPatient = new Patient
             {
                 PatientId = newPatientId,
-                PatientName = patientRegDTO.FullName,
+                FirstName = patientRegDTO.FirstName,
+                LastName = patientRegDTO.LastName,
                 Email = emailLower,
                 ContactNo = patientRegDTO.ContactNumber,
                 NIC = patientRegDTO.NIC,
@@ -112,7 +111,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 {
                     id = user.PatientId,
                     email = user.Email,
-                    name = user.PatientName
+                    name = user.FirstName + " " + user.LastName,
                 }
             });
         }
@@ -161,12 +160,58 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _applicationDbContext.SaveChanges();
 
             // Send email with reset link
-            string resetLink = $"https://yourfrontend.com/reset-password?token={token}&email={model.Email}";
+            string resetLink = $"https://localhost:3000/reset-password?token={token}&email={model.Email}";
 
             await _emailService.SendEmailAsync(user.Email, "Reset Password",
                 $"Click the link to reset your password: {resetLink}");
 
             return Ok(new { message = "Password reset link sent to your email." });
         }
+
+        [HttpPost]
+        [Route("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Token) || string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                return BadRequest(new { message = "Email, token, and new password are required." });
+            }
+
+            // Normalize email
+            string emailLower = model.Email.Trim().ToLower();
+            var user = _applicationDbContext.Patient.FirstOrDefault(x => x.Email == emailLower);
+
+            if (user == null)
+            {
+                return BadRequest(new { message = "Invalid email or token." });
+            }
+
+            // Check if token is valid and not expired
+            if (user.ResetToken != model.Token || user.ResetTokenExpiry < DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Invalid or expired reset token." });
+            }
+
+            // Validate new password
+            var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
+            if (!Regex.IsMatch(model.NewPassword, passwordPattern))
+            {
+                return BadRequest(new { message = "Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a digit, and a special character." });
+            }
+
+            // Hash and update password
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
+
+            // Remove token after reset
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+
+            _applicationDbContext.SaveChanges();
+
+            return Ok(new { message = "Password reset successful. You can now log in with your new password." });
+        }
+
+
+
     }
 }

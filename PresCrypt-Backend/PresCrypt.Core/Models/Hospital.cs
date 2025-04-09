@@ -7,30 +7,29 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     {
         [Key]
         [Required]
-        public string HospitalId { get; set; }  // Primary Key
+        public string HospitalId { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string HospitalName { get; set; }  // Name of the hospital
+        public string HospitalName { get; set; }
 
         [Required]
         [MaxLength(15)]
-        public string Number { get; set; }  // Phone number or contact number
+        public string Number { get; set; }
+
+        [Required]
+        public double Charge { get; set; }
 
         [Required]
         [MaxLength(255)]
-        public string Address { get; set; }  // Address of the hospital
+        public string Address { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string City { get; set; }  // City where the hospital is located
+        public string City { get; set; }
 
-        // Foreign Key to Doctor table
-        [Required]
-        public string DoctorId { get; set; }  // Foreign Key property
+        public required ICollection<DoctorAvailability> DoctorAvailability { get; set; }
+        public ICollection<RequestAvailability> RequestAvailability { get; set; }
 
-        // Navigation Property for the Doctor relationship
-        [ForeignKey("DoctorId")]
-        public Doctor Doctorid{ get; set; }  // Navigation property to the Doctor class
     }
 }

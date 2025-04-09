@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.API.Controllers;
 using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,11 +11,18 @@ builder.Configuration
     .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "PresCrypt.API"))
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+
+
+builder.Services.AddScoped<PatientController>();  
+builder.Services.AddScoped<DoctorController>();  
+builder.Services.AddScoped<AdminController>();
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
