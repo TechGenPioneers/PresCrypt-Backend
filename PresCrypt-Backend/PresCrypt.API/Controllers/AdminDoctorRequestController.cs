@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -22,6 +23,17 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return NotFound("No Request found.");
             return Ok(doctorRequests);
         }
-       
+
+        //get doctor by id
+        [HttpGet("{requestId}")]
+        public async Task<IActionResult> GetDoctorByID(string requestId)
+        {
+            var getRequestAndAvailability = await _adminDoctorRequestService.getRequestByID(requestId);
+
+            if (getRequestAndAvailability == null)
+                return NotFound("No doctor found.");
+
+            return Ok(getRequestAndAvailability);
+        }
     }
 }

@@ -24,7 +24,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             {
                 BadRequest("Empty");
             }
-            Debug.WriteLine($"Receptor: {adminEmailDto.Receptor}, Subject: {adminEmailDto.Subject}, Body: {adminEmailDto.Body}");
 
            var sent = await _adminEmailService.SendEmail(adminEmailDto);
             if(sent == "Success")

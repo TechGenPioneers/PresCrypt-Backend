@@ -33,8 +33,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl
                 smtpClient.UseDefaultCredentials = false;
                 smtpClient.Credentials = new NetworkCredential(email, password);
 
-
-                var message = new MailMessage(email!, adminEmailDto.Receptor, adminEmailDto.Subject, adminEmailDto.Body);
+                var subject = "Cancellation Notice";
+                var body = $"Dear Doctor,\n\n" +
+           $"We regret to inform you that your registration request has been rejected by the admin team.\n\n" +
+           $"Reason for rejection:\n{adminEmailDto.Reason}\n\n" +
+           $"If you believe this was a mistake or need further clarification, please feel free to contact us.\n\n" +
+           $"Best regards,\n" +
+           $"The Admin Team" +
+           $"PresCrypt";
+                var message = new MailMessage(email!, adminEmailDto.Receptor, subject, body);
                await smtpClient.SendMailAsync(message);
                 return "Success";
             }

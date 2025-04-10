@@ -3,7 +3,6 @@
     public class AdminEmailDto
     {
         public string Receptor { get; set; }
-        public string Subject { get; set; }
-        public string Body { get; set; }
+        public string Reason { get; set; }
     }
 }

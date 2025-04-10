@@ -5,5 +5,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
     public interface IAdminDoctorRequestService
     {
         public Task<List<AdminAllDoctorRequestDto>> GetAllDoctorRequest();
+        public Task<RequestDoctorAvailabilityDto> getRequestByID(string requestID);
     }
 }
