@@ -16,6 +16,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         public double Charge { get; set; }
         public string ConfirmPassword { get; set; }
         public string hospitalSchedules { get; set; }
+        
 
 
 

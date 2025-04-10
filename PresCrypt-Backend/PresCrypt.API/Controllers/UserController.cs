@@ -121,55 +121,82 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        
+
         [HttpPost]
         [Route("DoctorRegistration")]
         public async Task<IActionResult> RegisterDoctor([FromForm] DoctorRegDTO doctorRegDTO)
         {
-            // Check if model is valid
+            // Validate model state
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { message = "Invalid input data", errors = ModelState });
+                return BadRequest(new
+                {
+                    message = "Invalid input data",
+                    errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
+                });
             }
-
-            // Ensure SLMC registration image is provided
-            if (doctorRegDTO.SLMCIdImage == null || doctorRegDTO.SLMCIdImage.Length == 0)
+            if (doctorRegDTO.SLMCIdImage == null)
             {
-                return BadRequest(new { message = "SLMC Registration Image is required." });
+                ModelState.AddModelError("SLMCIdImage", "The SLMC ID Image is required.");
+                return BadRequest(ModelState);
             }
 
-            // Ensure hospital schedules are provided
+            // Process the uploaded file
+            byte[] imageBytes;
+            try
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await doctorRegDTO.SLMCIdImage.CopyToAsync(memoryStream);
+                    imageBytes = memoryStream.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = "Failed to process uploaded image",
+                    error = ex.Message
+                });
+            }
+
+            // Validate hospital schedules
             if (string.IsNullOrEmpty(doctorRegDTO.hospitalSchedules))
             {
                 return BadRequest("Hospital schedules are required.");
             }
 
-            // Deserialize hospital schedules
-            List<HospitalScheduleDTO> hospitalSchedules = JsonConvert.DeserializeObject<List<HospitalScheduleDTO>>(doctorRegDTO.hospitalSchedules);
-
-            byte[] slmcImageBytes;
-            using (var ms = new MemoryStream())
+            List<HospitalScheduleDTO> hospitalSchedules;
+            try
             {
-                await doctorRegDTO.SLMCIdImage.CopyToAsync(ms);
-                slmcImageBytes = ms.ToArray();
+                hospitalSchedules = JsonConvert.DeserializeObject<List<HospitalScheduleDTO>>(doctorRegDTO.hospitalSchedules);
+                if (hospitalSchedules == null || !hospitalSchedules.Any())
+                {
+                    return BadRequest("Invalid hospital schedules data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Invalid hospital schedules format.");
             }
 
-            // Validate password format
-            string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
+            // Validate password
+            const string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
             if (!Regex.IsMatch(doctorRegDTO.Password, passwordPattern))
             {
-                return BadRequest(new { message = "Password must be at least 6 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character." });
+                return BadRequest(new
+                {
+                    message = "Password must be at least 6 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character."
+                });
             }
 
-            // Check if passwords match
             if (doctorRegDTO.Password != doctorRegDTO.ConfirmPassword)
             {
                 return BadRequest(new { message = "Passwords do not match." });
             }
 
-            string emailLower = doctorRegDTO.Email.Trim().ToLower();
-
-            // Check if the email already exists
+            // Check email uniqueness
+            string emailLower = doctorRegDTO.Email.Trim().ToLowerInvariant();
             if (await _applicationDbContext.User.AnyAsync(x => x.UserName == emailLower))
             {
                 return BadRequest(new { message = "Email already exists." });
@@ -179,117 +206,226 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             using var transaction = await _applicationDbContext.Database.BeginTransactionAsync();
             try
             {
-                // Step 1: Create User
-                string hashedPassword = _passwordHasher.HashPassword(null, doctorRegDTO.Password);
-                var lastUser = await _applicationDbContext.User
-                    .OrderByDescending(p => p.UserId)
-                    .FirstOrDefaultAsync();
+                // Step 1: Generate IDs
+                string userId;
+                string requestId;
 
-                int newId = lastUser != null && int.TryParse(lastUser.UserId.Substring(1), out int lastId)
-                    ? lastId + 1 : 1;
-                string newUserId = $"U{newId:D3}";
-
-                var newUser = new User
+                try
                 {
-                    UserId = newUserId,
-                    UserName = emailLower,
-                    PasswordHash = hashedPassword,
-                    Role = "DoctorPending",  // Set to "DoctorPending" as status
-                    Patient = new List<Patient>(),
-                    Doctor = new List<Doctor>(),
-                    Admin = new List<Admin>()
-                };
-
-                await _applicationDbContext.User.AddAsync(newUser);
-
-                // Step 2: Create DoctorRequest
-                var lastRequest = await _applicationDbContext.DoctorRequest
-                    .OrderByDescending(d => d.RequestId)
-                    .FirstOrDefaultAsync();
-
-                int newRequestId = lastRequest != null &&
-                    int.TryParse(lastRequest.RequestId.Substring(2), out int lastReqId)
-                    ? lastReqId + 1 : 1;
-                string newDoctorRequestId = $"DR{newRequestId:D3}";
-
-                var doctorRequest = new DoctorRequest
+                    userId = await GenerateNewUserId();
+                    requestId = await GenerateNewRequestId();
+                }
+                catch (Exception ex)
                 {
-                    RequestId = newDoctorRequestId,
-                    FirstName = doctorRegDTO.FirstName,
-                    LastName = doctorRegDTO.LastName,
-                    Gender = doctorRegDTO.Gender,
-                    Email = emailLower,
-                    ContactNo = doctorRegDTO.ContactNumber,
-                    Specialization = doctorRegDTO.Specialization,
-                    SLMCRegId = doctorRegDTO.SLMCRegId,
-                    SLMCIdImage = slmcImageBytes,
-                    NIC = doctorRegDTO.NIC,
-                    Charge = doctorRegDTO.Charge,
-                    RequestStatus = "Pending", // Pending status as the doctor is being reviewed
-                    EmailVerified = false
-                };
-
-                await _applicationDbContext.DoctorRequest.AddAsync(doctorRequest);
-
-                // Step 3: Handle Hospital Schedules and Availability
-                var availabilityRequests = new List<RequestAvailability>();
-                int availabilityCounter = 1;
-
-                foreach (var schedule in hospitalSchedules)
-                {
-                    if (schedule.availability == null) continue;
-
-                    var hospital = await _applicationDbContext.Hospitals
-                        .FirstOrDefaultAsync(h => h.HospitalId == schedule.hospitalId);
-                    if (hospital == null) continue;
-
-                    foreach (var dayEntry in schedule.availability)
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new
                     {
-                        var day = dayEntry.Key;
-                        var time = dayEntry.Value;
-
-                        if (time == null) continue;
-
-                        if (TimeOnly.TryParse(time.startTime, out var startTime) &&
-                            TimeOnly.TryParse(time.endTime, out var endTime))
-                        {
-                            availabilityRequests.Add(new RequestAvailability
-                            {
-                                AvailabilityRequestId = $"AR{availabilityCounter++}",
-                                DoctorRequestId = doctorRequest.RequestId,
-                                AvailableDay = day,
-                                AvailableStartTime = startTime,
-                                AvailableEndTime = endTime,
-                                HospitalId = hospital.HospitalId
-                            });
-                        }
-                    }
+                        message = "Error generating IDs",
+                        phase = "ID Generation",
+                        details = ex.InnerException?.Message ?? ex.Message
+                    });
                 }
 
-                // Step 4: Save Availability Requests
-                if (availabilityRequests.Any())
+                // Step 2: Create User
+                try
                 {
-                    await _applicationDbContext.RequestAvailability.AddRangeAsync(availabilityRequests);
+                    var newUser = new User
+                    {
+                        UserId = userId,
+                        UserName = emailLower,
+                        PasswordHash = _passwordHasher.HashPassword(null, doctorRegDTO.Password),
+                        Role = "DoctorPending",
+                        Patient = new List<Patient>(),
+                        Doctor = new List<Doctor>(),
+                        Admin = new List<Admin>()
+                    };
+
+                    await _applicationDbContext.User.AddAsync(newUser);
+
+                    // Save just the user to find any issues
+                    await _applicationDbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new
+                    {
+                        message = "Error creating user account",
+                        phase = "User Creation",
+                        details = ex.InnerException?.Message ?? ex.Message
+                    });
                 }
 
-                // Step 5: Save Changes
-                await _applicationDbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(new
+                // Step 3: Create Doctor Request
+                try
                 {
-                    message = "Registration successful",
-                    requestId = doctorRequest.RequestId
-                });
+                    var doctorRequest = new DoctorRequest
+                    {
+                        RequestId = requestId,
+                        FirstName = doctorRegDTO.FirstName,
+                        LastName = doctorRegDTO.LastName,
+                        Gender = doctorRegDTO.Gender,
+                        Email = emailLower,
+                        ContactNo = doctorRegDTO.ContactNumber,
+                        Specialization = doctorRegDTO.Specialization,
+                        SLMCRegId = doctorRegDTO.SLMCRegId,
+                        SLMCIdImage = imageBytes,
+                        NIC = doctorRegDTO.NIC,
+                        Charge = doctorRegDTO.Charge,
+                        RequestStatus = "Pending",
+                        EmailVerified = false
+                    };
+
+                    await _applicationDbContext.DoctorRequest.AddAsync(doctorRequest);
+
+                    // Save just the doctor request to find any issues
+                    await _applicationDbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new
+                    {
+                        message = "Error creating doctor request",
+                        phase = "Doctor Request Creation",
+                        details = ex.InnerException?.Message ?? ex.Message
+                    });
+                }
+
+                // Step 4: Process Hospital Schedules
+                try
+                {
+                    await ProcessHospitalSchedules(hospitalSchedules, requestId);
+
+                    // Save the schedules
+                    await _applicationDbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new
+                    {
+                        message = "Error processing hospital schedules",
+                        phase = "Hospital Schedule Creation",
+                        details = ex.InnerException?.Message ?? ex.Message
+                    });
+                }
+
+                // Step 5: Commit transaction
+                try
+                {
+                    await transaction.CommitAsync();
+
+                    return Ok(new
+                    {
+                        message = "Registration successful",
+                        requestId = requestId
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new
+                    {
+                        message = "Error committing transaction",
+                        phase = "Transaction Commit",
+                        details = ex.InnerException?.Message ?? ex.Message
+                    });
+                }
             }
             catch (Exception ex)
             {
+                // This is a fallback catch for any other exceptions
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Doctor registration failed.");
-                return StatusCode(500, new { message = "Registration failed", error = ex.Message });
+                return StatusCode(500, new
+                {
+                    message = "Registration failed with unexpected error",
+                    phase = "Unknown",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
             }
         }
 
+        // Helper Methods
+        private async Task<string> GenerateNewUserId()
+        {
+            var lastUser = await _applicationDbContext.User
+                .OrderByDescending(p => p.UserId)
+                .FirstOrDefaultAsync();
+
+            int newId = lastUser != null && int.TryParse(lastUser.UserId.AsSpan(1), out int lastId)
+                ? lastId + 1 : 1;
+            return $"U{newId:D3}";
+        }
+
+        private async Task<string> GenerateNewRequestId()
+        {
+            var lastRequest = await _applicationDbContext.DoctorRequest
+                .OrderByDescending(d => d.RequestId)
+                .FirstOrDefaultAsync();
+
+            int newId = lastRequest != null && int.TryParse(lastRequest.RequestId.AsSpan(2), out int lastReqId)
+                ? lastReqId + 1 : 1;
+            return $"R{newId:D3}";
+        }
+
+        private async Task ProcessHospitalSchedules(List<HospitalScheduleDTO> schedules, string doctorRequestId)
+        {
+            if (schedules?.Any() != true) return;
+
+            // 1. Get the current maximum ID from the database (e.g., "AR10")
+            var maxId = await _applicationDbContext.RequestAvailability
+                .Select(ra => ra.AvailabilityRequestId)
+                .OrderByDescending(id => id)
+                .FirstOrDefaultAsync();
+
+            // 2. Extract the numeric part (if no records, start at 1)
+            int nextId = 1; // Default if table is empty
+            if (!string.IsNullOrEmpty(maxId))
+            {
+                var numericPart = maxId.Substring(2); // Skip "AR"
+                if (int.TryParse(numericPart, out int lastId))
+                {
+                    nextId = lastId + 1; // Increment
+                }
+            }
+
+            var availabilityRequests = new List<RequestAvailability>();
+
+            foreach (var schedule in schedules)
+            {
+                if (schedule.availability == null) continue;
+
+                bool hospitalExists = await _applicationDbContext.Hospitals
+                    .AnyAsync(h => h.HospitalId == schedule.hospitalId);
+
+                if (!hospitalExists) continue;
+
+                foreach (var (day, time) in schedule.availability)
+                {
+                    if (time == null) continue;
+
+                    if (TimeOnly.TryParse(time.startTime, out var startTime) &&
+                        TimeOnly.TryParse(time.endTime, out var endTime))
+                    {
+                        availabilityRequests.Add(new RequestAvailability
+                        {
+                            AvailabilityRequestId = $"AR{nextId++.ToString("D3")}",
+                            DoctorRequestId = doctorRequestId,
+                            AvailableDay = day,
+                            AvailableStartTime = startTime,
+                            AvailableEndTime = endTime,
+                            HospitalId = schedule.hospitalId
+                        });
+                    }
+                }
+            }
+
+            if (availabilityRequests.Any())
+            {
+                await _applicationDbContext.RequestAvailability.AddRangeAsync(availabilityRequests);
+            }
+        }
 
         [HttpPost]
         [Route("AdminRegistration")]
@@ -357,11 +493,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     {
                         AdminId = newAdminIdPrefix,  // Correct AdminId prefix (A)
                         FirstName = adminRegDTO.FirstName,
-                        LastName=adminRegDTO.LastName,
+                        LastName = adminRegDTO.LastName,
                         Email = emailLower,
                         Role = "Admin",  // Admin role
                         PasswordHash = hashedPassword,
-             
+
                         LastLogin = DateTime.UtcNow  // Set last login time
                     };
 
@@ -498,7 +634,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-       
+
         [HttpGet]
         [Route("GetAllUsers")]
         public IActionResult GetUsers()
@@ -549,7 +685,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             // Save token in DB
             user.ResetToken = token;
-            user.ResetTokenExpire= DateTime.UtcNow.AddHours(1);
+            user.ResetTokenExpire = DateTime.UtcNow.AddHours(1);
             _applicationDbContext.SaveChanges();
 
             // Send email with reset link
