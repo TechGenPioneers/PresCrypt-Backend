@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using System.Text.RegularExpressions;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
 using System.Linq;
 using System;
 using System.Threading.Tasks;
@@ -12,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using Hospital = PresCrypt_Backend.PresCrypt.Core.Models.Hospital;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -23,13 +27,19 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly ILogger<UserController> _logger;
         private readonly IEmailService _emailService;
+       
+        private readonly IJwtService _jwtService;
+     
 
-        public UserController(ApplicationDbContext applicationDbContext, IEmailService emailService, ILogger<UserController> logger)
+
+
+        public UserController(ApplicationDbContext applicationDbContext, IEmailService emailService, ILogger<UserController> logger, IJwtService jwtService)
         {
             _applicationDbContext = applicationDbContext ?? throw new ArgumentNullException(nameof(applicationDbContext));
             _passwordHasher = new PasswordHasher<User>();
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _jwtService = jwtService;
         }
 
         [HttpPost]
@@ -521,115 +531,201 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
             }
         }
-
+        
+        
         [HttpPost]
         [Route("Login")]
         public IActionResult Login([FromBody] LoginDTO loginDTO)
         {
-            if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
+            try
             {
-                return BadRequest(new { message = "Email and Password are required." });
+                if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
+                {
+                    return BadRequest(new { message = "Username and password are required." });
+                }
+
+                string inputUsername = loginDTO.Email.Trim().ToLower();
+
+                var user = _applicationDbContext.User
+                    .FirstOrDefault(u => u.UserName.ToLower() == inputUsername);
+
+                if (user == null)
+                {
+                    return BadRequest(new { success = false, message = "Invalid username or password." });
+                }
+
+                if (user.Role == "DoctorPending")
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Your doctor account is pending approval. Please wait for confirmation."
+                    });
+                }
+
+                var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
+
+                if (result != PasswordVerificationResult.Success)
+                {
+                    return BadRequest(new { success = false, message = "Invalid username or password." });
+                }
+
+                var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"{user.Role} login successful",
+                    token = token,
+                    user = new
+                    {
+                        id = user.UserId,
+                        username = user.UserName,
+                        role = user.Role
+                    }
+                });
             }
-
-            // Normalize email
-            string emailLower = loginDTO.Email.Trim().ToLower();
-
-            // Check User table for the role
-            var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
-            if (user != null && user.Role == "DoctorPending")
+            catch (Exception ex)
             {
-                return BadRequest(new { message = "Your doctor account is pending approval. Please wait for confirmation." });
+                _logger.LogError($"Login error: {ex.Message}", ex);
+                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
             }
-
-            // Check Patient table
-            var patient = _applicationDbContext.Patient.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-            if (patient != null)
-            {
-                return HandleLogin(patient, loginDTO.Password, "Patient");
-            }
-
-            // Check Doctor table
-            var doctor = _applicationDbContext.Doctor.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-            if (doctor != null)
-            {
-                return HandleLogin(doctor, loginDTO.Password, "Doctor");
-            }
-
-            // Check Admin table
-            var admin = _applicationDbContext.Admin.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-            if (admin != null)
-            {
-                return HandleLogin(admin, loginDTO.Password, "Admin");
-            }
-
-            return BadRequest(new { message = "Invalid email or password." });
         }
 
 
+        //[HttpPost]
+        //[Route("Login")]
+        //public IActionResult Login([FromBody] LoginDTO loginDTO)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
+        //        {
+        //            return BadRequest(new { message = "Email and Password are required." });
+        //        }
+
+        //        // Normalize email
+        //        string emailLower = loginDTO.Email.Trim().ToLower();
+
+        //        // Check User table for the role
+        //        var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
+        //        if (user != null && user.Role == "DoctorPending")
+        //        {
+        //            return BadRequest(new { success = false, message = "Your doctor account is pending approval. Please wait for confirmation." });
+        //        }
+
+        //        // Check Patient table
+        //        var patient = _applicationDbContext.Patient.FirstOrDefault(x => x.Email.ToLower() == emailLower);
+        //        if (patient != null)
+        //        {
+        //            return HandlePatientLogin(patient, loginDTO.Password);
+        //        }
+
+        //        // Check Doctor table
+        //        var doctor = _applicationDbContext.Doctor.FirstOrDefault(x => x.Email.ToLower() == emailLower);
+        //        if (doctor != null)
+        //        {
+        //            return HandleDoctorLogin(doctor, loginDTO.Password);
+        //        }
+
+        //        // Check Admin table
+        //        var admin = _applicationDbContext.Admin.FirstOrDefault(x => x.Email.ToLower() == emailLower);
+        //        if (admin != null)
+        //        {
+        //            return HandleAdminLogin(admin, loginDTO.Password);
+        //        }
+
+        //        return BadRequest(new { success = false, message = "Invalid email or password." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log the exception and return a generic error message
+        //        _logger.LogError($"Login error: {ex.Message}", ex);
+        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+        //    }
+        //}
 
 
 
+        //private IActionResult HandlePatientLogin(Patient patient, string password)
+        //{
+        //    var result = _passwordHasher.VerifyHashedPassword(null, patient.PasswordHash, password);
+        //    if (result != PasswordVerificationResult.Success)
+        //    {
+        //        return BadRequest(new { success = false, message = "Invalid email or password." });
+        //    }
+        //    var token = _jwtService.GenerateToken(patient.PatientId.ToString(), patient.Email, "Patient");
+        //    return Ok(new
+        //    {
 
-        private IActionResult HandleLogin(Patient patient, string password, string role)
+        //        success = true,
+        //        message = "Patient login successful",
+        //        token = token,
+        //        user = new
+        //        {
+        //            id = patient.PatientId,
+        //            email = patient.Email,
+        //            role = "Patient"
+        //        }
+        //    });
+        //}
+
+        //private IActionResult HandleDoctorLogin(Doctor doctor, string password)
+        //{
+        //    var result = _passwordHasher.VerifyHashedPassword(null, doctor.PasswordHash, password);
+        //    if (result != PasswordVerificationResult.Success)
+        //    {
+        //        return BadRequest(new { success = false, message = "Invalid email or password." });
+        //    }
+        //    var token = _jwtService.GenerateToken(doctor.DoctorId.ToString(), doctor.Email, "Doctor");
+        //    return Ok(new
+        //    {
+        //        success = true,
+        //        message = "Doctor login successful",
+        //        user = new
+        //        {
+        //            id = doctor.DoctorId,
+        //            email = doctor.Email,
+        //            role = "Doctor"
+        //        }
+        //    });
+        //}
+
+        //private IActionResult HandleAdminLogin(Admin admin, string password)
+        //{
+        //    var result = _passwordHasher.VerifyHashedPassword(null, admin.PasswordHash, password);
+        //    if (result != PasswordVerificationResult.Success)
+        //    {
+        //        return BadRequest(new { success = false, message = "Invalid email or password." });
+        //    }
+        //    var token = _jwtService.GenerateToken(admin.AdminId.ToString(), admin.Email, "Admin");
+        //    return Ok(new
+        //    {
+        //        success = true,
+        //        message = "Admin login successful",
+        //        user = new
+        //        {
+        //            id = admin.AdminId,
+        //            email = admin.Email,
+        //            role = "Admin"
+        //        }
+        //    });
+        //}
+        /// Test route to check if the user is authenticated
+        [Authorize(Roles = "Patient")]
+        [HttpGet("test-protected")]
+        public IActionResult TestProtected()
         {
-            var result = _passwordHasher.VerifyHashedPassword(null, patient.PasswordHash, password);
-            if (result != PasswordVerificationResult.Success)
-            {
-                return BadRequest(new { message = "Invalid email or password." });
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
             return Ok(new
             {
-                success = true,
-                message = $"{role} login successful",
-                user = new
-                {
-                    id = patient.PatientId,
-                    email = patient.Email,
-                    role = role
-                }
-            });
-        }
-
-        private IActionResult HandleLogin(Doctor doctor, string password, string role)
-        {
-            var result = _passwordHasher.VerifyHashedPassword(null, doctor.PasswordHash, password);
-            if (result != PasswordVerificationResult.Success)
-            {
-                return BadRequest(new { message = "Invalid email or password." });
-            }
-
-            return Ok(new
-            {
-                success = true,
-                message = $"{role} login successful",
-                user = new
-                {
-                    id = doctor.DoctorId,
-                    email = doctor.Email,
-                    role = role
-                }
-            });
-        }
-
-        private IActionResult HandleLogin(Admin admin, string password, string role)
-        {
-            var result = _passwordHasher.VerifyHashedPassword(null, admin.PasswordHash, password);
-            if (result != PasswordVerificationResult.Success)
-            {
-                return BadRequest(new { message = "Invalid email or password." });
-            }
-
-            return Ok(new
-            {
-                success = true,
-                message = $"{role} login successful",
-                user = new
-                {
-                    id = admin.AdminId,
-                    email = admin.Email,
-                    role = role
-                }
+                message = "Access granted to protected route",
+                userId,
+                email,
+                role
             });
         }
 
@@ -681,15 +777,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
 
             // Generate a URL-safe token
-            string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-
-            // Save token in DB
-            user.ResetToken = token;
+            user.ResetToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
             user.ResetTokenExpire = DateTime.UtcNow.AddHours(1);
             _applicationDbContext.SaveChanges();
 
             // Send email with reset link
-            string resetLink = $"https://localhost:3000/reset-password?token={token}&email={model.Email}";
+            string resetLink = $"https://localhost:3000/reset-password?token={user.ResetToken}&email={model.Email}";
 
             await _emailService.SendEmailAsync(user.UserName, "Reset Password",
                 $"Click the link to reset your password: {resetLink}");
