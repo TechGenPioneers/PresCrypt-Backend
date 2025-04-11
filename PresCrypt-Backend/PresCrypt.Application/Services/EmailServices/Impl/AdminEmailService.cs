@@ -34,7 +34,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl
                 smtpClient.Credentials = new NetworkCredential(email, password);
 
                 var subject = "Cancellation Notice";
-                var body = $"Dear Doctor,\n\n" +
+                var body = $"Dear {adminEmailDto.FirstName} {adminEmailDto.LastName},\n\n" +
            $"We regret to inform you that your registration request has been rejected by the admin team.\n\n" +
            $"Reason for rejection:\n{adminEmailDto.Reason}\n\n" +
            $"If you believe this was a mistake or need further clarification, please feel free to contact us.\n\n" +

@@ -15,10 +15,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
     {
         private readonly ApplicationDbContext _context;
         private readonly AdminDoctorUtil _adminDoctorUtil;
-        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil)
+        private readonly IAdminDoctorRequestService _adminDoctorRequestService;
+        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil,IAdminDoctorRequestService adminDoctorRequestService)
         {
             _context = context;
             _adminDoctorUtil = adminDoctorUtil;
+            _adminDoctorRequestService = adminDoctorRequestService;
         }
         public async Task<List<HospitalDto>> getAllHospitals()
         {
@@ -83,6 +85,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 await _context.Doctor.AddAsync(newDoctor);
 
                 int result = 0;
+                
                 foreach (var availability in newDoctorDto.Availability)
                 {
                     string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
@@ -101,8 +104,32 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     await _context.DoctorAvailability.AddRangeAsync(newAvailability);
                     result = await _context.SaveChangesAsync();
                 }
+                string allResult;
 
-                return result > 0 ? "Success" : "Error";
+                if (newDoctorDto.Doctor.RequestID != null)
+                {
+                    if (result > 0)
+                    {
+                        allResult = await _adminDoctorRequestService.ApprovRequest(newDoctorDto.Doctor.RequestID);
+                    }
+                    else
+                    {
+                        allResult = "Error";
+                    }
+                }
+                else
+                {
+                    if (result > 0)
+                    {
+                        allResult = "Success";
+                    }else
+                    {
+                        allResult = "Error";
+                    }
+                }
+
+                return allResult == "Success" ? "Success" : "Error";
+
 
             }
             catch (Exception e)
