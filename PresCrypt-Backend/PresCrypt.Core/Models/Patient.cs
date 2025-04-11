@@ -35,9 +35,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public byte[] ProfileImage { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } 
 
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; }
 
         [Required]
         public string PasswordHash { get; set; }
