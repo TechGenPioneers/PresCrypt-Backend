@@ -6,6 +6,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 ﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +21,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
-
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
 
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
