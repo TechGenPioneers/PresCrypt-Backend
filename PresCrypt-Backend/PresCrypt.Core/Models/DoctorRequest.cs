@@ -50,7 +50,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public bool EmailVerified { get; set; } = false;        
 
         public DateTime CreatedAt { get; set; }
-        
+        public DateTime? CheckedAt { get; set; }
+
+        public string? Reason { get; set; }
+
         public  ICollection<RequestAvailability> RequestAvailability { get; set; } 
     }
 }

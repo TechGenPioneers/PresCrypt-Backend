@@ -23,6 +23,11 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string? ResetToken { get; set; }
         public DateTime? ResetTokenExpire { get; set; }
 
+        public bool EmailVerified { get; set; } = false;
+
+        public int FailedLoginAttempts { get; set; } = 0;
+
+        public DateTime? LastFailedLoginTime { get; set; }
         public required ICollection<Patient> Patient { get; set; }
         public required ICollection<Doctor> Doctor { get; set; }
         public required ICollection<Admin> Admin { get; set; }

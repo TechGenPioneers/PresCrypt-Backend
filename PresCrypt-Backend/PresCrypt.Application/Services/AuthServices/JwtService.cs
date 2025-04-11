@@ -35,7 +35,13 @@ public class JwtService : IJwtService
             signingCredentials: creds
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var writtenToken = tokenHandler.WriteToken(token);
+
+        // Log expiration date for debugging
+        Console.WriteLine($"Token Expiration: {token.ValidTo}");
+
+        return writtenToken;
     }
 }
 

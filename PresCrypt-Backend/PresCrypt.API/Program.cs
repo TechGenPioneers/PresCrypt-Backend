@@ -39,11 +39,12 @@ builder.Services.AddAuthentication("Bearer")
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true, // ? THIS MUST BE TRUE
+            ValidateLifetime = true, 
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            ClockSkew = TimeSpan.Zero
         };
     });
 

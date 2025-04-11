@@ -531,8 +531,66 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
             }
         }
-        
-        
+
+
+        //[HttpPost]
+        //[Route("Login")]
+        //public IActionResult Login([FromBody] LoginDTO loginDTO)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
+        //        {
+        //            return BadRequest(new { message = "Username and password are required." });
+        //        }
+
+        //        string inputUsername = loginDTO.Email.Trim().ToLower();
+
+        //        var user = _applicationDbContext.User
+        //            .FirstOrDefault(u => u.UserName.ToLower() == inputUsername);
+
+        //        if (user == null)
+        //        {
+        //            return BadRequest(new { success = false, message = "Invalid username or password." });
+        //        }
+
+        //        if (user.Role == "DoctorPending")
+        //        {
+        //            return BadRequest(new
+        //            {
+        //                success = false,
+        //                message = "Your doctor account is pending approval. Please wait for confirmation."
+        //            });
+        //        }
+
+        //        var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
+
+        //        if (result != PasswordVerificationResult.Success)
+        //        {
+        //            return BadRequest(new { success = false, message = "Invalid username or password." });
+        //        }
+
+        //        var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = $"{user.Role} login successful",
+        //            token = token,
+        //            user = new
+        //            {
+        //                id = user.UserId,
+        //                username = user.UserName,
+        //                role = user.Role
+        //            }
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Login error: {ex.Message}", ex);
+        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+        //    }
+        //}
         [HttpPost]
         [Route("Login")]
         public IActionResult Login([FromBody] LoginDTO loginDTO)
@@ -541,17 +599,21 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             {
                 if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
                 {
-                    return BadRequest(new { message = "Username and password are required." });
+                    return BadRequest(new { message = "Email and password are required." });
                 }
 
-                string inputUsername = loginDTO.Email.Trim().ToLower();
+                string inputEmail = loginDTO.Email.Trim().ToLower();
 
-                var user = _applicationDbContext.User
-                    .FirstOrDefault(u => u.UserName.ToLower() == inputUsername);
+                var user = _applicationDbContext.User.FirstOrDefault(u => u.UserName.ToLower() == inputEmail);
 
                 if (user == null)
                 {
-                    return BadRequest(new { success = false, message = "Invalid username or password." });
+                    return BadRequest(new { success = false, message = "Invalid email or password." });
+                }
+
+                if (!user.EmailVerified)
+                {
+                    return BadRequest(new { success = false, message = "Please verify your email before logging in." });
                 }
 
                 if (user.Role == "DoctorPending")
@@ -563,14 +625,34 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     });
                 }
 
+                // Check for lockout
+                if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue &&
+                    user.LastFailedLoginTime.Value.AddMinutes(15) > DateTime.UtcNow)
+                {
+                    return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
+                }
+
                 var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
 
                 if (result != PasswordVerificationResult.Success)
                 {
-                    return BadRequest(new { success = false, message = "Invalid username or password." });
+                    // Update failed attempt count
+                    user.FailedLoginAttempts += 1;
+                    user.LastFailedLoginTime = DateTime.UtcNow;
+                    _applicationDbContext.SaveChanges();
+
+                    return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
+                // Reset failed attempts after successful login
+                user.FailedLoginAttempts = 0;
+                user.LastFailedLoginTime = null;
+                _applicationDbContext.SaveChanges();
+
                 var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+
+                // Log successful login
+                _logger.LogInformation($"Successful login for {user.UserName}");
 
                 return Ok(new
                 {
@@ -593,124 +675,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        //[HttpPost]
-        //[Route("Login")]
-        //public IActionResult Login([FromBody] LoginDTO loginDTO)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
-        //        {
-        //            return BadRequest(new { message = "Email and Password are required." });
-        //        }
-
-        //        // Normalize email
-        //        string emailLower = loginDTO.Email.Trim().ToLower();
-
-        //        // Check User table for the role
-        //        var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
-        //        if (user != null && user.Role == "DoctorPending")
-        //        {
-        //            return BadRequest(new { success = false, message = "Your doctor account is pending approval. Please wait for confirmation." });
-        //        }
-
-        //        // Check Patient table
-        //        var patient = _applicationDbContext.Patient.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-        //        if (patient != null)
-        //        {
-        //            return HandlePatientLogin(patient, loginDTO.Password);
-        //        }
-
-        //        // Check Doctor table
-        //        var doctor = _applicationDbContext.Doctor.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-        //        if (doctor != null)
-        //        {
-        //            return HandleDoctorLogin(doctor, loginDTO.Password);
-        //        }
-
-        //        // Check Admin table
-        //        var admin = _applicationDbContext.Admin.FirstOrDefault(x => x.Email.ToLower() == emailLower);
-        //        if (admin != null)
-        //        {
-        //            return HandleAdminLogin(admin, loginDTO.Password);
-        //        }
-
-        //        return BadRequest(new { success = false, message = "Invalid email or password." });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the exception and return a generic error message
-        //        _logger.LogError($"Login error: {ex.Message}", ex);
-        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
-        //    }
-        //}
 
 
-
-        //private IActionResult HandlePatientLogin(Patient patient, string password)
-        //{
-        //    var result = _passwordHasher.VerifyHashedPassword(null, patient.PasswordHash, password);
-        //    if (result != PasswordVerificationResult.Success)
-        //    {
-        //        return BadRequest(new { success = false, message = "Invalid email or password." });
-        //    }
-        //    var token = _jwtService.GenerateToken(patient.PatientId.ToString(), patient.Email, "Patient");
-        //    return Ok(new
-        //    {
-
-        //        success = true,
-        //        message = "Patient login successful",
-        //        token = token,
-        //        user = new
-        //        {
-        //            id = patient.PatientId,
-        //            email = patient.Email,
-        //            role = "Patient"
-        //        }
-        //    });
-        //}
-
-        //private IActionResult HandleDoctorLogin(Doctor doctor, string password)
-        //{
-        //    var result = _passwordHasher.VerifyHashedPassword(null, doctor.PasswordHash, password);
-        //    if (result != PasswordVerificationResult.Success)
-        //    {
-        //        return BadRequest(new { success = false, message = "Invalid email or password." });
-        //    }
-        //    var token = _jwtService.GenerateToken(doctor.DoctorId.ToString(), doctor.Email, "Doctor");
-        //    return Ok(new
-        //    {
-        //        success = true,
-        //        message = "Doctor login successful",
-        //        user = new
-        //        {
-        //            id = doctor.DoctorId,
-        //            email = doctor.Email,
-        //            role = "Doctor"
-        //        }
-        //    });
-        //}
-
-        //private IActionResult HandleAdminLogin(Admin admin, string password)
-        //{
-        //    var result = _passwordHasher.VerifyHashedPassword(null, admin.PasswordHash, password);
-        //    if (result != PasswordVerificationResult.Success)
-        //    {
-        //        return BadRequest(new { success = false, message = "Invalid email or password." });
-        //    }
-        //    var token = _jwtService.GenerateToken(admin.AdminId.ToString(), admin.Email, "Admin");
-        //    return Ok(new
-        //    {
-        //        success = true,
-        //        message = "Admin login successful",
-        //        user = new
-        //        {
-        //            id = admin.AdminId,
-        //            email = admin.Email,
-        //            role = "Admin"
-        //        }
-        //    });
-        //}
         /// Test route to check if the user is authenticated
         [Authorize(Roles = "Patient")]
         [HttpGet("test-protected")]
@@ -730,19 +696,21 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("GetAllUsers")]
         public IActionResult GetUsers()
         {
             return Ok(_applicationDbContext.User.ToList());
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("GetAllPatients")]
         public IActionResult GetPatients()
         {
             return Ok(_applicationDbContext.Patient.ToList());
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [Route("GetAllDoctors")]
         public IActionResult GetDoctors()
