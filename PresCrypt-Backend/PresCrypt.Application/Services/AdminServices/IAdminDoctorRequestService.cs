@@ -7,5 +7,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
         public Task<List<AdminAllDoctorRequestDto>> GetAllDoctorRequest();
         public Task<RequestDoctorAvailabilityDto> getRequestByID(string requestID);
         public Task<string> RejectRequest(DoctorRequestRejectDto rejected);
+        public Task<string> ApprovRequest(string requestId);
     }
 }

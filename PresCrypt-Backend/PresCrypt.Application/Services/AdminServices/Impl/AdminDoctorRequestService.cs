@@ -120,5 +120,27 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
             }
         }
+
+        public async Task<string> ApprovRequest(string requestId)
+        {
+            var doctorRequest = await _context.DoctorRequest.FirstOrDefaultAsync(d => d.RequestId == requestId);
+            if (doctorRequest == null)
+            {
+                return "Doctor request not found.";
+            }
+
+            try
+            {
+                doctorRequest.RequestStatus = "Approved";
+                doctorRequest.CheckedAt = DateTime.Now;
+                _context.DoctorRequest.Update(doctorRequest);
+                int result = await _context.SaveChangesAsync();
+                return result > 0 ? "Success" : "Error";
+            }
+            catch (Exception e)
+            {
+                return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+            }
+        }
     }
 }
