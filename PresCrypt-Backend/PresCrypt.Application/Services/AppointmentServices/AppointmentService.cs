@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-//using PresCrypt_Backend.PresCrypt.Infrastructure.Data;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using Mapster;
@@ -19,77 +18,68 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             _context = context;
         }
 
-        public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsForTodayAsync(string doctorId)
+        public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null)
         {
-            var today = DateOnly.FromDateTime(DateTime.Today);
+            // Get current date at server's timezone
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-            var appointments = await _context.Appointments
-                .Where(a => a.DoctorId == doctorId && a.Date == today)
+            // Start building the query
+            var query = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
+                .Where(a => a.DoctorId == doctorId);
+
+            // Apply date filter if specified, otherwise get future appointments
+            query = date.HasValue
+                ? query.Where(a => a.Date == date.Value)
+                : query.Where(a => a.Date >= currentDate);
+
+            // Execute and map to DTO
+            return await query
+                .OrderBy(a => a.Date)
+                .ThenBy(a => a.Time)
+                .Select(a => new AppointmentDisplayDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    Date = a.Date,  // Ensure consistent date format
+                    Time = a.Time, // Format time consistently
+                    Status = a.Status,
+                    PatientId = a.Patient.PatientId,
+                    HospitalId = a.HospitalId,
+                    PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
+                    Gender = a.Patient.Gender,
+                    DOB = a.Patient.DOB, // Format DOB consistently
+                    ProfileImage = a.Patient.ProfileImage
+                })
                 .ToListAsync();
-
-            return appointments.Select(a => new AppointmentDisplayDto
-            {
-                AppointmentId = a.AppointmentId,
-                Time = a.Time,
-                Status = a.Status,
-                PatientName = a.Patient.FirstName,
-                PatientId = a.Patient.PatientId,
-                DoctorName = a.Doctor.FirstName,
-                Gender = a.Patient.Gender,
-                DOB = a.Patient.DOB
-                //ProfilePictureUrl = a.Patient.ProfilePictureUrl
-            }).ToList();
-        }
-
-        public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsByDateAsync(string date, string doctorId)
-        {
-            if (!DateOnly.TryParse(date, out var parsedDate))
-            {
-                throw new ArgumentException("Invalid date format. Please provide a date in the format YYYY-MM-DD.");
-            }
-
-            var appointments = await _context.Appointments
-                .Where(a => a.DoctorId == doctorId && a.Date == parsedDate)
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
-                .ToListAsync();
-
-            return appointments.Select(a => new AppointmentDisplayDto
-            {
-                AppointmentId = a.AppointmentId,
-                Time = a.Time,
-                Status = a.Status,
-                PatientName = a.Patient.FirstName,
-                PatientId = a.Patient.PatientId,
-                DoctorName = a.Doctor.FirstName,
-                Gender = a.Patient.Gender,
-                DOB = a.Patient.DOB
-                //ProfilePictureUrl = a.Patient.ProfilePictureUrl
-            }).ToList();
         }
 
         public async Task<IEnumerable<AvailabilityDisplayDto>> GetAvailabilityByDateAsync(string date, string doctorId)
         {
+            // Validate date format
             if (!DateTime.TryParse(date, out var parsedDate))
             {
-                throw new ArgumentException("Invalid date format. Please provide a date in the format YYYY-MM-DD.");
+                throw new ArgumentException("Invalid date format. Use YYYY-MM-DD.");
             }
 
+            // Get day of week (e.g., "Monday")
             var dayOfWeek = parsedDate.DayOfWeek.ToString();
 
-            var availabilities = await _context.DoctorAvailability
+            // Query availability
+            var availability = await _context.DoctorAvailability
+
                 .Where(a => a.DoctorId == doctorId && a.AvailableDay == dayOfWeek)
+                .Select(a => new AvailabilityDisplayDto
+                {
+                    AvailabilityId = a.AvailabilityId,
+                    DoctorId = a.DoctorId,
+                    AvailableDay = a.AvailableDay,
+                    AvailableStartTime = a.AvailableStartTime,
+                    AvailableEndTime = a.AvailableEndTime
+                })
                 .ToListAsync();
 
-            return availabilities.Select(a => new AvailabilityDisplayDto
-            {
-                AvailabilityId = int.Parse(a.AvailabilityId), // Fix: Convert string to int
-                DoctorId = a.DoctorId,
-                AvailableDay = a.AvailableDay,
-                AvailableTime = a.AvailableStartTime
-            }).ToList();
+            return availability;
         }
 
         public async Task<Appointment> CreateAppointmentAsync(AppointmentSave dto)
@@ -104,5 +94,4 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         }
     }
-
 }
