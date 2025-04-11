@@ -11,12 +11,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
-        // private readonly ILogger<AppointmentsController> _logger;
 
-        public AppointmentsController(IAppointmentService appointmentService/*, ILogger<AppointmentsController> logger*/)
+        public AppointmentsController(IAppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
-            // _logger = logger;
         }
 
         [HttpGet("by-doctor/{doctorId}")]
@@ -35,7 +33,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
             catch (Exception ex)
             {
-                // _logger.LogError(ex, "Error fetching appointments for doctor {DoctorId}", doctorId);
                 return StatusCode(500, "An error occurred while fetching appointments");
             }
         }
