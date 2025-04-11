@@ -39,7 +39,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl
            $"Reason for rejection:\n{adminEmailDto.Reason}\n\n" +
            $"If you believe this was a mistake or need further clarification, please feel free to contact us.\n\n" +
            $"Best regards,\n" +
-           $"The Admin Team" +
+           $"The Admin Team \n" +
            $"PresCrypt";
                 var message = new MailMessage(email!, adminEmailDto.Receptor, subject, body);
                await smtpClient.SendMailAsync(message);

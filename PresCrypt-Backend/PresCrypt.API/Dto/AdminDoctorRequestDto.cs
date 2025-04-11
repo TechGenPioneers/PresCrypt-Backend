@@ -34,5 +34,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public string CheckedAt { get; set; }
 
+        public string? Reason { get; set; }
+
     }
 }

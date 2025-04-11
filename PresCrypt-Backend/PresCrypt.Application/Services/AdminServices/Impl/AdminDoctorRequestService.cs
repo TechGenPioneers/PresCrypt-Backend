@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using System.Diagnostics;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 {
@@ -24,7 +25,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Gender = d.Gender,
                     Specialization = d.Specialization,
                     CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd"),
-                    CheckedAt = d.CheckedAt.ToString("yyyy-MM-dd"),
+                    CheckedAt = d.CheckedAt.HasValue ? d.CheckedAt.Value.ToString("yyyy-MM-dd") : null,
                     Status = d.RequestStatus
                 })
                 .ToListAsync();
@@ -52,7 +53,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     EmailVerified = d.EmailVerified,
                     RequestStatus = d.RequestStatus,
                     CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                    CheckedAt = d.CheckedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    CheckedAt = d.CheckedAt.HasValue ? d.CheckedAt.Value.ToString("yyyy-MM-dd") : null,
+                    Reason = d.Reason,
                     ContactNumber = d.ContactNumber
                 })
                 .FirstOrDefaultAsync();
@@ -94,6 +96,29 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 return null;
             }
 
+        }
+
+        public async Task<string> RejectRequest(DoctorRequestRejectDto rejected)
+        {
+            var doctorRequest = await _context.DoctorRequest.FirstOrDefaultAsync(d => d.RequestId == rejected.RequestId);
+            if (doctorRequest == null)
+            {
+                return "Doctor request not found.";
+            }
+
+            try
+            {
+                doctorRequest.RequestStatus = "Rejected";
+                doctorRequest.CheckedAt = DateTime.Now;
+                doctorRequest.Reason = rejected.Reason;
+                _context.DoctorRequest.Update(doctorRequest);
+                int result = await _context.SaveChangesAsync();
+               return result > 0 ? "Success" : "Error";
+            }
+            catch (Exception e)
+            {
+                return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+            }
         }
     }
 }

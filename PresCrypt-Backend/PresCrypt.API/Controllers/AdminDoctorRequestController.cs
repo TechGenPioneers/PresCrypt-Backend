@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
+using System.Diagnostics;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -34,6 +36,26 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return NotFound("No doctor found.");
 
             return Ok(getRequestAndAvailability);
+        }
+
+        [HttpPatch]
+        public async Task<IActionResult> UpdateDoctor([FromBody] DoctorRequestRejectDto rejected)
+        {
+            if (rejected.RequestId == null || rejected.RequestId == null)
+            {
+                return BadRequest("null");
+            }
+
+            var updated = await _adminDoctorRequestService.RejectRequest(rejected);
+
+            if (updated == "Success")
+            {
+                return Ok(updated);
+            }
+            else
+            {
+                return StatusCode(500, "Error");
+            }
         }
     }
 }
