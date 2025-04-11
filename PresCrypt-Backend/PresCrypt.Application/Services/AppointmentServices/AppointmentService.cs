@@ -42,7 +42,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Select(a => new AppointmentDisplayDto
                 {
                     AppointmentId = a.AppointmentId,
-                    Date = a.Date.ToDateTime(TimeOnly.MinValue),  // Ensure consistent date format
+                    Date = a.Date,  // Ensure consistent date format
                     Time = a.Time, // Format time consistently
                     Status = a.Status,
                     PatientId = a.Patient.PatientId,

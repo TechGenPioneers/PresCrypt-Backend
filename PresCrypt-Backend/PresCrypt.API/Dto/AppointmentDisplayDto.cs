@@ -12,7 +12,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public TimeOnly Time { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateOnly Date { get; set; }
 
         public string Status { get; set; }
         
@@ -22,7 +22,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public string PatientName { get; set; }
 
-        public char Gender { get; set; }
+        public string Gender { get; set; }
 
         public DateTime DOB { get; set; }
 
