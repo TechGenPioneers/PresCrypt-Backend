@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PresCrypt_Backend</RootNamespace>
+    <UserSecretsId>df67fcff-4827-40dd-9e12-055b45cf62f3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

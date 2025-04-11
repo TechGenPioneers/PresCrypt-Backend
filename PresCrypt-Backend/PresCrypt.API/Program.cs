@@ -6,6 +6,8 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 ﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +22,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
+builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
+builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
