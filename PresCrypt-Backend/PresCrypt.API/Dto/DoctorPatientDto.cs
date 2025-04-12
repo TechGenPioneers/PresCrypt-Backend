@@ -22,7 +22,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public string PatientName { get; set; }
 
-        public char Gender { get; set; }
+        public string Gender { get; set; }
 
         public DateTime DOB { get; set; }
 
