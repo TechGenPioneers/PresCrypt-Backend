@@ -17,25 +17,45 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
             _context = context;
         }
 
-        public async Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(string doctorId)
+        public async Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(string doctorId, string type = "past")
         {
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
             var currentTime = TimeOnly.FromDateTime(DateTime.Now);
 
-            // Build query with filter for past or current appointments only
+            // Step 1: Build base query to filter by doctorId
             var query = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                 .Include(a => a.Hospital)
-                .Where(a => a.DoctorId == doctorId)
-                .Where(a => a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime)); // filter for past
+                .Where(a => a.DoctorId == doctorId);
 
-            // Group by PatientId and select the latest appointment from the past
+            // Step 2: Filter by appointment type (past or future)
+            if (type == "past")
+            {
+                // Filter past appointments (appointments before today or today but before current time)
+                query = query.Where(a => a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime));
+            }
+            else if (type == "future")
+            {
+                // Get all patients who have only future appointments
+                var patientsWithPastAppointments = await _context.Appointments
+                    .Where(a => a.DoctorId == doctorId && (a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime)))
+                    .Select(a => a.PatientId)
+                    .Distinct()
+                    .ToListAsync();
+
+                query = query
+                    .Where(a => !patientsWithPastAppointments.Contains(a.PatientId))  // Patients with no past appointments
+                    .Where(a => a.Date > currentDate || (a.Date == currentDate && a.Time > currentTime));  // Future appointments
+            }
+
+            // Step 3: Group by PatientId to get the latest appointment (most recent)
             var latestAppointments = await query
                 .GroupBy(a => a.PatientId)
                 .Select(g => g.OrderByDescending(a => a.Date).ThenByDescending(a => a.Time).FirstOrDefault())
                 .ToListAsync();
 
+            // Step 4: Map to DTO (DoctorPatientDto)
             return latestAppointments.Select(a => new DoctorPatientDto
             {
                 AppointmentId = a.AppointmentId,
