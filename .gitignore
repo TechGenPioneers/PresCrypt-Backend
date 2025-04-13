@@ -100,12 +100,7 @@ StyleCopReport.xml
 !**/[Pp]ackages/build/
 *.nuget.props
 *.nuget.targets
-# Additional NuGet specific files causing merge conflicts
-*.nuget.dgspec.json
-*.nuget.g.props
-*.nuget.g.targets
-project.assets.json
-project.nuget.cache
+
 
 # Microsoft Azure Build Output
 csx/
