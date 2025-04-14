@@ -29,6 +29,7 @@ builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
 builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
+builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 
 builder.Services.AddHttpClient();
 
