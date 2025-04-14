@@ -1,58 +1,66 @@
-﻿using System.Collections.Generic;
+﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
-namespace PresCrypt_Backend.PresCrypt.Core.Models
+public class Doctor
 {
-    public class Doctor
-    {
-        internal object Hospitals;
+    [Key]
+    [Required]
+    public string DoctorId { get; set; }
 
-        [Key]
-        [Required]
-        public string DoctorId { get; set; }  // Primary Key
+    [Required]
+    [MaxLength(100)]
+    public string FirstName{ get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string DoctorName { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string LastName { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+    [Required]
+    public string Gender { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string Specialization { get; set; }
+    public byte[] DoctorImage { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string SLMCRegId { get; set; }  // SLMC Registration ID
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 
-        public byte[] Id { get; set; }  // Image stored as a byte array
+    [Required]
+    public string ContactNumber { get; set; } 
 
-        [Required]
-        public long NIC { get; set; }  // Assuming NIC as a numeric value (long)
+    [Required]
+    [MaxLength(100)]
+    public string Specialization { get; set; }
 
-        [Required]
-        public bool EmailVerified { get; set; }
+    [Required]
+    [MaxLength(50)]
+    public string SLMCRegId { get; set; }
 
-        [Required]
-        public string Role { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Default to current UTC time
+    public byte[] SLMCIdImage { get; set; }
 
-        public DateTime? UpdatedAt { get; set; }  // Nullable, since it may not always be updated
+    [Required]
+    public string NIC { get; set; }
 
-        [Required]
-        public string PasswordHash { get; set; }  // Storing hashed password
+    public string Description { get; set; }
 
-        [Required]
-        [MaxLength(20)]
-        public string Status { get; set; }  // Active, Inactive, etc.
+    public double Charge { get; set; }
 
-        public DateTime? LastLogin { get; set; }  // Nullable, as it may not always be available
+    [Required]
+    public bool EmailVerified { get; set; }
 
-        // Navigation Property
-        public ICollection<Doctor_Availability> Availabilities { get; set; }
-    }
+    [Required]
+    public DateTime CreatedAt { get; set; } 
+
+    public DateTime UpdatedAt { get; set; }
+
+    [Required]
+    public bool Status { get; set; }
+
+    public DateTime? LastLogin { get; set; }
+
+
+    // Navigation Property
+    public ICollection<DoctorAvailability> Availabilities { get; set; }
+    
 }

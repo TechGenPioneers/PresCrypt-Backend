@@ -5,7 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PresCrypt_Backend</RootNamespace>
+    <UserSecretsId>df67fcff-4827-40dd-9e12-055b45cf62f3</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <Content Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <EmbeddedResource Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <None Remove="PresCrypt.Application\Services\NewFolder1\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="PresCrypt.Application\Services\AdminServices.AdminDoctorService.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Mapster" Version="7.4.0" />
@@ -19,18 +31,20 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include=".gitignore\" />
-    <Folder Include="Migrations\" />
     <Folder Include="PresCrypt.API\Middlewares\" />
     <Folder Include="PresCrypt.API\Filters\" />
     <Folder Include="PresCrypt.API\Configuration\" />
     <Folder Include="PresCrypt.Application\Abstractions\" />
     <Folder Include="PresCrypt.Application\Commands &amp; Queries\" />
     <Folder Include="PresCrypt.Application\Mappings\" />
+
+    <Folder Include="PresCrypt.Application\Services\PatientServices\" />
     <Folder Include="PresCrypt.Core\Enums\" />
     <Folder Include="PresCrypt.Core\ValueObjects\" />
     <Folder Include="PresCrypt.Infrastructure\Identity\" />

@@ -129,11 +129,12 @@ node_modules/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Ignore auto-generated files
+
+# NuGet-generated files
 *.nuget.dgspec.json
 *.nuget.g.props
 *.nuget.g.targets
 project.assets.json
 project.nuget.cache
-obj/
-bin/
+/obj
+
