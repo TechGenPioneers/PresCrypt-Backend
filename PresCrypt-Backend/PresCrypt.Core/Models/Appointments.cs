@@ -1,50 +1,42 @@
-﻿using PresCrypt_Backend.PresCrypt.Core.Models;
+using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-public class Appointment
+namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public string AppointmentId { get; set; }  // Primary Key
+    public class Appointment
+    {
+        [Key]
+        [Required]
+        public string AppointmentId { get; set; }  // Primary Key
 
-    [Required]
-    [ForeignKey(nameof(Patient))]  // Foreign Key referencing Patient.UserId
-    public string PatientId { get; set; }
+        [Required]
+        public string PatientId { get; set; }  // Assuming this references a Patient table
 
-    public Patient Patient { get; set; }  // Navigation Property for Patient
+        [Required]
+        public string DoctorId { get; set; }  // Foreign Key referencing Doctor table
 
-    [Required]
-    public string DoctorId { get; set; }  // DoctorId remains a normal field
+        [ForeignKey("DoctorId")]
+        public Doctor Doctor { get; set; }  // Navigation Property
 
-    public Doctor Doctor { get; set; }  // Navigation Property for Doctor (not a foreign key)
+        [Required]
+        public DateTime Time { get; set; }
 
-    [Required]
-    [ForeignKey(nameof(Hospital))]
-    public string HospitalId { get; set; }
+        [Required]
+        public DateTime Date { get; set; }
 
-    public Hospital Hospital { get; set; }
+        [Required]
+        [MaxLength(20)]  // Assuming limited status values like "Pending", "Completed"
+        public string Status { get; set; }
 
-    [Required]
-    public DateOnly Date { get; set; }
+        public byte[] SpecialNote { get; set; }  // File stored as a byte array
 
-    [Required]
-    public TimeOnly Time { get; set; }
+        [Required]
+        [MaxLength(50)]
+        public string TypeOfAppointment { get; set; }  // Example: "Consultation", "Surgery"
 
-    [Required]
-    public double Charge { get; set; }
-
-    [Required]
-    [MaxLength(20)]
-    public string Status { get; set; }
-
-    public string? SpecialNote { get; set; }
-
-    [Required]
-    [MaxLength(50)]
-    public string TypeOfAppointment { get; set; }
-
-    public DateTime CreatedAt { get; set; } 
-    public DateTime? UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+    }
 }
