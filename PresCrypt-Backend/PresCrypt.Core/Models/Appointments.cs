@@ -9,15 +9,15 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     {
         [Key]
         [Required]
-        public string AppointmentId { get; set; }  // Primary Key
+        public string AppointmentId { get; set; }
 
         [Required]
-        public string PatientId { get; set; }  // Assuming this references a Patient table
+        public string PatientId { get; set; }
 
         [Required]
-        public string DoctorId { get; set; }  // Foreign Key referencing Doctor table
+        [ForeignKey("Doctor")]  // ✅ Ensure it properly links to the Doctor table
+        public string DoctorId { get; set; }
 
-        [ForeignKey("DoctorId")]
         public Doctor Doctor { get; set; }  // Navigation Property
 
         [Required]
@@ -27,14 +27,14 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime Date { get; set; }
 
         [Required]
-        [MaxLength(20)]  // Assuming limited status values like "Pending", "Completed"
+        [MaxLength(20)]
         public string Status { get; set; }
 
-        public byte[] SpecialNote { get; set; }  // File stored as a byte array
+        public byte[] SpecialNote { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string TypeOfAppointment { get; set; }  // Example: "Consultation", "Surgery"
+        public string TypeOfAppointment { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
