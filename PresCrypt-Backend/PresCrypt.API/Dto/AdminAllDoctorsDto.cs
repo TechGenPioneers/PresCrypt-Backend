@@ -9,6 +9,5 @@
         public string Specialization{get; set;}
         public bool Status { get; set; }
         public byte[]? ProfilePhoto { get; set; }
-        //public string Gender { get; set; }
     }
 }

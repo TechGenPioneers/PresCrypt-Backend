@@ -7,6 +7,7 @@ using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Diagnostics;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 using System.Linq;
+using Azure.Core;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -59,30 +60,60 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 
                 string newDoctorId = await _adminDoctorUtil.GenerateDoctorId();
 
-                var newDoctor = new Doctor
+                if (newDoctorDto.Doctor.RequestID != null)
                 {
-                    DoctorId = newDoctorId,
-                    FirstName = newDoctorDto.Doctor.FirstName,
-                    LastName = newDoctorDto.Doctor.LastName,
-                    Gender = newDoctorDto.Doctor.Gender,
-                    Email = newDoctorDto.Doctor.Email,
-                    Specialization = newDoctorDto.Doctor.Specialization,
-                    ContactNumber = newDoctorDto.Doctor.ContactNumber,
-                    Charge = newDoctorDto.Doctor.Charge,
-                    Description = newDoctorDto.Doctor.Description,
-                    SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
-                    SLMCIdImage = new byte[0], // want to Implement
-                    DoctorImage = new byte[0], // want to Implement
-                    NIC = newDoctorDto.Doctor.NIC,
-                    EmailVerified = true, // want to Implement
-                    CreatedAt = DateTime.Now,  // Set current date
-                    UpdatedAt = DateTime.Now,
-                    Status = true, // want to Implement
-                    LastLogin = null
-                };
-
-                // Add to DbContext
-                await _context.Doctor.AddAsync(newDoctor);
+                    var doctorRequest = await _context.DoctorRequest.FirstOrDefaultAsync(d => d.RequestId == newDoctorDto.Doctor.RequestID);
+                    var newDoctor = new Doctor
+                    {
+                        DoctorId = newDoctorId,
+                        FirstName = newDoctorDto.Doctor.FirstName,
+                        LastName = newDoctorDto.Doctor.LastName,
+                        Gender = newDoctorDto.Doctor.Gender,
+                        Email = newDoctorDto.Doctor.Email,
+                        Specialization = newDoctorDto.Doctor.Specialization,
+                        ContactNumber = newDoctorDto.Doctor.ContactNumber,
+                        Charge = newDoctorDto.Doctor.Charge,
+                        Description = newDoctorDto.Doctor.Description,
+                        SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
+                        SLMCIdImage = doctorRequest.SLMCIdImage, 
+                        DoctorImage = new byte[0], // want to Implement
+                        NIC = newDoctorDto.Doctor.NIC,
+                        EmailVerified = true, // want to Implement
+                        CreatedAt = DateTime.Now,  
+                        UpdatedAt = DateTime.Now,
+                        Status = true, 
+                        LastLogin = null
+                    };
+                    // Add to DbContext
+                    await _context.Doctor.AddAsync(newDoctor);
+                }
+                else
+                {
+                    var newDoctor = new Doctor
+                    {
+                        DoctorId = newDoctorId,
+                        FirstName = newDoctorDto.Doctor.FirstName,
+                        LastName = newDoctorDto.Doctor.LastName,
+                        Gender = newDoctorDto.Doctor.Gender,
+                        Email = newDoctorDto.Doctor.Email,
+                        Specialization = newDoctorDto.Doctor.Specialization,
+                        ContactNumber = newDoctorDto.Doctor.ContactNumber,
+                        Charge = newDoctorDto.Doctor.Charge,
+                        Description = newDoctorDto.Doctor.Description,
+                        SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
+                        SLMCIdImage = new byte[0], // want to Implement
+                        DoctorImage = new byte[0], // want to Implement
+                        NIC = newDoctorDto.Doctor.NIC,
+                        EmailVerified = true, // want to Implement
+                        CreatedAt = DateTime.Now,  // Set current date
+                        UpdatedAt = DateTime.Now,
+                        Status = true, // want to Implement
+                        LastLogin = null
+                    };
+                    // Add to DbContext
+                    await _context.Doctor.AddAsync(newDoctor);
+                }
+                    
 
                 int result = 0;
                 
