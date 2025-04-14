@@ -18,7 +18,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     [ApiController]
     public class PatientController : ControllerBase
     {
-        private readonly ApplicationDbContext __context;
+        private readonly ApplicationDbContext _applicationDbContext;
 
         private readonly PasswordHasher<Patient> _passwordHasher;
 
