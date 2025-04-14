@@ -101,6 +101,7 @@ StyleCopReport.xml
 *.nuget.props
 *.nuget.targets
 
+
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
@@ -137,4 +138,5 @@ FodyWeavers.xsd
 project.assets.json
 project.nuget.cache
 /obj
+
 

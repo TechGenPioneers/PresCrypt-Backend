@@ -11,8 +11,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250411174845_RemoveDateTimeAutoOfPatient")]
-    partial class RemoveDateTimeAutoOfPatient
+<<<<<<<< HEAD:PresCrypt-Backend/Migrations/20250411191240_UpdatedPatient.Designer.cs
+    [Migration("20250411191240_UpdatedPatient")]
+    partial class UpdatedPatient
+========
+    [Migration("20250320060510_Init")]
+    partial class Init
+>>>>>>>> 2afef8a (Integrate the login and register pages with API endpoints):PresCrypt-Backend/Migrations/20250320060510_Init.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +29,50 @@ namespace PresCrypt_Backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+<<<<<<<< HEAD:PresCrypt-Backend/Migrations/20250411191240_UpdatedPatient.Designer.cs
             modelBuilder.Entity("Appointment", b =>
+========
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Admin", b =>
+                {
+                    b.Property<string>("AdminId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AdminName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("AdminId");
+
+                    b.ToTable("Admin");
+                });
+
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Appointment", b =>
+>>>>>>>> 2afef8a (Integrate the login and register pages with API endpoints):PresCrypt-Backend/Migrations/20250320060510_Init.Designer.cs
                 {
                     b.Property<string>("AppointmentId")
                         .ValueGeneratedOnAdd()
@@ -123,10 +171,16 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
 
+<<<<<<<< HEAD:PresCrypt-Backend/Migrations/20250411191240_UpdatedPatient.Designer.cs
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+========
+                    b.Property<string>("NIC")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+>>>>>>>> 2afef8a (Integrate the login and register pages with API endpoints):PresCrypt-Backend/Migrations/20250320060510_Init.Designer.cs
 
                     b.Property<string>("NIC")
                         .IsRequired()
@@ -166,10 +220,17 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+<<<<<<<< HEAD:PresCrypt-Backend/Migrations/20250411191240_UpdatedPatient.Designer.cs
                     b.Property<TimeOnly>("AvailableEndTime")
                         .HasColumnType("time");
 
                     b.Property<TimeOnly>("AvailableStartTime")
+========
+                    b.Property<DateOnly>("AvailableDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("AvailableTime")
+>>>>>>>> 2afef8a (Integrate the login and register pages with API endpoints):PresCrypt-Backend/Migrations/20250320060510_Init.Designer.cs
                         .HasColumnType("time");
 
                     b.Property<string>("DoctorId")
@@ -223,15 +284,12 @@ namespace PresCrypt_Backend.Migrations
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>
+<<<<<<<< HEAD:PresCrypt-Backend/Migrations/20250411191240_UpdatedPatient.Designer.cs
                 {
                     b.Property<string>("PatientId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("BloodGroup")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContactNo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -251,7 +309,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nvarchar(1)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
@@ -261,10 +319,6 @@ namespace PresCrypt_Backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NIC")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -288,6 +342,61 @@ namespace PresCrypt_Backend.Migrations
                 {
                     b.HasOne("Doctor", "Doctor")
                         .WithMany()
+========
+                {
+                    b.Property<string>("PatientId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BloodGroup")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DOB")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NIC")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PatientName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PatientId");
+
+                    b.ToTable("Patient");
+                });
+
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Appointment", b =>
+                {
+                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", "Doctor")
+                        .WithMany("Appointments")
+>>>>>>>> 2afef8a (Integrate the login and register pages with API endpoints):PresCrypt-Backend/Migrations/20250320060510_Init.Designer.cs
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -343,6 +452,11 @@ namespace PresCrypt_Backend.Migrations
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>
                 {
                     b.Navigation("Appointments");
+<<<<<<<< HEAD:PresCrypt-Backend/Migrations/20250411191240_UpdatedPatient.Designer.cs
+========
+
+                    b.Navigation("Availabilities");
+>>>>>>>> 2afef8a (Integrate the login and register pages with API endpoints):PresCrypt-Backend/Migrations/20250320060510_Init.Designer.cs
                 });
 #pragma warning restore 612, 618
         }
