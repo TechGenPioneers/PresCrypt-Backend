@@ -43,7 +43,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
-        
+       
         public ICollection<Appointment> Appointments { get; set; }
     }
 }
