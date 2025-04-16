@@ -9,9 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class Patient
     {
-        
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public required string PatientId { get; set; } = string.Empty; // Primary Key
+        public required string PatientId { get; set; } // Primary Key
 
         [Required]
         public required string FirstName { get; set; }
