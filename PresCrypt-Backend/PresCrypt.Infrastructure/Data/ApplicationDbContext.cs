@@ -14,7 +14,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<Patient> Patient { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Hospital> Hospitals { get; set; }
-    public DbSet<DoctorRequest> DoctorRequest { get; set; }
-    public DbSet<RequestAvailability> RequestAvailability { get; set; }
-    public DbSet<DoctorAvailability> DoctorAvailability { get; set; }
+    public DbSet<Doctor_Availability> Doctor_Availability { get; set; } // This is the correct declaration
 }
