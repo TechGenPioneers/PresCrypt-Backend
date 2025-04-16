@@ -122,7 +122,41 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 {
                     return null;
                 }
-                   
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<string> UpdatePatient(AdminUpdatePatientDto updatePatient)
+        {
+            if (updatePatient == null)
+            {
+                throw new ArgumentNullException(nameof(updatePatient));
+            }
+            try
+            {
+                var patient = _context.Patient.FirstOrDefault(p => p.PatientId == updatePatient.PatientId);
+                if (patient == null)
+                {
+                    throw new Exception("Patient not found");
+                }
+                patient.Status = updatePatient.Status;
+                patient.UpdatedAt = DateTime.UtcNow;
+                _context.Patient.Update(patient);
+                int result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return "Success";
+                }
+                else
+                {
+                    return "Error";
+                }
+
             }
             catch (Exception)
             {
