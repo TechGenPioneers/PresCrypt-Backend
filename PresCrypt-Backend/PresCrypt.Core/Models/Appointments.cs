@@ -8,35 +8,54 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
     public class Appointment
     {
         [Key]
-        [Required]
-        public string AppointmentId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public string AppointmentId { get; set; }  // Primary Key
+
+
 
         [Required]
+        [ForeignKey(nameof(Patient))]  // Foreign Key referencing Patient.UserId
         public string PatientId { get; set; }
 
-        [Required]
-        [ForeignKey("Doctor")]  // ✅ Ensure it properly links to the Doctor table
-        public string DoctorId { get; set; }
+        public Patient Patient { get; set; }  // Navigation Property for Patient
 
-        public Doctor Doctor { get; set; }  // Navigation Property
+
 
         [Required]
-        public DateTime Time { get; set; }
+        public string DoctorId { get; set; }  // DoctorId remains a normal field
+
+        public Doctor Doctor { get; set; }  // Navigation Property for Doctor (not a foreign key)
+
 
         [Required]
-        public DateTime Date { get; set; }
+        [ForeignKey(nameof(Hospital))]
+        public string HospitalId { get; set; }
+
+        public Hospital Hospital { get; set; }
+
+
+
+        [Required]
+        public DateOnly Date { get; set; }
+
+        [Required]
+        public TimeOnly Time { get; set; }
+
+
+        [Required]
+        public double Charge { get; set; }
 
         [Required]
         [MaxLength(20)]
         public string Status { get; set; }
 
-        public byte[] SpecialNote { get; set; }
+        public string? SpecialNote { get; set; }
 
         [Required]
         [MaxLength(50)]
         public string TypeOfAppointment { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 }
