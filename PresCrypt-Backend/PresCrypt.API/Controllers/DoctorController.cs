@@ -83,7 +83,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [HttpGet("book/{doctorId}")]//for this I used mapster
         public async Task<ActionResult<List<DoctorBookingDto>>> GetDoctorBookedbyId(string doctorId)
         {
-            var doctor = (await _context.Doctor.FindAsync(doctorId));
+            var doctor = await _context.Doctor.FindAsync(doctorId);
             if (doctor is null)
             {
                 return NotFound();
@@ -93,7 +93,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(response);
 
         }
-        //test
+        
 
 
     }
