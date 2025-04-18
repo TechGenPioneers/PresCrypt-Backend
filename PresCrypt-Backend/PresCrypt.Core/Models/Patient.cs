@@ -9,9 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class Patient
     {
-        
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public required string PatientId { get; set; } = string.Empty; // Primary Key
+        public required string PatientId { get; set; } // Primary Key
 
         [Required]
         public required string FirstName { get; set; }
@@ -44,7 +42,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
-        
+       
         public ICollection<Appointment> Appointments { get; set; }
     }
 }
