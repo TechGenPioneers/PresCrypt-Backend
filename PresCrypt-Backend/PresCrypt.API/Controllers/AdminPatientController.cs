@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 
@@ -50,29 +49,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }catch (Exception e)
             {
                 return BadRequest($"An error occurred while retrieving patient: {e.Message}");
-            }
-        }
-
-        [HttpPatch]
-        public async Task<IActionResult> UpdatePatient([FromBody] AdminUpdatePatientDto adminUpdatePatientDto)
-        {
-            if (adminUpdatePatientDto == null)
-            {
-                return BadRequest("Invalid patient data.");
-            }
-            try
-            {
-                var updatedPatient = await _adminPatientService.UpdatePatient(adminUpdatePatientDto);
-                if (updatedPatient == "Success")
-                {
-                    return Ok(updatedPatient);
-                }
-                return NotFound("No patient found.");
-               
-            }
-            catch (Exception e)
-            {
-                return BadRequest($"An error occurred while updating the patient: {e.Message}");
             }
         }
 

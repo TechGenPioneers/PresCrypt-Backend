@@ -11,9 +11,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         Task<Appointment> CreateAppointmentAsync(AppointmentSave dto);
 
-        Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates);
-
-
     }
 
 }

@@ -95,22 +95,5 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             return appointment;
 
         }
-        public async Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates)
-        {
-            var result = new Dictionary<DateTime, int>();
-
-            foreach (var date in dates)
-            {
-                var count = await _context.Appointments
-                    .Where(a => a.DoctorId == doctorId && a.Date == DateOnly.FromDateTime(date))
-                    .CountAsync();
-
-                result[date] = count;
-            }
-
-            return result;
-        }
-
-
     }
 }

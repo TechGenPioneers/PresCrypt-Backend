@@ -59,23 +59,5 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var appointment = await _appointmentService.CreateAppointmentAsync(dto);
             return Ok(appointment);
         }
-
-        [HttpPost("count-by-dates")]
-        public async Task<IActionResult> GetAppointmentCounts([FromBody] AppointmentCountDto request)
-        {
-            var counts = await _appointmentService.GetAppointmentCountsAsync(request.DoctorId, request.Dates);
-
-            // Convert the dictionary keys to string (yyyy-MM-dd) format
-            var formattedCounts = counts.ToDictionary(
-                kvp => kvp.Key.ToString("yyyy-MM-dd"),
-                kvp => kvp.Value
-            );
-
-            return Ok(formattedCounts);
-        }
-
-
-
-
     }
 }
