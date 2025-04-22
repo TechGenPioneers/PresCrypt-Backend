@@ -276,7 +276,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         LastName = doctorRegDTO.LastName,
                         Gender = doctorRegDTO.Gender,
                         Email = emailLower,
-                        ContactNo = doctorRegDTO.ContactNumber,
+                        ContactNumber = doctorRegDTO.ContactNumber,
                         Specialization = doctorRegDTO.Specialization,
                         SLMCRegId = doctorRegDTO.SLMCRegId,
                         SLMCIdImage = imageBytes,

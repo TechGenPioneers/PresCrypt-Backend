@@ -50,41 +50,41 @@ public class ApplicationDbContext : DbContext
             .HasPrincipalKey(u => u.UserName)  // Link to UserName, NOT UserId
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<DoctorRequest>()
-            .HasMany(dr => dr.RequestAvailability)
-            .WithOne(ra => ra.DoctorRequest)
-            .HasForeignKey(ra => ra.DoctorRequestId);
+        //modelBuilder.Entity<DoctorRequest>()
+        //    .HasMany(dr => dr.RequestAvailability)
+        //    .WithOne(ra => ra.DoctorRequest)
+        //    .HasForeignKey(ra => ra.DoctorRequestId);
             
 
         // Hospital -> RequestAvailability (One-to-Many)
-        modelBuilder.Entity<Hospital>()
-            .HasMany(h => h.RequestAvailability)
-            .WithOne(ra => ra.Hospital)
-            .HasForeignKey(ra => ra.HospitalId)
-            .OnDelete(DeleteBehavior.Restrict);
-        modelBuilder.Entity<RequestAvailability>()
-            .Property(ra => ra.AvailableStartTime)
-            .HasConversion(
-                v => v.ToTimeSpan(),
-                v => TimeOnly.FromTimeSpan(v));
+        //modelBuilder.Entity<Hospital>()
+        //    .HasMany(h => h.RequestAvailability)
+        //    .WithOne(ra => ra.Hospital)
+        //    .HasForeignKey(ra => ra.HospitalId)
+        //    .OnDelete(DeleteBehavior.Restrict);
+        //modelBuilder.Entity<RequestAvailability>()
+        //    .Property(ra => ra.AvailableStartTime)
+        //    .HasConversion(
+        //        v => v.ToTimeSpan(),
+        //        v => TimeOnly.FromTimeSpan(v));
 
-        modelBuilder.Entity<RequestAvailability>()
-            .Property(ra => ra.AvailableEndTime)
-            .HasConversion(
-                v => v.ToTimeSpan(),
-                v => TimeOnly.FromTimeSpan(v));
+        //modelBuilder.Entity<RequestAvailability>()
+        //    .Property(ra => ra.AvailableEndTime)
+        //    .HasConversion(
+        //        v => v.ToTimeSpan(),
+        //        v => TimeOnly.FromTimeSpan(v));
 
-        modelBuilder.Entity<DoctorAvailability>()
-            .Property(da => da.AvailableStartTime)
-            .HasConversion(
-                v => v.ToTimeSpan(),
-                v => TimeOnly.FromTimeSpan(v));
+        //modelBuilder.Entity<DoctorAvailability>()
+        //    .Property(da => da.AvailableStartTime)
+        //    .HasConversion(
+        //        v => v.ToTimeSpan(),
+        //        v => TimeOnly.FromTimeSpan(v));
 
-        modelBuilder.Entity<DoctorAvailability>()
-            .Property(da => da.AvailableEndTime)
-            .HasConversion(
-                v => v.ToTimeSpan(),
-                v => TimeOnly.FromTimeSpan(v));
+        //modelBuilder.Entity<DoctorAvailability>()
+        //    .Property(da => da.AvailableEndTime)
+        //    .HasConversion(
+        //        v => v.ToTimeSpan(),
+        //        v => TimeOnly.FromTimeSpan(v));
 
 
 
