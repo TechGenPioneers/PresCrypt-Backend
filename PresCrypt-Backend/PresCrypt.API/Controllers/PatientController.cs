@@ -59,49 +59,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        //[HttpPost]
-        // public async Task<IActionResult> AddPatient([FromForm] PatientCreateModel model)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(ModelState);  // Return validation errors if any
-        //     }
-
-        //     byte[] imageData = null;
-
-        //     // Handle Profile Image Upload (if present)
-        //     if (model.ProfileImage != null && model.ProfileImage.Length > 0)
-        //     {
-        //         using (var ms = new MemoryStream())
-        //         {
-        //             await model.ProfileImage.CopyToAsync(ms);
-        //             imageData = ms.ToArray();
-        //         }
-        //     }
-
-        //     var patient = new Patient
-        //     {
-        //         PatientId = model.PatientId,
-        //         FirstName = model.FirstName,
-        //         LastName = model.LastName,
-        //         DOB = model.DOB,
-        //         Email = model.Email,
-        //         BloodGroup = model.BloodGroup,
-        //         NIC = model.NIC,
-        //         ProfileImage = imageData,  // Save image as byte[]
-        //         PasswordHash = model.PasswordHash,
-        //         ContactNo = model.ContactNo,
-        //         Status = "Active",  // Default status
-        //         CreatedAt = DateTime.UtcNow,
-        //         UpdatedAt = DateTime.UtcNow,
-        //         LastLogin = null
-        //     };
-
-        //     await _context.Patient.AddAsync(patient);
-        //     await _context.SaveChangesAsync();
-
-        //     return Ok(new { Message = "Patient added successfully!", Patient = patient });
-        // }
+        
     }
 }
 
