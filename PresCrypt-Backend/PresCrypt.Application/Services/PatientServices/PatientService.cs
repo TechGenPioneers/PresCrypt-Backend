@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,21 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
                 return (null, null);
 
             return (patient.ProfileImage, patient.FirstName);
+        }
+
+        public async Task<PatientNavBarDto> GetPatientNavBarDetailsAsync(string patientId)
+        {
+            var patient = await _context.Patient
+                .Where(p => p.PatientId == patientId)
+                .Select(p => new PatientNavBarDto
+                {
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    CreatedAt = p.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            return patient;
         }
     }
 }

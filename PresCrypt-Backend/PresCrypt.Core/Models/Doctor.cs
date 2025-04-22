@@ -61,6 +61,6 @@ public class Doctor
 
 
     // Navigation Property
-    public ICollection<DoctorAvailability> Availabilities { get; set; }
-    
+    public ICollection<DoctorAvailability> Availabilities { get; set; } //Makes the 1:M relationship with DoctorAvailability
+
 }
