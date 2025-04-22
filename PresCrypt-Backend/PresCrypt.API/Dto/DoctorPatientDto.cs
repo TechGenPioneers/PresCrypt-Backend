@@ -1,6 +1,6 @@
 namespace PresCrypt_Backend.PresCrypt.API.Dto
 {
-    public class AppointmentDisplayDto
+    public class DoctorPatientDto
     {
         public string AppointmentId { get; set; }
 
@@ -12,12 +12,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public TimeOnly Time { get; set; }
 
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
 
         public string Status { get; set; }
-        
+
         public string FirstName { get; set; }
-        
+
         public string LastName { get; set; }
 
         public string PatientName { get; set; }

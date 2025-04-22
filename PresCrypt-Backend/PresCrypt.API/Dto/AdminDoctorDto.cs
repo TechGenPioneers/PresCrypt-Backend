@@ -2,6 +2,7 @@
 {
     public class AdminDoctorDto
     {
+        public string? RequestID { get; set; }
         public string? DoctorId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; } 

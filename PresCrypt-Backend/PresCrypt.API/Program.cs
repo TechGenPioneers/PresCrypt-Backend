@@ -7,6 +7,10 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +24,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
+builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
+builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
-
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
+builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
+builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
+
+builder.Services.AddHttpClient();
+
 
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -69,6 +80,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 

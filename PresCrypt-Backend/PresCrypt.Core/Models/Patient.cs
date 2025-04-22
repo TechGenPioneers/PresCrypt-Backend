@@ -9,7 +9,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class Patient
     {
-        
         public required string PatientId { get; set; } // Primary Key
 
         [Required]

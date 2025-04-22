@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
@@ -104,3 +104,4 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         // }
     }
 }
+
