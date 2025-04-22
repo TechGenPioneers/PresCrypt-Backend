@@ -64,5 +64,4 @@ public class Doctor
     public ICollection<DoctorAvailability> Availabilities { get; set; }
     public ICollection<Appointment> Appointments { get; set; }  // One doctor can have multiple appointments
 
-    
 }
