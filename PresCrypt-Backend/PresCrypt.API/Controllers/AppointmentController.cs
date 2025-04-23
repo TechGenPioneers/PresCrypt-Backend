@@ -59,5 +59,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var appointment = await _appointmentService.CreateAppointmentAsync(dto);
             return Ok(appointment);
         }
+
+        [HttpGet("recent-by-doctor/{doctorId}")]
+        public async Task<IActionResult> GetRecentAppointmentsByDoctor(string doctorId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(doctorId))
+                    return BadRequest("Doctor ID is required");
+
+                var appointments = await _appointmentService.GetRecentAppointmentsByDoctorAsync(doctorId);
+
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                // Include the actual error message in the response
+                return StatusCode(500, $"An error occurred while fetching recent appointments: {ex.Message}");
+            }
+        }
     }
 }

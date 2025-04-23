@@ -95,5 +95,46 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             return appointment;
 
         }
+
+        public async Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            // First get the IDs of the most recent PAST appointments per patient
+            var recentAppointmentIds = await _context.Appointments
+                .Where(a => a.DoctorId == doctorId && a.Date < today) // Only past appointments
+                .GroupBy(a => a.PatientId)
+                .Select(g => g.OrderByDescending(a => a.Date)
+                             .ThenByDescending(a => a.Time)
+                             .Select(a => a.AppointmentId)
+                             .FirstOrDefault())
+                .Where(id => id != null) // Filter out nulls for patients without past appointments
+                .ToListAsync();
+
+            // If no past appointments found, return empty list
+            if (!recentAppointmentIds.Any())
+                return new List<AppointmentDisplayDto>();
+
+            // Then fetch the complete appointment data with includes
+            return await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Hospital)
+                .Where(a => recentAppointmentIds.Contains(a.AppointmentId))
+                .Select(a => new AppointmentDisplayDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    Date = a.Date.ToDateTime(TimeOnly.MinValue),
+                    Time = a.Time,
+                    Status = a.Status,
+                    PatientId = a.Patient.PatientId,
+                    HospitalId = a.HospitalId,
+                    HospitalName = a.Hospital.HospitalName,
+                    PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
+                    Gender = a.Patient.Gender,
+                    DOB = a.Patient.DOB,
+                    ProfileImage = a.Patient.ProfileImage
+                })
+                .ToListAsync();
+        }
     }
 }
