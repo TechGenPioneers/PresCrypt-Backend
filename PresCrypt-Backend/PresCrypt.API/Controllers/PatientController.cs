@@ -66,8 +66,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 LastName = patientRegDTO.LastName,
                 Email = emailLower,
                 ContactNo = patientRegDTO.ContactNumber,
-                NIC = patientRegDTO.NIC,
-               // BloodGroup = patientRegDTO.BloodGroup,
+                Address = patientRegDTO.Address,
+                DOB = patientRegDTO.DOB,
+                
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 Status = patientRegDTO.Status

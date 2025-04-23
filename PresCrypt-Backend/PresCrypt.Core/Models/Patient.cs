@@ -26,8 +26,12 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public string? BloodGroup { get; set; }
 
+        
+        public string? NIC { get; set; }
+
         [Required]
-        public string NIC { get; set; }
+        public string Address { get; set; }    
+
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

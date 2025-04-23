@@ -51,7 +51,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest(new { message = "Invalid input data", errors = ModelState });
             }
 
-            // Validate Password
             var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
             if (!Regex.IsMatch(patientRegDTO.Password, passwordPattern))
             {
@@ -63,10 +62,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest(new { message = "Passwords do not match." });
             }
 
-            // Normalize email
             string emailLower = patientRegDTO.Email.Trim().ToLower();
 
-            // Check if the email already exists in the User table
             if (_applicationDbContext.User.Any(x => x.UserName == emailLower))
             {
                 return BadRequest(new { message = "Email already exists." });
@@ -80,12 +77,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     var lastUser = _applicationDbContext.User.OrderByDescending(p => p.UserId).FirstOrDefault();
                     int newId = lastUser != null && int.TryParse(lastUser.UserId.Substring(1), out int lastId) ? lastId + 1 : 1;
                     string newUserId = $"U{newId:D3}";
-                    // Step 2: Insert into User table first
+
                     var newUser = new User
                     {
                         UserId = newUserId,
                         UserName = emailLower,
-                        PasswordHash = hashedPassword,  // ✅ Hashed password
+                        PasswordHash = hashedPassword,
                         Role = "Patient",
                         Patient = new List<Patient>(),
                         Doctor = new List<Doctor>(),
@@ -95,20 +92,19 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     _applicationDbContext.User.Add(newUser);
                     _applicationDbContext.SaveChanges();
 
-                    // Step 3: Generate PatientId
                     var lastPatient = _applicationDbContext.Patient.OrderByDescending(p => p.PatientId).FirstOrDefault();
                     int newIdPatient = lastPatient != null && int.TryParse(lastPatient.PatientId.Substring(1), out int lastIdPatient) ? lastIdPatient + 1 : 1;
                     string newPatientId = $"P{newIdPatient:D3}";
 
-                    // Step 4: Insert into Patient table using Email as FK
                     var newPatient = new Patient
                     {
                         PatientId = newPatientId,
                         FirstName = patientRegDTO.FirstName,
                         LastName = patientRegDTO.LastName,
-                        Email = newUser.UserName,  // ✅ Use Email as FK
+                        Email = newUser.UserName,
                         ContactNo = patientRegDTO.ContactNumber,
-                        NIC = patientRegDTO.NIC,
+                        Address = patientRegDTO.Address,
+                        DOB = patientRegDTO.DOB,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
@@ -118,17 +114,26 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     _applicationDbContext.Patient.Add(newPatient);
                     _applicationDbContext.SaveChanges();
 
-                    transaction.Commit(); // Commit both inserts
+                    transaction.Commit();
 
                     return Ok(new { message = "Patient registered successfully", patientId = newPatientId });
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback(); // Rollback if any issue occurs
-                    return BadRequest(new { message = "Registration failed", error = ex.Message });
+                    transaction.Rollback();
+
+                    var innerMessage = ex.InnerException?.Message ?? "No inner exception";
+
+                    return BadRequest(new
+                    {
+                        message = "Registration failed",
+                        error = ex.Message,
+                        innerError = innerMessage
+                    });
                 }
             }
         }
+
 
 
 
