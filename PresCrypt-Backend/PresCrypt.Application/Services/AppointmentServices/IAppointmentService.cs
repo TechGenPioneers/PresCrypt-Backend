@@ -9,7 +9,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<IEnumerable<AvailabilityDisplayDto>> GetAvailabilityByDateAsync(string day, string doctorId);
         Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null);
         Task<Appointment> CreateAppointmentAsync(AppointmentSave dto);
+
         Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId);   //for prescription page to get recent appointments
+
+        Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates);
+
     }
 
 }

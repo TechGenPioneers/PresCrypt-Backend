@@ -62,5 +62,6 @@ public class Doctor
 
     // Navigation Property
     public ICollection<DoctorAvailability> Availabilities { get; set; }
-    
+    public ICollection<Appointment> Appointments { get; set; }  // One doctor can have multiple appointments
+
 }

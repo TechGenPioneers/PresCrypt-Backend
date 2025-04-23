@@ -7,6 +7,7 @@ using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Diagnostics;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 using System.Linq;
+using Azure.Core;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -15,10 +16,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
     {
         private readonly ApplicationDbContext _context;
         private readonly AdminDoctorUtil _adminDoctorUtil;
-        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil)
+        private readonly IAdminDoctorRequestService _adminDoctorRequestService;
+        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil,IAdminDoctorRequestService adminDoctorRequestService)
         {
             _context = context;
             _adminDoctorUtil = adminDoctorUtil;
+            _adminDoctorRequestService = adminDoctorRequestService;
         }
         public async Task<List<HospitalDto>> getAllHospitals()
         {
@@ -57,32 +60,63 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 
                 string newDoctorId = await _adminDoctorUtil.GenerateDoctorId();
 
-                var newDoctor = new Doctor
+                if (newDoctorDto.Doctor.RequestID != null)
                 {
-                    DoctorId = newDoctorId,
-                    FirstName = newDoctorDto.Doctor.FirstName,
-                    LastName = newDoctorDto.Doctor.LastName,
-                    Gender = newDoctorDto.Doctor.Gender,
-                    Email = newDoctorDto.Doctor.Email,
-                    Specialization = newDoctorDto.Doctor.Specialization,
-                    ContactNumber = newDoctorDto.Doctor.ContactNumber,
-                    Charge = newDoctorDto.Doctor.Charge,
-                    Description = newDoctorDto.Doctor.Description,
-                    SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
-                    SLMCIdImage = new byte[0], // want to Implement
-                    DoctorImage = new byte[0], // want to Implement
-                    NIC = newDoctorDto.Doctor.NIC,
-                    EmailVerified = true, // want to Implement
-                    CreatedAt = DateTime.Now,  // Set current date
-                    UpdatedAt = DateTime.Now,
-                    Status = true, // want to Implement
-                    LastLogin = null
-                };
-
-                // Add to DbContext
-                await _context.Doctor.AddAsync(newDoctor);
+                    var doctorRequest = await _context.DoctorRequest.FirstOrDefaultAsync(d => d.RequestId == newDoctorDto.Doctor.RequestID);
+                    var newDoctor = new Doctor
+                    {
+                        DoctorId = newDoctorId,
+                        FirstName = newDoctorDto.Doctor.FirstName,
+                        LastName = newDoctorDto.Doctor.LastName,
+                        Gender = newDoctorDto.Doctor.Gender,
+                        Email = newDoctorDto.Doctor.Email,
+                        Specialization = newDoctorDto.Doctor.Specialization,
+                        ContactNumber = newDoctorDto.Doctor.ContactNumber,
+                        Charge = newDoctorDto.Doctor.Charge,
+                        Description = newDoctorDto.Doctor.Description,
+                        SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
+                        SLMCIdImage = doctorRequest.SLMCIdImage, 
+                        DoctorImage = new byte[0], // want to Implement
+                        NIC = newDoctorDto.Doctor.NIC,
+                        EmailVerified = true, // want to Implement
+                        CreatedAt = DateTime.Now,  
+                        UpdatedAt = DateTime.Now,
+                        Status = true, 
+                        LastLogin = null
+                    };
+                    // Add to DbContext
+                    await _context.Doctor.AddAsync(newDoctor);
+                }
+                else
+                {
+                    var newDoctor = new Doctor
+                    {
+                        DoctorId = newDoctorId,
+                        FirstName = newDoctorDto.Doctor.FirstName,
+                        LastName = newDoctorDto.Doctor.LastName,
+                        Gender = newDoctorDto.Doctor.Gender,
+                        Email = newDoctorDto.Doctor.Email,
+                        Specialization = newDoctorDto.Doctor.Specialization,
+                        ContactNumber = newDoctorDto.Doctor.ContactNumber,
+                        Charge = newDoctorDto.Doctor.Charge,
+                        Description = newDoctorDto.Doctor.Description,
+                        SLMCRegId = newDoctorDto.Doctor.SlmcLicense,
+                        SLMCIdImage = new byte[0], // want to Implement
+                        DoctorImage = new byte[0], // want to Implement
+                        NIC = newDoctorDto.Doctor.NIC,
+                        EmailVerified = true, // want to Implement
+                        CreatedAt = DateTime.Now,  // Set current date
+                        UpdatedAt = DateTime.Now,
+                        Status = true, // want to Implement
+                        LastLogin = null
+                    };
+                    // Add to DbContext
+                    await _context.Doctor.AddAsync(newDoctor);
+                }
+                    
 
                 int result = 0;
+                
                 foreach (var availability in newDoctorDto.Availability)
                 {
                     string newAvailabilityId = await _adminDoctorUtil.GenerateAvailabilityId();
@@ -101,8 +135,32 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     await _context.DoctorAvailability.AddRangeAsync(newAvailability);
                     result = await _context.SaveChangesAsync();
                 }
+                string allResult;
 
-                return result > 0 ? "Success" : "Error";
+                if (newDoctorDto.Doctor.RequestID != null)
+                {
+                    if (result > 0)
+                    {
+                        allResult = await _adminDoctorRequestService.ApprovRequest(newDoctorDto.Doctor.RequestID);
+                    }
+                    else
+                    {
+                        allResult = "Error";
+                    }
+                }
+                else
+                {
+                    if (result > 0)
+                    {
+                        allResult = "Success";
+                    }else
+                    {
+                        allResult = "Error";
+                    }
+                }
+
+                return allResult == "Success" ? "Success" : "Error";
+
 
             }
             catch (Exception e)

@@ -42,7 +42,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Select(a => new AppointmentDisplayDto
                 {
                     AppointmentId = a.AppointmentId,
-                    Date = a.Date.ToDateTime(TimeOnly.MinValue),  // Ensure consistent date format
+                    Date = a.Date,  // Ensure consistent date format
                     Time = a.Time, // Format time consistently
                     Status = a.Status,
                     PatientId = a.Patient.PatientId,
@@ -96,6 +96,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         }
 
+
         public async Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
@@ -136,5 +137,24 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 })
                 .ToListAsync();
         }
+
+        public async Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates)
+        {
+            var result = new Dictionary<DateTime, int>();
+
+            foreach (var date in dates)
+            {
+                var count = await _context.Appointments
+                    .Where(a => a.DoctorId == doctorId && a.Date == DateOnly.FromDateTime(date))
+                    .CountAsync();
+
+                result[date] = count;
+            }
+
+            return result;
+        }
+
+
+
     }
 }
