@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <Folder Include=".gitignore\" />
+    <Folder Include="Migrations\" />
     <Folder Include="PresCrypt.API\Middlewares\" />
     <Folder Include="PresCrypt.API\Filters\" />
     <Folder Include="PresCrypt.API\Configuration\" />
