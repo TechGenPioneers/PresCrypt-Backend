@@ -214,7 +214,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             string emailLower = doctorRegDTO.Email.Trim().ToLowerInvariant();
             if (await _applicationDbContext.User.AnyAsync(x => x.UserName == emailLower))
             {
-                return BadRequest(new { message = "Email already exists." });
+                return BadRequest(new { message = "Email already exists. Try again" });
             }
 
             // Begin transaction
