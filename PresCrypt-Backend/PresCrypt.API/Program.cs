@@ -1,9 +1,21 @@
+
+using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PresCrypt_Backend.PresCrypt.API.Controllers;
 using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -26,6 +38,19 @@ builder.Services.AddLogging(config =>
 
 // Register services
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
+builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
+builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
+builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
+builder.Services.AddScoped<AdminDoctorUtil>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
+builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
+builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
+
+builder.Services.AddHttpClient();
+
+
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration for JwtService
 
@@ -53,6 +78,8 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
 builder.Services.AddScoped<AdminController>();
+var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Set up Entity Framework DbContext with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -73,7 +100,37 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();  // ✅ Allow credentials if needed
+        });
+});
+
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") 
+                  .AllowAnyMethod() 
+                  .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
+
+
+// Apply CORS middleware
+app.UseCors("AllowLocalhost3000");
+
 
 // Enable Swagger in Development environment
 if (app.Environment.IsDevelopment())
@@ -83,6 +140,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Middleware pipeline setup
+app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication(); // Authentication should come before Routing

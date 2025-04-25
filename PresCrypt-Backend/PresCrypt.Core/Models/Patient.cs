@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 
@@ -31,6 +33,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         public string Address { get; set; }    
+         public byte[] ProfileImage { get; set; }
 
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -48,6 +51,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public string? ResetToken { get; set; }
         public DateTime? ResetTokenExpiry { get; set; }
+        public ICollection<Appointment> Appointments { get; set; }
 
     }
 }
