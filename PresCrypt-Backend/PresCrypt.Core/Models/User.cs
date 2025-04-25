@@ -22,8 +22,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public string? ResetToken { get; set; }
         public DateTime? ResetTokenExpire { get; set; }
-
-        public bool EmailVerified { get; set; } = false;
+        [Column(TypeName = "bit")]
+        public bool EmailVerified { get; set; } = true;
 
         public int FailedLoginAttempts { get; set; } = 0;
 

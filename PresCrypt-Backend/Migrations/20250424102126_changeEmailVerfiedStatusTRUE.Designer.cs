@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250424102126_changeEmailVerfiedStatusTRUE")]
+    partial class changeEmailVerfiedStatusTRUE
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +62,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("Email");
 
-                    b.ToTable("Admin", (string)null);
+                    b.ToTable("Admin");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Appointment", b =>
@@ -105,7 +108,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("Appointments", (string)null);
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Doctor", b =>
@@ -176,7 +179,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("Email");
 
-                    b.ToTable("Doctor", (string)null);
+                    b.ToTable("Doctor");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>
@@ -211,7 +214,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("HospitalId");
 
-                    b.ToTable("DoctorAvailability", (string)null);
+                    b.ToTable("DoctorAvailability");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorRequest", b =>
@@ -281,7 +284,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasKey("RequestId");
 
-                    b.ToTable("DoctorRequest", (string)null);
+                    b.ToTable("DoctorRequest");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Hospital", b =>
@@ -314,7 +317,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasKey("HospitalId");
 
-                    b.ToTable("Hospitals", (string)null);
+                    b.ToTable("Hospitals");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>
@@ -377,7 +380,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("Email");
 
-                    b.ToTable("Patient", (string)null);
+                    b.ToTable("Patient");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.RequestAvailability", b =>
@@ -409,7 +412,7 @@ namespace PresCrypt_Backend.Migrations
 
                     b.HasIndex("HospitalId");
 
-                    b.ToTable("RequestAvailability", (string)null);
+                    b.ToTable("RequestAvailability");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.User", b =>
@@ -449,7 +452,7 @@ namespace PresCrypt_Backend.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Admin", b =>

@@ -250,6 +250,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         UserName = emailLower,
                         PasswordHash = _passwordHasher.HashPassword(null, doctorRegDTO.Password),
                         Role = "DoctorPending",
+                        EmailVerified = false, //explicitly i have defined false stastus for  doectors under verifcation
                         Patient = new List<Patient>(),
                         Doctor = new List<Doctor>(),
                         Admin = new List<Admin>()
@@ -616,11 +617,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
-                if (!user.EmailVerified)
-                {
-                    return BadRequest(new { success = false, message = "Please verify your email before logging in." });
-                }
-
                 if (user.Role == "DoctorPending")
                 {
                     return BadRequest(new
@@ -628,6 +624,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         success = false,
                         message = "Your doctor account is pending approval. Please wait for confirmation."
                     });
+                }
+                else if (!user.EmailVerified)
+                {
+                    return BadRequest(new { success = false, message = "Please verify your email before logging in." });
                 }
 
                 // Check for lockout
