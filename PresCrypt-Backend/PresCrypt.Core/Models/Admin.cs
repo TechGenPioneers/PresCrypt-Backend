@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 
 {
@@ -8,14 +9,19 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string AdminId { get; set; } // Primary Key
 
         [Required]
-        public string AdminName { get; set; }
+        public string FirstName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
 
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+        [ForeignKey("Email")]
+        public User User { get; set; }
 
         [Required]
-        public string Role { get; set; } // Example: "Admin"
+        public string Role { get; set; } 
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -24,9 +30,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public string PasswordHash { get; set; }
 
-        public string Status { get; set; } // Example: "Active" or "Inactive"
+        
 
-        public DateTime? LastLogin { get; set; } // Nullable if they haven't logged in yet
+        public DateTime? LastLogin { get; set; }
 
 
     }
