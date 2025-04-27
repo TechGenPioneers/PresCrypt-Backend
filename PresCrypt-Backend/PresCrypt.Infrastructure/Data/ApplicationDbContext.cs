@@ -18,5 +18,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<DoctorRequest> DoctorRequest { get; set; }
     public DbSet<RequestAvailability> RequestAvailability { get; set; }
     public DbSet<DoctorAvailability> DoctorAvailability { get; set; }
+    public DbSet<PatientNotifications> PatientNotifications { get; set; }
 
 }

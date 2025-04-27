@@ -23,6 +23,7 @@
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
@@ -59,7 +60,6 @@
     <Folder Include="PresCrypt.Infrastructure\Repositories\" />
     <Folder Include="PresCrypt.Integration\PaymentGateway\" />
     <Folder Include="PresCrypt.Integration\OpenMRS\" />
-    <Folder Include="PresCrypt.Shared\Helpers\" />
     <Folder Include="PresCrypt.Shared\Constants\" />
     <Folder Include="PresCrypt.Shared\Extensions\" />
     <Folder Include="PresCrypt.Tests\ApplicationTests\" />
