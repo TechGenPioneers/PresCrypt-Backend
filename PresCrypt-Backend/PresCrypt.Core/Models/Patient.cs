@@ -44,6 +44,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
        
         public ICollection<Appointment> Appointments { get; set; }
+
+        public ICollection<PatientNotifications> Notifications { get; set; }
     }
 }
 
