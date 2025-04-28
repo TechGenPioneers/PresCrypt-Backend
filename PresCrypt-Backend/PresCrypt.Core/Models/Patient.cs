@@ -39,11 +39,14 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        [Required]
+        public string Gender { get; set; }
+
 
         [Required]
         public string PasswordHash { get; set; }
 
-        public bool Status { get; set; }  
+        public string Status { get; set; }  
 
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]

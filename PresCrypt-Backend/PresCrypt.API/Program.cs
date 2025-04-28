@@ -15,7 +15,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
+//using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -45,7 +45,7 @@ builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
-builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
+//builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 
 builder.Services.AddHttpClient();
@@ -60,6 +60,8 @@ builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration fo
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        options.RequireHttpsMetadata = false; // Set to true in production
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -77,7 +79,7 @@ builder.Services.AddAuthentication("Bearer")
 // Register controllers for Dependency Injection
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
-builder.Services.AddScoped<AdminController>();
+
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

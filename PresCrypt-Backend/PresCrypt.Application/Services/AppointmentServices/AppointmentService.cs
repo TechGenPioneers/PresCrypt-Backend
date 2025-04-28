@@ -124,7 +124,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Select(a => new AppointmentDisplayDto
                 {
                     AppointmentId = a.AppointmentId,
-                    Date = a.Date.ToDateTime(TimeOnly.MinValue),
+                    Date = a.Date,
                     Time = a.Time,
                     Status = a.Status,
                     PatientId = a.Patient.PatientId,
