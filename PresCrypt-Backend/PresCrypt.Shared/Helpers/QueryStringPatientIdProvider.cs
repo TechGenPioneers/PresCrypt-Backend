@@ -1,6 +1,9 @@
-﻿namespace PresCrypt_Backend.PresCrypt.Shared.Helpers
+﻿using Microsoft.AspNetCore.SignalR;
+
+public class QueryStringPatientIdProvider : IUserIdProvider
 {
-    public class QueryStringPatientIdProvider
+    public string GetUserId(HubConnectionContext connection)
     {
+        return connection.GetHttpContext()?.Request.Query["patientId"];
     }
 }

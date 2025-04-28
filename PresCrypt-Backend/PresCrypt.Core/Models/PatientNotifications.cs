@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class PatientNotifications
     {
-            public string Id { get; set; }
+
+            [Key]
+            public string Id { get; set; } = Guid.NewGuid().ToString();
 
             [ForeignKey("Patient")] 
             public string PatientId { get; set; }

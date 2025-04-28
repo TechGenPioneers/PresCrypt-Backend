@@ -11,6 +11,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
@@ -61,9 +63,11 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:3000") 
                   .AllowAnyMethod() 
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .AllowCredentials();
         });
 });
+
 
 var app = builder.Build();
 
@@ -83,5 +87,6 @@ app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 
 app.Run();
