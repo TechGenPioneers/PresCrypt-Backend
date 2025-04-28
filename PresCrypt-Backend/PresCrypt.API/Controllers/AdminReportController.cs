@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
@@ -25,6 +26,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return NotFound("No any Details Found");
                 }
                 return Ok(Details);
+            }catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetFilteredDetails([FromBody] AdminGetReportDetailsDto reportDetails)
+        {
+            try
+            {
+                var filteredDetails = await _adminReportService.GetFilteredDetails(reportDetails);
+                if(filteredDetails == null)
+                {
+                    return NotFound("Not Fonud");
+                }
+
+                return Ok(filteredDetails);
             }catch(Exception e)
             {
                 return BadRequest(e.Message);
