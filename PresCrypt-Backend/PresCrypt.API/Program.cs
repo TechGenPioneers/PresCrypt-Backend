@@ -15,7 +15,6 @@ using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -45,7 +44,6 @@ builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
-builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 
 builder.Services.AddHttpClient();
