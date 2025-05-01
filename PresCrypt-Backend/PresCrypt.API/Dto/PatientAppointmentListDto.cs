@@ -1,0 +1,18 @@
+﻿using System.Globalization;
+
+namespace PresCrypt_Backend.PresCrypt.API.Dto
+{
+    public class PatientAppointmentListDto
+    {
+        public string DoctorName { get; set; }
+        public string Specialization { get; set; }
+
+        public string HospitalName { get; set; }
+
+        public TimeOnly Time { get; set; }
+
+        public DateOnly Date { get; set; }
+
+        public string Status { get; set; }
+    }
+}

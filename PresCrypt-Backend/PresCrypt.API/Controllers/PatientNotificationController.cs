@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Core.Models; // Use your correct namespace heere
 using PresCrypt_Backend.PresCrypt.API.Hubs;
+using System.Globalization;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Controllers
 {
@@ -24,6 +25,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
             public string PatientId { get; set; }
             public string Title { get; set; }
             public string Message { get; set; }
+
+            public string Type { get; set; }
         }
 
         [HttpPost("send")]
@@ -35,16 +38,23 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
                 Title = req.Title,
                 Message = req.Message,
                 IsRead = false,
+                Type = req.Type,
                 CreatedAt = DateTime.UtcNow
             };
 
             _context.PatientNotifications.Add(notification);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Save to DB -> Now notification.Id is populated
 
-            await _hub.Clients.User(req.PatientId).SendAsync("ReceiveNotification", new { Title = req.Title, Message = req.Message });
+            await _hub.Clients.User(req.PatientId).SendAsync("ReceiveNotification", new
+            {
+                id = notification.Id,         // ✅ Include id!
+                title = notification.Title,
+                message = notification.Message
+            });
 
             return Ok(new { success = true });
         }
+
 
         [HttpGet("{patientId}")]
         public async Task<IActionResult> GetNotifications(string patientId)
@@ -54,8 +64,43 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
-            return Ok(notifications);
+            var enrichedNotifications = new List<object>();
+
+            foreach (var notification in notifications)
+            {
+                if (notification.Type == "Request" && !string.IsNullOrEmpty(notification.DoctorId))
+                {
+                    var doctor = await _context.Doctor
+                        .FirstOrDefaultAsync(d => d.DoctorId == notification.DoctorId);
+
+                    enrichedNotifications.Add(new
+                    {
+                        notification.Id,
+                        Title = $"Dr. {doctor?.FirstName + " "+ doctor.LastName?? "A doctor"} wants to access your prescription.",
+                        Message = "Please respond to the access request by reviewing carefully.",
+                        notification.CreatedAt,
+                        notification.IsRead,
+                        notification.Type,
+                        notification.DoctorId
+                    });
+                }
+                else
+                {
+                    enrichedNotifications.Add(new
+                    {
+                        notification.Id,
+                        Title = notification.Title,
+                        Message = notification.Message,
+                        notification.CreatedAt,
+                        notification.IsRead,
+                        notification.Type
+                    });
+                }
+            }
+
+            return Ok(enrichedNotifications);
         }
+
 
         [HttpPost("mark-as-read")]
         public async Task<IActionResult> MarkAsRead([FromBody] string id)
