@@ -115,18 +115,6 @@ builder.Services.AddCors(options =>
 });
 
 
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000") 
-                  .AllowAnyMethod() 
-                  .AllowAnyHeader();
-        });
-});
-
 var app = builder.Build();
 
 
@@ -142,11 +130,11 @@ if (app.Environment.IsDevelopment())
 }
 
 // Middleware pipeline setup
-app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
-app.UseAuthentication(); // Authentication should come before Routing
-app.UseAuthorization(); // Authorization after authentication
-app.UseRouting(); // Routing middleware after auth
-app.MapControllers(); // Map Controllers to Routes
+app.UseRouting();                // 🟢 First, define routing
+app.UseCors("AllowReactApp");
+app.UseCors("AllowFrontend");// 🟢 CORS after routing
+app.UseAuthentication();         // 🟢 Then auth
+app.UseAuthorization();          // 🟢 Then authorization
+app.MapControllers();            // 🟢 Finally map endpoints
 app.Run();

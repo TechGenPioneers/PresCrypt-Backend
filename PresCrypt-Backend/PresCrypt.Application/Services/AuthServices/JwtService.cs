@@ -1,10 +1,7 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-
 
 public class JwtService : IJwtService
 {
@@ -19,8 +16,8 @@ public class JwtService : IJwtService
     {
         var claims = new[]
         {
-            new Claim("UserId", userId),
-            new Claim("UserName", username),
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.Name, username),
             new Claim(ClaimTypes.Role, role)
         };
 
@@ -31,17 +28,11 @@ public class JwtService : IJwtService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddSeconds(20),
+            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"])),
             signingCredentials: creds
         );
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var writtenToken = tokenHandler.WriteToken(token);
-
-        // Log expiration date for debugging
         Console.WriteLine($"Token Expiration: {token.ValidTo}");
 
-        return writtenToken;
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
-
