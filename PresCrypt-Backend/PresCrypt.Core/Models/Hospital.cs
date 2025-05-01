@@ -27,8 +27,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         [MaxLength(100)]
         public string City { get; set; }
-      
-        public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; }
+
+        public required ICollection<DoctorAvailability> DoctorAvailability { get; set; }
+        public ICollection<RequestAvailability> RequestAvailability { get; set; }
 
     }
 }

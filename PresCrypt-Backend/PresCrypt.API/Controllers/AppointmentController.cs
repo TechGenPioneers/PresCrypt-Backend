@@ -60,6 +60,26 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(appointment);
         }
 
+
+        [HttpGet("recent-by-doctor/{doctorId}")]
+        public async Task<IActionResult> GetRecentAppointmentsByDoctor(string doctorId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(doctorId))
+                    return BadRequest("Doctor ID is required");
+
+                var appointments = await _appointmentService.GetRecentAppointmentsByDoctorAsync(doctorId);
+
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                // Include the actual error message in the response
+                return StatusCode(500, $"An error occurred while fetching recent appointments: {ex.Message}");
+            }
+        }
+
         [HttpPost("count-by-dates")]
         public async Task<IActionResult> GetAppointmentCounts([FromBody] AppointmentCountDto request)
         {
@@ -73,8 +93,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(formattedCounts);
         }
-
-
         [HttpGet("patient/{patientId}")]
         public async Task<ActionResult<List<PatientAppointmentListDto>>> GetAppointmentsByPatientId(string patientId)
         {
@@ -84,10 +102,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(result);
         }
-
-
-
-
 
     }
 }

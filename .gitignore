@@ -102,6 +102,7 @@ StyleCopReport.xml
 *.nuget.targets
 
 
+
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
@@ -140,3 +141,23 @@ project.nuget.cache
 /obj
 
 
+
+
+# NuGet-generated files
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
+project.assets.json
+project.nuget.cache
+/obj
+
+
+
+
+# NuGet-generated files
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
+project.assets.json
+project.nuget.cache
+/obj
