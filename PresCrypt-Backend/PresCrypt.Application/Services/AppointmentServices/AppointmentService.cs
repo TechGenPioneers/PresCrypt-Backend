@@ -154,6 +154,24 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             return result;
         }
 
+        public async Task<List<PatientAppointmentListDto>> GetAppointmentsByPatientIdAsync(string patientId)
+        {
+            return await _context.Appointments
+                .Where(a => a.PatientId == patientId)
+                .Include(a => a.Doctor)
+                .Include(a => a.Hospital)
+                .Select(a => new PatientAppointmentListDto
+                {
+                    DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
+                    Specialization = a.Doctor.Specialization,
+                    HospitalName = a.Hospital.HospitalName,
+                    Time = a.Time,
+                    Date = a.Date,
+                    Status = a.Status
+                })
+                .ToListAsync();
+        }
+
 
 
     }

@@ -15,9 +15,13 @@ using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +31,7 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging(config =>
@@ -45,7 +50,7 @@ builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
-
+builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddHttpClient();
 
 
@@ -119,9 +124,11 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:3000") 
                   .AllowAnyMethod() 
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .AllowCredentials();
         });
 });
+
 
 var app = builder.Build();
 
@@ -140,6 +147,7 @@ if (app.Environment.IsDevelopment())
 // Middleware pipeline setup
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
+app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 app.UseCors("AllowFrontend");
 app.UseAuthentication(); // Authentication should come before Routing
 app.UseAuthorization(); // Authorization after authentication
