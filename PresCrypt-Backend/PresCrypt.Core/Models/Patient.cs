@@ -53,6 +53,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string? ResetToken { get; set; }
         public DateTime? ResetTokenExpiry { get; set; }
         public ICollection<Appointment> Appointments { get; set; }
-
+        public ICollection<PatientNotifications> Notifications { get; set; }
     }
 }

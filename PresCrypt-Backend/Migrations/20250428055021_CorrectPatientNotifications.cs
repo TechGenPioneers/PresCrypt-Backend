@@ -5,7 +5,7 @@
 namespace PresCrypt_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveDateTimeAutoOfPatient : Migration
+    public partial class CorrectPatientNotifications : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
