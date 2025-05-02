@@ -617,7 +617,7 @@ namespace PresCrypt_Backend.Migrations
                     b.Navigation("DoctorRequest");
 
                     b.Navigation("Hospital");
-                });
+                }));
 
             modelBuilder.Entity("Doctor", b =>
                 {
