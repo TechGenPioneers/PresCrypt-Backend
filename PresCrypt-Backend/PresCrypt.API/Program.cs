@@ -1,9 +1,8 @@
-
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +14,6 @@ using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
@@ -53,7 +51,6 @@ builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddHttpClient();
 
-
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration for JwtService
 
@@ -80,41 +77,13 @@ builder.Services.AddAuthentication("Bearer")
 // Register controllers for Dependency Injection
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
-builder.Services.AddScoped<AdminController>();
+//builder.Services.AddScoped<AdminController>();
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Set up Entity Framework DbContext with SQL Server
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Configure CORS to allow frontend access
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000") // Update this if frontend URL changes
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        });
-});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();  // ✅ Allow credentials if needed
-        });
-});
-
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -134,7 +103,7 @@ var app = builder.Build();
 
 
 // Apply CORS middleware
-app.UseCors("AllowLocalhost3000");
+app.UseCors("AllowReactApp");
 
 
 // Enable Swagger in Development environment
@@ -148,7 +117,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
-app.UseCors("AllowFrontend");
+
+
 app.UseAuthentication(); // Authentication should come before Routing
 app.UseAuthorization(); // Authorization after authentication
 app.UseRouting(); // Routing middleware after auth
