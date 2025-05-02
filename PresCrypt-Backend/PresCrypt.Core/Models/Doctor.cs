@@ -1,5 +1,6 @@
 ﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 
 public class Doctor
@@ -22,10 +23,9 @@ public class Doctor
     public byte[] DoctorImage { get; set; }
 
     [Required]
-    public string ContactNumber { get; set; }
-    [Required]
     [EmailAddress]
     public string Email { get; set; }
+
     [ForeignKey("Email")]
     public User User { get; set; }
 

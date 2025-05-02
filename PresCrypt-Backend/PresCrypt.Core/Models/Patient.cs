@@ -25,6 +25,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [ForeignKey("Email")]
         public User User { get; set; }
 
+        public string Gender { get; set; }
 
         public string? BloodGroup { get; set; }
 
@@ -43,7 +44,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public string PasswordHash { get; set; }
 
-        public bool Status { get; set; }  
+        public string Status { get; set; }  
 
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
