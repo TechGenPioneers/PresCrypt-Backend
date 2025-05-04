@@ -2,9 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PresCrypt_Backend.PresCrypt.API.Controllers;
 using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
@@ -47,6 +45,7 @@ builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
+//builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddHttpClient();
@@ -60,6 +59,8 @@ builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration fo
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        options.RequireHttpsMetadata = false; // Set to true in production
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -77,7 +78,7 @@ builder.Services.AddAuthentication("Bearer")
 // Register controllers for Dependency Injection
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
-//builder.Services.AddScoped<AdminController>();
+
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -114,7 +115,10 @@ if (app.Environment.IsDevelopment())
 }
 
 // Middleware pipeline setup
+app.UseHttpsRedirection();
+app.UseRouting();                // 🟢 First, define routing
 app.UseCors("AllowReactApp");
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 
