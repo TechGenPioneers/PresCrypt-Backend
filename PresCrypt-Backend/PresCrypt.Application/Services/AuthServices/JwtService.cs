@@ -28,7 +28,7 @@ public class JwtService : IJwtService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"])),
+            expires: DateTime.UtcNow.AddMinutes(5),
             signingCredentials: creds
         );
         Console.WriteLine($"Token Expiration: {token.ValidTo}");
