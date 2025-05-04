@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.12.0" />
     <Compile Remove="PresCrypt.Application\Services\NewFolder1\**" />
     <Content Remove="PresCrypt.Application\Services\NewFolder1\**" />
     <EmbeddedResource Remove="PresCrypt.Application\Services\NewFolder1\**" />
@@ -31,15 +32,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.11.0" />
+<!--     <PackageReference Include="MailKit" Version="4.11.0" /> -->
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -52,7 +53,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="7.3.1" />
@@ -61,6 +61,7 @@
 
   <ItemGroup>
     <Folder Include=".gitignore\" />
+    <Folder Include="Migrations\" />
     <Folder Include="PresCrypt.API\Middlewares\" />
     <Folder Include="PresCrypt.API\Filters\" />
     <Folder Include="PresCrypt.API\Configuration\" />
@@ -76,7 +77,6 @@
     <Folder Include="PresCrypt.Infrastructure\OpenMRSIntegration\" />
     <Folder Include="PresCrypt.Integration\PaymentGateway\" />
     <Folder Include="PresCrypt.Integration\OpenMRS\" />
-    <Folder Include="PresCrypt.Shared\Helpers\" />
     <Folder Include="PresCrypt.Shared\Constants\" />
     <Folder Include="PresCrypt.Shared\Extensions\" />
     <Folder Include="PresCrypt.Tests\ApplicationTests\" />

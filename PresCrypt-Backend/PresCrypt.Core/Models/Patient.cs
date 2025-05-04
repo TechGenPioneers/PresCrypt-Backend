@@ -27,6 +27,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [ForeignKey("Email")]
         public User User { get; set; }
 
+        public string Gender { get; set; }
 
         public string? BloodGroup { get; set; }
 
@@ -56,6 +57,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string? ResetToken { get; set; }
         public DateTime? ResetTokenExpiry { get; set; }
         public ICollection<Appointment> Appointments { get; set; }
-
+        public ICollection<PatientNotifications> Notifications { get; set; }
     }
 }

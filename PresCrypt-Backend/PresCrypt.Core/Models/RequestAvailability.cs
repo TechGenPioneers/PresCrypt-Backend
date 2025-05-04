@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
     public class RequestAvailability
-
     {
         [Key]
         public string AvailabilityRequestId { get; set; }
@@ -28,6 +27,5 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public Hospital Hospital { get; set; }
 
         public DoctorRequest DoctorRequest { get; set; }
-
     }
 }
