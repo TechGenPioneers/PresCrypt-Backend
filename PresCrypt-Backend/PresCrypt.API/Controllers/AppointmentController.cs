@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
 using System.Threading.Tasks;
 
