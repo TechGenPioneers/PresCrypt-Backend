@@ -49,6 +49,7 @@ builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
+builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
 builder.Services.AddHttpClient();
 
