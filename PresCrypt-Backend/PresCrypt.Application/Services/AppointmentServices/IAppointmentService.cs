@@ -14,6 +14,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates);
 
         Task<List<PatientAppointmentListDto>> GetAppointmentsByPatientIdAsync(string patientId);
+        Task<bool> DeleteAppointmentAsync(string appointmentId);
 
 
     }
