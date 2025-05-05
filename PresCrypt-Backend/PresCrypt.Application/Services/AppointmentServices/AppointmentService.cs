@@ -183,7 +183,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Include(a => a.Hospital)
                 .Select(a => new PatientAppointmentListDto
                 {
+                    AppointmentId = a.AppointmentId,
+                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                    PatientEmail = a.Patient.Email,
                     DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
+                    DoctorEmail= a.Doctor.Email,
                     Specialization = a.Doctor.Specialization,
                     HospitalName = a.Hospital.HospitalName,
                     Time = a.Time,
@@ -192,6 +196,18 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 })
                 .ToListAsync();
         }
+        public async Task<bool> DeleteAppointmentAsync(string appointmentId)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+
+            if (appointment == null)
+                return false;
+
+            _context.Appointments.Remove(appointment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
 
         public async Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId)
         {
@@ -208,7 +224,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 })
                 .Distinct()
                 .ToListAsync();
-
             return hospitals;
         }
 
