@@ -60,6 +60,26 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(appointment);
         }
 
+
+        [HttpGet("recent-by-doctor/{doctorId}")]
+        public async Task<IActionResult> GetRecentAppointmentsByDoctor(string doctorId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(doctorId))
+                    return BadRequest("Doctor ID is required");
+
+                var appointments = await _appointmentService.GetRecentAppointmentsByDoctorAsync(doctorId);
+
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                // Include the actual error message in the response
+                return StatusCode(500, $"An error occurred while fetching recent appointments: {ex.Message}");
+            }
+        }
+
         [HttpPost("count-by-dates")]
         public async Task<IActionResult> GetAppointmentCounts([FromBody] AppointmentCountDto request)
         {
@@ -74,7 +94,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(formattedCounts);
         }
 
-
         [HttpGet("patient/{patientId}")]
         public async Task<ActionResult<List<PatientAppointmentListDto>>> GetAppointmentsByPatientId(string patientId)
         {
@@ -85,6 +104,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(result);
         }
 
+        
+        [HttpGet("available-hospitals")]
+        public async Task<IActionResult> GetAvailableHospitals([FromQuery] string doctorId, [FromQuery] string date)
+        {
+            if (string.IsNullOrEmpty(doctorId) || string.IsNullOrEmpty(date))
+                return BadRequest("Doctor ID and date are required.");
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAppointment(string id)
@@ -98,7 +123,55 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
+            if (!DateTime.TryParse(date, out var parsedDate))
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
 
+            var hospitals = await _appointmentService.GetAvailableHospitalsByDateAsync(parsedDate, doctorId);
 
+            return Ok(hospitals);
+        }
+
+        [HttpPost("reschedule")]
+        public async Task<IActionResult> RescheduleAppointment([FromBody] AppointmentRescheduleDto dto)
+        {
+            try
+            {
+                var rescheduledCount = await _appointmentService.RescheduleAppointmentsAsync(dto);
+
+                return Ok(new
+                {
+                    success = true,
+                    rescheduledCount,
+                    message = $"Successfully rescheduled {rescheduledCount} appointments."
+                });
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("No upcoming appointments"))
+            {
+                return Ok(new
+                {
+                    success = true,
+                    rescheduledCount = 0,
+                    message = ex.Message
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorType = "ValidationError",
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    errorType = "ServerError",
+                    message = $"An error occurred: {ex.Message}"
+                });
+            }
+        }
     }
 }
