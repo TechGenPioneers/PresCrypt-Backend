@@ -173,7 +173,17 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
             return result;
         }
+        public async Task<bool> DeleteAppointmentAsync(string appointmentId)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
 
+            if (appointment == null)
+                return false;
+
+            _context.Appointments.Remove(appointment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
         public async Task<List<PatientAppointmentListDto>> GetAppointmentsByPatientIdAsync(string patientId)
         {
