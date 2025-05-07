@@ -193,7 +193,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Include(a => a.Hospital)
                 .Select(a => new PatientAppointmentListDto
                 {
+                    AppointmentId = a.AppointmentId,
+                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                    PatientEmail = a.Patient.Email,
                     DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
+                    DoctorEmail = a.Doctor.Email,
                     Specialization = a.Doctor.Specialization,
                     HospitalName = a.Hospital.HospitalName,
                     Time = a.Time,
