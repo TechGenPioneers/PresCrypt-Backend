@@ -12,6 +12,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.PatientPDFServices;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
@@ -50,6 +51,7 @@ builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
+builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
