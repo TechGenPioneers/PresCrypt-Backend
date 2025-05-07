@@ -50,5 +50,16 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
             return doctors;
         }
 
+        public async Task<List<string>> GetAllSpecializationsAsync()
+        {
+            return await _context.Doctor
+                .AsNoTracking()
+                .Where(d => !string.IsNullOrWhiteSpace(d.Specialization))
+                .Select(d => d.Specialization.Trim())
+                .Distinct()
+                .OrderBy(s => s)
+                .ToListAsync();
+        }
+
     }
 }

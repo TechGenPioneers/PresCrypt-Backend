@@ -94,6 +94,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         }
 
+        [HttpGet("specializations")]
+        public async Task<IActionResult> GetSpecializations()
+        {
+            var specializations = await _doctorServices.GetAllSpecializationsAsync();
+            return Ok(specializations);
+        }
+
 
     }
 
