@@ -742,23 +742,49 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             // Normalize email
             string emailLower = model.Email.Trim().ToLower();
 
-            // Check User table
+            // Find user
             var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
             if (user == null)
             {
                 return NotFound(new { message = "User not found." });
             }
 
-            // Generate a URL-safe token
+            // Generate a secure token
             user.ResetToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
             user.ResetTokenExpire = DateTime.UtcNow.AddHours(1);
             _applicationDbContext.SaveChanges();
 
-            // Send email with reset link
-            string resetLink = $"https://localhost:3000/reset-password?token={user.ResetToken}&email={model.Email}";
+            // Create reset password link (update if deployed)
+            string resetLink = $"http://localhost:3000/Auth/ResetPassword?token={user.ResetToken}&email={model.Email}";
 
-            await _emailService.SendEmailAsync(user.UserName, "Reset Password",
-                $"Click the link to reset your password: {resetLink}");
+            // Email content with HTML formatting
+            string emailBody = $@"
+        <div style='font-family: Arial, sans-serif; font-size: 15px; color: #333;'>
+            <h2>Password Reset Request</h2>
+            <p>Hi,</p>
+            <p>You recently requested to reset your password. Click the button below to proceed:</p>
+            <p>
+                <a href='{resetLink}' style='
+                    display: inline-block;
+                    padding: 10px 20px;
+                    color: white;
+                    background-color: #007BFF;
+                    text-decoration: none;
+                    border-radius: 5px;
+                '>Reset Password</a>
+            </p>
+            <p>This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
+            <br/>
+            <p>Thanks,<br/>Your App Team</p>
+        </div>
+    ";
+
+            // Send the email (assuming SendEmailAsync supports HTML)
+            await _emailService.SendEmailAsync(
+                user.UserName,
+                "Reset Your Password",
+                emailBody
+            );
 
             return Ok(new { message = "Password reset link sent to your email." });
         }
@@ -801,6 +827,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             // Remove token after reset
             user.ResetToken = null;
             user.ResetTokenExpire = null;
+            Console.WriteLine("Before: " + user.PasswordHash);
+            user.PasswordHash = _passwordHasher.HashPassword(null, model.NewPassword);
+            Console.WriteLine("After: " + user.PasswordHash);
+
 
             _applicationDbContext.SaveChanges();
 
