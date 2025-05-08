@@ -73,7 +73,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         DOB = d.DOB.ToString("yyyy-MM-dd"),
                         Gender = d.Gender,
                         Email = d.Email,
-                        BloodGroup = d.BloodGroup,
                         NIC = d.NIC,
                         ProfileImage = d.ProfileImage,
                         CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),

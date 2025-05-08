@@ -1,6 +1,9 @@
 ﻿using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
+using System.ComponentModel.DataAnnotations.Schema; 
+
 
 public class Doctor
 {
@@ -10,7 +13,7 @@ public class Doctor
 
     [Required]
     [MaxLength(100)]
-    public string FirstName{ get; set; }
+    public string FirstName { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -25,8 +28,12 @@ public class Doctor
     [EmailAddress]
     public string Email { get; set; }
 
+    [ForeignKey("Email")]
+    public User User { get; set; }
+
     [Required]
-    public string ContactNumber { get; set; } 
+    [Phone]
+    public string ContactNumber { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -50,7 +57,7 @@ public class Doctor
     public bool EmailVerified { get; set; }
 
     [Required]
-    public DateTime CreatedAt { get; set; } 
+    public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
 
