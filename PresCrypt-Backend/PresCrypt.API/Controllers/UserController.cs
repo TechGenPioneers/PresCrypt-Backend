@@ -834,9 +834,23 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         [HttpGet]
         [Route("GetAllHospitals")]
-        public IActionResult GetHospitals()
-        {
+        public IActionResult GetHospitals() { 
             return Ok(_applicationDbContext.Hospitals.ToList());
+        }
+     
+        [HttpPost]
+        [Route("logout")]
+        public IActionResult Logout()
+        {
+            // If using cookie authentication
+            Response.Cookies.Delete("authToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+
+            return Ok(new { message = "Logged out successfully" });
         }
 
     }
