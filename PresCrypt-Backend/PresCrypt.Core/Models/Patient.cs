@@ -41,19 +41,13 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
        
-
-
-        [Required]
-        public string PasswordHash { get; set; }
-
         public string Status { get; set; }  
 
         public DateTime? LastLogin { get; set; } // Nullable in case they haven't logged in
         [Required]
         public string ContactNo { get; set; }
 
-        public string? ResetToken { get; set; }
-        public DateTime? ResetTokenExpiry { get; set; }
+      
         public ICollection<Appointment> Appointments { get; set; }
         public ICollection<PatientNotifications> Notifications { get; set; }
     }

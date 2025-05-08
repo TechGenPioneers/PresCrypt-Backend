@@ -111,7 +111,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
-                        PasswordHash = hashedPassword
+                     
                     };
 
                     _applicationDbContext.Patient.Add(newPatient);
