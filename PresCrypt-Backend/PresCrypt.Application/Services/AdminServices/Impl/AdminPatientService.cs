@@ -73,7 +73,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         DOB = d.DOB.ToString("yyyy-MM-dd"),
                         Gender = d.Gender,
                         Email = d.Email,
-                        BloodGroup = d.BloodGroup,
                         NIC = d.NIC,
                         ProfileImage = d.ProfileImage,
                         CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -87,27 +86,27 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 {
 
                     var appointments = await (
-         from a in _context.Appointments
-         join d in _context.Doctor on a.DoctorId equals d.DoctorId
-         join h in _context.Hospitals on a.HospitalId equals h.HospitalId
-         where a.PatientId == patientId
-         select new AdminAllAppointmentsDto
-         {
-             AppointmentId = a.AppointmentId,
-             DoctorId = a.DoctorId,
-             DoctorName = d.FirstName + " " + d.LastName,
-             HospitalId = a.HospitalId,
-             HospitalName = h.HospitalName,
-             Date = a.Date.ToString("yyyy-MM-dd"),
-             Time = a.Time.ToString("HH:mm"),
-             Charge = a.Charge,
-             Status = a.Status,
-             SpecialNote = a.SpecialNote,
-             TypeOfAppointment = a.TypeOfAppointment,
-             CreatedAt = a.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-             UpdatedAt = a.UpdatedAt.HasValue ? a.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-         })
-         .ToListAsync();
+                       from a in _context.Appointments
+                        join d in _context.Doctor on a.DoctorId equals d.DoctorId
+                        join h in _context.Hospitals on a.HospitalId equals h.HospitalId
+                        where a.PatientId == patientId
+                        select new AdminAllAppointmentsDto
+                        {
+                          AppointmentId = a.AppointmentId,
+                          DoctorId = a.DoctorId,
+                           DoctorName = d.FirstName + " " + d.LastName,
+                           HospitalId = a.HospitalId,
+                           HospitalName = h.HospitalName,
+                           Date = a.Date.ToString("yyyy-MM-dd"),
+                            Time = a.Time.ToString("HH:mm"),
+                            Charge = a.Charge,
+                             Status = a.Status,
+                            SpecialNote = a.SpecialNote,
+                           TypeOfAppointment = a.TypeOfAppointment,
+                          CreatedAt = a.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                             UpdatedAt = a.UpdatedAt.HasValue ? a.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                          })
+                        .ToListAsync();
 
                     // Combine doctor details and availability
                     var patientAndAppointments = new AdminPatientAppointmentsDto()

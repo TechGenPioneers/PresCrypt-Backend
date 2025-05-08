@@ -14,13 +14,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId);  
 
         Task<List<PatientAppointmentListDto>> GetAppointmentsByPatientIdAsync(string patientId);
+        Task<bool> DeleteAppointmentAsync(string appointmentId);
         Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates);
-
         //for reschedule
         Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId);
         Task<int> RescheduleAppointmentsAsync(AppointmentRescheduleDto dto);
 
         Task CancelAppointmentAsync(string appointmentId, string patientId);
+
     }
 }
 

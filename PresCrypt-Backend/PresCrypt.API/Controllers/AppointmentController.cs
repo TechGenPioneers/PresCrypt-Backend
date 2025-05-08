@@ -115,13 +115,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             if (string.IsNullOrEmpty(doctorId) || string.IsNullOrEmpty(date))
                 return BadRequest("Doctor ID and date are required.");
 
-
             if (!DateTime.TryParse(date, out var parsedDate))
                 return BadRequest("Invalid date format. Use YYYY-MM-DD.");
 
             var hospitals = await _appointmentService.GetAvailableHospitalsByDateAsync(parsedDate, doctorId);
 
             return Ok(hospitals);
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAppointment(string id)
+        {
+            var result = await _appointmentService.DeleteAppointmentAsync(id);
+
+            if (!result)
+                return NotFound("Appointment not found");
+
+            return NoContent();
         }
 
         [HttpPost("reschedule")]
