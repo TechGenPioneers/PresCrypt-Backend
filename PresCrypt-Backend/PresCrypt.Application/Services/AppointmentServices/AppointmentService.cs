@@ -7,16 +7,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 {
     public class AppointmentService : IAppointmentService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<DoctorNotificationHub> _hubContext;
+        private readonly IDoctorNotificationService _doctorNotificationService;
+        private readonly ILogger<AppointmentService> _logger;
 
-        public AppointmentService(ApplicationDbContext context)
+        public AppointmentService(ApplicationDbContext context, IHubContext<DoctorNotificationHub> hubContext, IDoctorNotificationService doctorNotificationService)
         {
             _context = context;
+            _hubContext = hubContext;
+            _doctorNotificationService = doctorNotificationService;
         }
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null)
@@ -89,33 +97,94 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         public async Task<Appointment> CreateAppointmentAsync(AppointmentSave dto)
         {
+            // Validate the appointment
+            var doctorExists = await _context.Doctor.AnyAsync(d => d.DoctorId == dto.DoctorId);
+            if (!doctorExists)
+            {
+                throw new Exception("Doctor not found");
+            }
+
+            var patient = await _context.Patient
+                .Where(p => p.PatientId == dto.PatientId)
+                .Select(p => new { p.PatientId, p.FirstName, p.LastName, p.Email })
+                .FirstOrDefaultAsync();
+
+            if (patient == null)
+            {
+                throw new Exception("Patient not found");
+            }
+
+            // Create the appointment
             var appointment = dto.Adapt<Appointment>();
             appointment.CreatedAt = DateTime.UtcNow;
+            appointment.AppointmentId = Guid.NewGuid().ToString();
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            return appointment;
+            // Prepare notification details
+            var patientFullName = $"{patient.FirstName} {patient.LastName}";
+            var message = $"{patient.PatientId} {patientFullName} has booked an appointment on {appointment.Date:MMMM dd, yyyy} at {appointment.Time:h:mm tt}";
 
+            try
+            {
+                //call the notification service
+                await _doctorNotificationService.CreateAndSendNotificationAsync(
+                    dto.DoctorId,
+                    message,
+                    "New Appointment Booked",
+                    "Appointment"
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending or saving notification for appointment {AppointmentId}", appointment.AppointmentId);
+            }
+
+            return appointment;
         }
 
-        //public async Task CancelAppointmentAsync(string appointmentId)
-        //{
-        //    var appointment = await _context.Appointments.FindAsync(appointmentId);
-        //    if (appointment == null) throw new Exception("Appointment not found");
+        public async Task CancelAppointmentAsync(string appointmentId, string patientId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId
+                                      && a.PatientId == patientId);
 
-        //    var oldStatus = appointment.Status;
-        //    appointment.Status = "Cancelled";
-        //    appointment.UpdatedAt = DateTime.UtcNow;
+            if (appointment == null)
+                throw new Exception("Appointment not found or not owned by patient");
 
-        //    await _context.SaveChangesAsync();
+            if (appointment.Status == "Cancelled")
+                return;
 
-        //    // Only notify if status actually changed to cancelled
-        //    if (oldStatus != "Cancelled")
-        //    {
-        //        await _doctorNotificationService.NotifyCancelledAppointmentAsync(appointment);
-        //    }
-        //}
+            appointment.Status = "Cancelled";
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            try
+            {
+                // Notify doctor with patient details first
+                var doctorMessage = $"Patient ID: {appointment.PatientId}\n" +
+                                  $"Name: {appointment.Patient.FirstName} {appointment.Patient.LastName}\n" +
+                                  $"Cancelled appointment on {appointment.Date:MMMM dd, yyyy} at {appointment.Time:h:mm tt}\n" +
+                                  $"Original appointment ID: {appointmentId}";
+
+                await _doctorNotificationService.CreateAndSendNotificationAsync(
+                    appointment.DoctorId,
+                    doctorMessage,
+                    "APPOINTMENT CANCELLED",
+                    "Appointment"
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending cancellation notifications for appointment {AppointmentId}", appointmentId);
+                // Notification failure shouldn't fail the cancellation
+            }
+        }
+
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId)
         {

@@ -10,7 +10,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null);
         Task<Appointment> CreateAppointmentAsync(AppointmentSave dto);
 
-        Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId);   //for prescription page to get recent appointments
+        //for prescription page to get recent appointments
+        Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId);  
 
         Task<List<PatientAppointmentListDto>> GetAppointmentsByPatientIdAsync(string patientId);
         Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates);
@@ -19,8 +20,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId);
         Task<int> RescheduleAppointmentsAsync(AppointmentRescheduleDto dto);
 
-
+        Task CancelAppointmentAsync(string appointmentId, string patientId);
     }
-
 }
 

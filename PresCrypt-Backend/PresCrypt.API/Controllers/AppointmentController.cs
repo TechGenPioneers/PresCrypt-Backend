@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
 using System.Threading.Tasks;
 
@@ -11,10 +12,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
+        private readonly IDoctorNotificationService _doctorNotificationService;
+        private readonly ILogger<AppointmentsController> _logger;
 
-        public AppointmentsController(IAppointmentService appointmentService)
+        public AppointmentsController(IAppointmentService appointmentService, IDoctorNotificationService doctorNotificationService, ILogger<AppointmentsController> logger)
         {
             _appointmentService = appointmentService;
+            _logger = logger;
         }
 
         [HttpGet("by-doctor/{doctorId}")]
@@ -104,7 +108,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpGet("available-hospitals")]
         public async Task<IActionResult> GetAvailableHospitals([FromQuery] string doctorId, [FromQuery] string date)
         {
@@ -159,6 +163,49 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     success = false,
                     errorType = "ServerError",
                     message = $"An error occurred: {ex.Message}"
+                });
+            }
+        }
+
+        [HttpPost("{appointmentId}/cancel")]
+        public async Task<IActionResult> CancelAppointment(string appointmentId)
+        {
+            try
+            {
+                var patientId = User.Claims.FirstOrDefault(c => c.Type == "patientId")?.Value;
+
+                if (string.IsNullOrEmpty(patientId))
+                {
+                    return Unauthorized(new
+                    {
+                        Success = false,
+                        Message = "Patient authentication required",
+                        Code = "PATIENT_ID_MISSING"
+                    });
+                }
+
+                await _appointmentService.CancelAppointmentAsync(appointmentId, patientId);
+
+                _logger.LogInformation("Appointment cancelled - ID: {AppointmentId}, Patient: {PatientId}",
+                    appointmentId, patientId);
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Appointment cancelled successfully",
+                    Data = new { AppointmentId = appointmentId }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Appointment cancellation failed - ID: {AppointmentId}", appointmentId);
+
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Code = ex is InvalidOperationException ? "INVALID_OPERATION" : "CANCELLATION_FAILED",
+                    AppointmentId = appointmentId
                 });
             }
         }
