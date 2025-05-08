@@ -647,26 +647,26 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
         {
             try
             {
-                string cdnUrl = "https://raw.githubusercontent.com/TechGenPioneers/PresCrypt/dev/front-end/prescrypt/public/logo.png";
-                using (var httpClient = new HttpClient())
+                // Local file path to the logo
+                string localFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo.png");
+
+                // Read logo bytes from local file system
+                byte[] logoBytes = File.ReadAllBytes(localFilePath);
+                using (var ms = new MemoryStream(logoBytes))
                 {
-                    var logoBytes = await httpClient.GetByteArrayAsync(cdnUrl);
-                    using (var ms = new MemoryStream(logoBytes))
-                    {
-                        XImage logo = XImage.FromStream(() => ms);
+                    XImage logo = XImage.FromStream(() => ms);
 
-                        // Define logo dimensions
-                        double logoWidth = 100; // Fixed width
-                        double logoHeight = logo.PixelHeight * (logoWidth / logo.PixelWidth); // Maintain aspect ratio
+                    // Define logo dimensions
+                    double logoWidth = 100; // Fixed width
+                    double logoHeight = logo.PixelHeight * (logoWidth / logo.PixelWidth); // Maintain aspect ratio
 
-                        // Center horizontally
-                        double centerX = (page.Width - logoWidth) / 2;
+                    // Center horizontally
+                    double centerX = (page.Width - logoWidth) / 2;
 
-                        // Draw logo at top-center (Y position: 30)
-                        gfx.DrawImage(logo, centerX, 30, logoWidth, logoHeight);
+                    // Draw logo at top-center (Y position: 30)
+                    gfx.DrawImage(logo, centerX, 30, logoWidth, logoHeight);
 
-                        return logoHeight; // Return the actual height used
-                    }
+                    return logoHeight; // Return the actual height used
                 }
             }
             catch (Exception ex)
@@ -675,5 +675,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
                 return 0; // Return 0 if logo failed to load
             }
         }
+
     }
 }

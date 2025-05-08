@@ -17,6 +17,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmai
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microsoft.AspNetCore.SignalR;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
 //builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
+builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
@@ -90,6 +92,9 @@ var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
 
+// Add SignalR with detailed errors
+builder.Services.AddSignalR();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -103,12 +108,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-
 var app = builder.Build();
-
-
-// Apply CORS middleware
-app.UseCors("AllowReactApp");
 
 
 // Enable Swagger in Development environment
@@ -124,6 +124,7 @@ app.UseRouting();                // 🟢 First, define routing
 app.UseCors("AllowReactApp");
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 
 
