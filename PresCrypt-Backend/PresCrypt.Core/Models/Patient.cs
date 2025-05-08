@@ -18,8 +18,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public required string LastName { get; set; }
         [Required]
         public DateTime DOB { get; set; }
-        [Required]
-        public string Gender { get; set; }
+        
+        public string? Gender { get; set; }
 
         [Required]
         [EmailAddress]
@@ -34,7 +34,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [Required]
         public string Address { get; set; }    
-         public byte[] ProfileImage { get; set; }
+         public byte[]? ProfileImage { get; set; }
 
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

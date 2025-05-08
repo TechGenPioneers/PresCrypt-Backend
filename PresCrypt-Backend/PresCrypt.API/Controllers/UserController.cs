@@ -16,6 +16,9 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using Hospital = PresCrypt_Backend.PresCrypt.Core.Models.Hospital;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Cryptography;
+using System.Web;
+using static System.Net.WebRequestMethods;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -539,67 +542,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        //[HttpPost]
-        //[Route("Login")]
-        //public IActionResult Login([FromBody] LoginDTO loginDTO)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
-        //        {
-        //            return BadRequest(new { message = "Username and password are required." });
-        //        }
-
-        //        string inputUsername = loginDTO.Email.Trim().ToLower();
-
-        //        var user = _applicationDbContext.User
-        //            .FirstOrDefault(u => u.UserName.ToLower() == inputUsername);
-
-        //        if (user == null)
-        //        {
-        //            return BadRequest(new { success = false, message = "Invalid username or password." });
-        //        }
-
-        //        if (user.Role == "DoctorPending")
-        //        {
-        //            return BadRequest(new
-        //            {
-        //                success = false,
-        //                message = "Your doctor account is pending approval. Please wait for confirmation."
-        //            });
-        //        }
-
-        //        var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
-
-        //        if (result != PasswordVerificationResult.Success)
-        //        {
-        //            return BadRequest(new { success = false, message = "Invalid username or password." });
-        //        }
-
-        //        var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-
-        //        return Ok(new
-        //        {
-        //            success = true,
-        //            message = $"{user.Role} login successful",
-        //            token = token,
-        //            user = new
-        //            {
-        //                id = user.UserId,
-        //                username = user.UserName,
-        //                role = user.Role
-        //            }
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Login error: {ex.Message}", ex);
-        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
-        //    }
-        //}
         [HttpPost]
         [Route("Login")]
-        public IActionResult Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             try
             {
@@ -641,7 +586,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
                 if (result != PasswordVerificationResult.Success)
                 {
-                    // Update failed attempt count
                     user.FailedLoginAttempts += 1;
                     user.LastFailedLoginTime = DateTime.UtcNow;
                     _applicationDbContext.SaveChanges();
@@ -652,11 +596,40 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 // Reset failed attempts after successful login
                 user.FailedLoginAttempts = 0;
                 user.LastFailedLoginTime = null;
+
+                // 🔐 ADMIN ONLY 2FA
+                if (user.Role == "Admin")
+                {
+                    string code = new Random().Next(100000, 999999).ToString();
+                    user.TwoFactorCode = code;
+                    user.TwoFactorExpiry = DateTime.UtcNow.AddMinutes(5);
+                    await _applicationDbContext.SaveChangesAsync();
+
+                    string verifyUrl = $"http://localhost:3000/Auth/Verify2FA?email={Uri.EscapeDataString(user.UserName)}";
+                    string emailBody = $@"
+                        <p>Your 2FA code is: <strong>{code}</strong></p>
+                        <p>This code will expire in 5 minutes.</p>
+                        <p>Please <a href='{verifyUrl}'>click here to verify your 2FA code</a> or copy and paste this link into your browser:</p>
+                        
+                        <br/>
+                        <p>If you did not request this login, please ignore this email.</p>";
+
+
+                    await _emailService.SendEmailAsync(user.UserName, "Your Admin 2FA Code", emailBody);
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "2FA code sent to your email.",
+                        twoFactorRequired = true,
+                        email = user.UserName
+                    });
+                }
+
+                // For other roles, return token directly
+                var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
                 _applicationDbContext.SaveChanges();
 
-                var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-
-                // Log successful login
                 _logger.LogInformation($"Successful login for {user.UserName}");
 
                 return Ok(new
@@ -678,6 +651,39 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
             }
         }
+
+        [HttpPost]
+        [Route("Verify2FA")]
+        public IActionResult Verify2FA([FromBody] TwoFactorDTO model)
+        {
+            var user = _applicationDbContext.User.FirstOrDefault(u => u.UserName.ToLower() == model.Email.ToLower());
+
+            if (user == null || user.TwoFactorCode != model.Code || user.TwoFactorExpiry < DateTime.UtcNow)
+            {
+                return Unauthorized(new { message = "Invalid or expired 2FA code." });
+            }
+
+            // Clear the code after successful use
+            user.TwoFactorCode = null;
+            user.TwoFactorExpiry = null;
+            _applicationDbContext.SaveChanges();
+
+            var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+
+            return Ok(new
+            {
+                success = true,
+                message = "2FA verified successfully",
+                token = token,
+                user = new
+                {
+                    id = user.UserId,
+                    username = user.UserName,
+                    role = user.Role
+                }
+            });
+        }
+
 
 
 
@@ -701,7 +707,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        [Authorize(Roles = "Admin")]
+        
         [HttpGet]
         [Route("GetAllUsers")]
         public IActionResult GetUsers()
@@ -730,112 +736,102 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        [HttpPost]
-        [Route("ForgotPassword")]
+        [HttpPost("ForgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO model)
         {
-            if (string.IsNullOrEmpty(model.Email))
-            {
-                return BadRequest(new { message = "Email is required." });
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Normalize email
-            string emailLower = model.Email.Trim().ToLower();
+            // Normalize and find user
+            var normalizedEmail = model.Email.Trim().ToLower();
+            var user = await _applicationDbContext.User
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == normalizedEmail);
+
+            // Security: Always return success to prevent email enumeration
+            if (user == null)
+                return Ok(new { message = "If this email exists, a reset link was sent." });
+
+            // Generate cryptographically secure token
+            user.ResetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
+                .Replace('+', '-').Replace('/', '_').Replace("=", "");
+            user.ResetTokenExpire = DateTime.UtcNow.AddHours(1);
+
+            // Create secure reset link
+            string resetLink = $"http://localhost:3000/Auth/ResetPassword?" +
+                $"token={HttpUtility.UrlEncode(user.ResetToken)}&" +
+                $"email={HttpUtility.UrlEncode(user.UserName)}";
+
+            // Send email
+            await SendResetEmailAsync(user.UserName, resetLink);
+
+            await _applicationDbContext.SaveChangesAsync();
+            return Ok(new { message = "If this email exists, a reset link was sent." });
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
+        {
+       
+            if (string.IsNullOrWhiteSpace(model.Email))
+                return BadRequest("Email is required");
+
+            if (string.IsNullOrWhiteSpace(model.Token))
+                return BadRequest("Token is required");
+
+            if (string.IsNullOrWhiteSpace(model.NewPassword))
+                return BadRequest("NewPassword is required");
 
             // Find user
-            var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
-            if (user == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
+            var normalizedEmail = model.Email.Trim().ToLower();
+            var user = await _applicationDbContext.User
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == normalizedEmail);
 
-            // Generate a secure token
-            user.ResetToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-            user.ResetTokenExpire = DateTime.UtcNow.AddHours(1);
-            _applicationDbContext.SaveChanges();
+            // Validate token
+            if (user == null || user.ResetToken != model.Token)
+                return BadRequest(new { message = "Invalid token." });
 
-            // Create reset password link (update if deployed)
-            string resetLink = $"http://localhost:3000/Auth/ResetPassword?token={user.ResetToken}&email={model.Email}";
+            if (user.ResetTokenExpire < DateTime.UtcNow)
+                return BadRequest(new { message = "Token expired." });
 
-            // Email content with HTML formatting
+            // Update password
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
+            user.ResetToken = null;
+            user.ResetTokenExpire = null;
+
+            await _applicationDbContext.SaveChangesAsync();
+            return Ok(new { message = "Password reset successful." });
+        }
+
+        private async Task SendResetEmailAsync(string email, string resetLink)
+        {
             string emailBody = $@"
-        <div style='font-family: Arial, sans-serif; font-size: 15px; color: #333;'>
-            <h2>Password Reset Request</h2>
-            <p>Hi,</p>
-            <p>You recently requested to reset your password. Click the button below to proceed:</p>
-            <p>
-                <a href='{resetLink}' style='
-                    display: inline-block;
-                    padding: 10px 20px;
-                    color: white;
-                    background-color: #007BFF;
-                    text-decoration: none;
-                    border-radius: 5px;
-                '>Reset Password</a>
-            </p>
-            <p>This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
-            <br/>
-            <p>Thanks,<br/>Your App Team</p>
-        </div>
-    ";
+            <div style='font-family: Arial, sans-serif; font-size: 15px; color: #333;'>
+                <h2>Password Reset Request</h2>
+                <p>Hi,</p>
+                <p>You recently requested to reset your password. Click the button below to proceed:</p>
+                <p>
+                    <a href='{resetLink}' style='
+                        display: inline-block;
+                        padding: 10px 20px;
+                        color: white;
+                        background-color: #007b5e;
+                        text-decoration: none;
+                        border-radius: 5px;
+                    '>Reset Password</a>
+                </p>
+                <p>This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
+                <br/>
+                <p>Thanks,<br/>PresCrypt Team</p>
+            </div>";
 
-            // Send the email (assuming SendEmailAsync supports HTML)
             await _emailService.SendEmailAsync(
-                user.UserName,
+                email,
                 "Reset Your Password",
                 emailBody
             );
-
-            return Ok(new { message = "Password reset link sent to your email." });
         }
 
 
-        [HttpPost]
-        [Route("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
-        {
-            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Token) || string.IsNullOrWhiteSpace(model.NewPassword))
-            {
-                return BadRequest(new { message = "Email, token, and new password are required." });
-            }
-
-            // Normalize email
-            string emailLower = model.Email.Trim().ToLower();
-            var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName == emailLower);
-
-            if (user == null)
-            {
-                return BadRequest(new { message = "Invalid email or token." });
-            }
-
-            // Check if token is valid and not expired
-            if (user.ResetToken != model.Token || user.ResetTokenExpire < DateTime.UtcNow)
-            {
-                return BadRequest(new { message = "Invalid or expired reset token." });
-            }
-
-            // Validate new password
-            var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
-            if (!Regex.IsMatch(model.NewPassword, passwordPattern))
-            {
-                return BadRequest(new { message = "Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a digit, and a special character." });
-            }
-
-            // Hash and update password
-            user.PasswordHash = _passwordHasher.HashPassword(null, model.NewPassword);
-
-            // Remove token after reset
-            user.ResetToken = null;
-            user.ResetTokenExpire = null;
-            Console.WriteLine("Before: " + user.PasswordHash);
-            user.PasswordHash = _passwordHasher.HashPassword(null, model.NewPassword);
-            Console.WriteLine("After: " + user.PasswordHash);
-
-
-            _applicationDbContext.SaveChanges();
-
-            return Ok(new { message = "Password reset successful. You can now log in with your new password." });
-        }
         [HttpGet]
         [Route("GetAllHospitals")]
         public IActionResult GetHospitals()
