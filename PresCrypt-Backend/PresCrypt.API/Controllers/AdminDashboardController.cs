@@ -14,7 +14,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _adminDashboardService = adminDashboardService;
         }
 
-        [HttpGet]
+        [HttpGet ("GetAllData")]
         public async Task<IActionResult> GetDashboardData()
         {
             // Simulate fetching data from a service

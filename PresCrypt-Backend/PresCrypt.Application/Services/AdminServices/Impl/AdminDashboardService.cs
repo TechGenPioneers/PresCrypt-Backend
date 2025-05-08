@@ -26,9 +26,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 .AsEnumerable() // <-- switch to LINQ-to-Objects here
                 .Select(g => new AppointmentsOverTimeDto
                 {
-                    Day = g.Key.DayOfWeek.ToString(), 
+                    Day = g.Key.DayOfWeek.ToString().Substring(0, 3),
                     Total = g.Count(),
-                    Complete = g.Count(a => a.Status == "Complete"),
+                    Completed = g.Count(a => a.Status == "Complete"),
                     Missed = g.Count(a => a.Status == "Missed")
                 })
                 .OrderBy(a => a.Day)

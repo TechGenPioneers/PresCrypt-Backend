@@ -4,7 +4,7 @@
     {
         public string Day { get; set; }
         public int Total { get; set; }
-        public int Complete { get; set; }
+        public int Completed { get; set; }
         public int Missed { get; set; }
     }
 }
