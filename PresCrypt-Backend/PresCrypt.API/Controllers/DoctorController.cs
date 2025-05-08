@@ -102,6 +102,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
+        [HttpGet("doctors")]
+        
+        public async Task<IActionResult> GetAllDoctors()
+        {
+            var doctors = await _doctorServices.GetAllDoctor();
+            return Ok(doctors);
+
+        }
+
     }
 
 }

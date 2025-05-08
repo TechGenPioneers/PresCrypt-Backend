@@ -20,6 +20,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
 using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,6 +57,7 @@ builder.Services.AddScoped<DoctorReportService>();
 builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IEmailService, EmailService>();

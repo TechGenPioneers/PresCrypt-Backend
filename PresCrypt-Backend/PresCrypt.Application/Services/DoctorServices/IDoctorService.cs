@@ -4,5 +4,7 @@
     {
         Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName);
         Task<List<string>> GetAllSpecializationsAsync();
+
+        Task<List<string>> GetAllDoctor();
     }
 }

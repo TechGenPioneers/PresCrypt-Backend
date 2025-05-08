@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250508064856_removebloodgroup")]
+    partial class removebloodgroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,9 +170,6 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("PaymentId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("SpecialNote")
                         .HasColumnType("nvarchar(max)");
 
@@ -196,8 +196,6 @@ namespace PresCrypt_Backend.Migrations
                     b.HasIndex("HospitalId");
 
                     b.HasIndex("PatientId");
-
-                    b.HasIndex("PaymentId");
 
                     b.ToTable("Appointments");
                 });
@@ -445,27 +443,6 @@ namespace PresCrypt_Backend.Migrations
                     b.ToTable("PatientNotifications");
                 });
 
-            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Payment", b =>
-                {
-                    b.Property<string>("PaymentId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<double>("PaymentAmount")
-                        .HasColumnType("float");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("PaymentId");
-
-                    b.ToTable("Payments");
-                });
-
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.RequestAvailability", b =>
                 {
                     b.Property<string>("AvailabilityRequestId")
@@ -582,17 +559,11 @@ namespace PresCrypt_Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Payment", "Payment")
-                        .WithMany()
-                        .HasForeignKey("PaymentId");
-
                     b.Navigation("Doctor");
 
                     b.Navigation("Hospital");
 
                     b.Navigation("Patient");
-
-                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorAvailability", b =>

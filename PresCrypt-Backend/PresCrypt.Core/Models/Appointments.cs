@@ -57,5 +57,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        [ForeignKey(nameof(Payment))]
+        public string? PaymentId { get; set; }
+        public Payment? Payment { get; set; }
+
     }
 }

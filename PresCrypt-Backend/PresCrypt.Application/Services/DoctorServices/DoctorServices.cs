@@ -61,5 +61,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 .ToListAsync();
         }
 
+        public async Task<List<string>> GetAllDoctor()
+        {
+            return await _context.Doctor
+                .AsNoTracking()
+                .Select(d => d.FirstName + " " + d.LastName)
+                .Distinct()
+                .ToListAsync();
+        }
+
     }
 }
