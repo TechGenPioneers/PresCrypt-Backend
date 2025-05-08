@@ -7,5 +7,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
     {
         public Task<List<AdminAllPatientDto>> GetAllPatients();
         public Task<AdminPatientAppointmentsDto> GetPatientById(string patientId);
+        public Task<string> UpdatePatient(AdminUpdatePatientDto updatePatient);
     }
 }

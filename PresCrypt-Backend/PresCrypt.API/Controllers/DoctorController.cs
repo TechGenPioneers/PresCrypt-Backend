@@ -14,7 +14,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     [EnableCors("AllowReactApp")]
     public class DoctorController : ControllerBase
     {
-         private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly IDoctorService _doctorServices;
         public DoctorController(ApplicationDbContext context, IDoctorService doctorServices)
         {
@@ -83,7 +83,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [HttpGet("book/{doctorId}")]//for this I used mapster
         public async Task<ActionResult<List<DoctorBookingDto>>> GetDoctorBookedbyId(string doctorId)
         {
-            var doctor = (await _context.Doctor.FindAsync(doctorId));
+            var doctor = await _context.Doctor.FindAsync(doctorId);
             if (doctor is null)
             {
                 return NotFound();
@@ -93,76 +93,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(response);
 
         }
-        [HttpPost]
-        [Route("DoctorRegistration")]
-        public IActionResult DoctorRegistration(DoctorRegDTO doctorRegDTO)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var objUser = _context.Doctor.FirstOrDefault(x => x.Email == doctorRegDTO.Email);
-            if (objUser == null)
-            {
-                _ = _context.Doctor.Add(new Doctor
-                {
-                    DoctorId = Guid.NewGuid().ToString(),
-                    DoctorName = doctorRegDTO.DoctorName,
-                    Email = doctorRegDTO.Email,
-                    Specialization = doctorRegDTO.Specialization,
-                    SLMCRegId = doctorRegDTO.SLMCRegId,
-                    EmailVerified = false,
-                    PasswordHash = doctorRegDTO.Password,
-                    NIC = doctorRegDTO.NIC
-                });
-                _context.SaveChanges();
-                return Ok("Doctor Registered Successfully");
-            }
-            else
-            {
-                return BadRequest("Email Already Exists");
-            }
-        }
 
-        [HttpPost]
-        [Route("login")]
-        public IActionResult Login(LoginDTO doctorLoginDTO)
-        {
-            Doctor? objUser = _context.Doctor.FirstOrDefault(x => x.Email == doctorLoginDTO.Email);
-            if (objUser != null)
-            {
-                if (objUser.PasswordHash == doctorLoginDTO.Password)
-                {
-                    return Ok("Login Successful");
-                }
-                else
-                {
-                    return BadRequest("Invalid Password");
-                }
-            }
-            else
-            {
-                return BadRequest("Invalid Email");
-            }
-        }
-        [HttpGet]
-        [Route("GetDoctor")]
-        public IActionResult GetDoctor()
-        {
-            return Ok(_context.Doctor.ToList());
-        }
-
-        [HttpGet]
-        [Route("GetDoctorByID")]
-        public IActionResult GetDoctorById(string id)
-        {
-            var Doctor = _context.Doctor.FirstOrDefault(x => x.DoctorId == id);
-            if (Doctor == null)
-            {
-                return NotFound("Doctor not found");
-            }
-            return Ok(Doctor);
-        }
 
     }
+
 }

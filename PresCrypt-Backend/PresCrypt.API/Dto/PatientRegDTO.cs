@@ -7,8 +7,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
     public class PatientRegDTO
     {
         [Required]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
 
+        [Required] public string LastName { get; set; }
         [Required]
         [EmailAddress]
         public string Email { get; set; }
@@ -26,9 +27,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         [Required]
         [Phone]
         public string ContactNumber { get; set; }
+       
         [Required]
-        public string NIC { get; set; }
+        public string Address { get; set; }
+        [Required]
+        public DateTime DOB { get; set; }
 
-        public string BloodGroup { get; set; }
+
     }
 }

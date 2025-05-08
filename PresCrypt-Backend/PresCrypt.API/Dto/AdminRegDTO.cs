@@ -5,7 +5,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
     public class AdminRegDTO
     {
         [Required]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+        [Required] public string LastName { get; set; }
 
         [Required]
         [EmailAddress]
@@ -18,9 +19,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         [Required]
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
-        [Required]
-        public string Status { get; set; }
-        [Required]
-        public string Role { get; set; }
+       
+       
     }
 }
