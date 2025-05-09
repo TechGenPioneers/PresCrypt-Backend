@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<RequestAvailability> RequestAvailability { get; set; }
     public DbSet<PatientNotifications> PatientNotifications { get; set; }
     public DbSet<DoctorNotification> DoctorNotifications { get; set; }
+    public DbSet<AdminNotification> AdminNotifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
