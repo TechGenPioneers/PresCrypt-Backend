@@ -67,7 +67,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 Title = adminNotification.Title,
                 Message = adminNotification.Message,
                 IsRead = adminNotification.IsRead,
-                CreatedAt = adminNotification.CreatedAt
+                CreatedAt = adminNotification.CreatedAt.ToLocalTime()
             };
 
             _context.AdminNotifications.Add(notificationEntity);

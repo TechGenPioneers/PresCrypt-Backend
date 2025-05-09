@@ -53,6 +53,28 @@ public class ApplicationDbContext : DbContext
             .HasPrincipalKey(u => u.UserName)  // Link to UserName
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        // Cascade Delete
+        modelBuilder.Entity<AdminNotification>()
+            .HasOne(an => an.Doctor)
+            .WithMany()
+            .HasForeignKey(an => an.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cascade Delete
+        modelBuilder.Entity<AdminNotification>()
+            .HasOne(an => an.Patient)
+            .WithMany()
+            .HasForeignKey(an => an.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cascade Delete
+        modelBuilder.Entity<AdminNotification>()
+             .HasOne(an => an.DoctorRequest)
+             .WithMany()
+             .HasForeignKey(an => an.RequestId)
+             .OnDelete(DeleteBehavior.Cascade);
+
     }
 }
 

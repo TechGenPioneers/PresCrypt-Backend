@@ -111,7 +111,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             if(doctorId != null)
             {
                 var deleted = await _adminDoctorServices.deleteDoctorById(doctorId);
-                return Ok(deleted);
+                if(deleted== "Success")
+                {
+                    return Ok(deleted);
+                }
+                return BadRequest(deleted);
             }
             else
             {
