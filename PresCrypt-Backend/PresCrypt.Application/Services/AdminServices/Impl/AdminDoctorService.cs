@@ -8,6 +8,10 @@ using System.Diagnostics;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 using System.Linq;
 using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -17,11 +21,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         private readonly ApplicationDbContext _context;
         private readonly AdminDoctorUtil _adminDoctorUtil;
         private readonly IAdminDoctorRequestService _adminDoctorRequestService;
-        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil,IAdminDoctorRequestService adminDoctorRequestService)
+        private readonly IAdminDashboardService _adminDashboardService;
+
+        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil,IAdminDoctorRequestService adminDoctorRequestService, IAdminDashboardService adminDashboardService)
         {
             _context = context;
             _adminDoctorUtil = adminDoctorUtil;
             _adminDoctorRequestService = adminDoctorRequestService;
+            _adminDashboardService = adminDashboardService;
         }
         public async Task<List<HospitalDto>> getAllHospitals()
         {
@@ -142,6 +149,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     if (result > 0)
                     {
                         allResult = await _adminDoctorRequestService.ApprovRequest(newDoctorDto.Doctor.RequestID);
+
                     }
                     else
                     {
@@ -153,7 +161,28 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     if (result > 0)
                     {
                         allResult = "Success";
-                    }else
+
+                        // Prepare notification details
+                        var message = $"{newDoctorDto.Doctor.DoctorId} {newDoctorDto.Doctor.FirstName} {newDoctorDto.Doctor.LastName}  successfully registered.";
+                        var notificationDto = new AdminNotificationDto
+                        {
+                            DoctorId = newDoctorId,
+                            Message = message,
+                            Title = "New Doctor Registered",
+                            Type = "Alert"
+                        };
+
+                        try
+                        {
+                            //call the notification service
+                            await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                        }
+                        catch (Exception ex)
+                        {
+                            return $"Unexpected error: {ex.Message}";
+                        }
+                    }
+                    else
                     {
                         allResult = "Error";
                     }
@@ -309,16 +338,38 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
                 }
                 result =  await _context.SaveChangesAsync();
+                if (result>0)
+                {
+                    // Prepare notification details
+                    var message = $"{dto.Doctor.DoctorId} {dto.Doctor.FirstName} {dto.Doctor.LastName} details successfully updated by Admin.";
+                    var notificationDto = new AdminNotificationDto
+                    {
+                        DoctorId = dto.Doctor.DoctorId,
+                        Message = message,
+                        Title = "Doctor Updated",
+                        Type = "Alert"
+                    };
+
+                    try
+                    {
+                        //call the notification service
+                        await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Unexpected error: {ex.Message}";
+                    }
+                }
                 return result > 0 ? "Success" : "Error";
-    }
-    catch (DbUpdateException ex)
-    {
-        return $"Database update error: {ex.Message} \nStackTrace: {ex.StackTrace}";
-    }
-    catch (Exception e)
-    {
-        return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
-    }
+                 }
+                   catch (DbUpdateException ex)
+                 {
+                     return $"Database update error: {ex.Message} \nStackTrace: {ex.StackTrace}";
+                    }
+                    catch (Exception e)
+                     {
+                        return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+                     }
 }
 
         public async Task<string> deleteDoctorById(string doctorId)
@@ -339,24 +390,49 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     return "Doctor not found";
                 }
 
-                // Remove doctor from the database
-                _context.Doctor.Remove(doctor);
+                var fullName = $"{doctor.FirstName} {doctor.LastName}";
 
                 // Remove related doctor availability records
-                var doctorAvailabilities = _context.DoctorAvailability
-                    .Where(a => a.DoctorId == doctorId);
+                var doctorAvailabilities = await _context.DoctorAvailability
+                    .Where(a => a.DoctorId == doctorId)
+                    .ToListAsync();
+
                 _context.DoctorAvailability.RemoveRange(doctorAvailabilities);
+                _context.Doctor.Remove(doctor);
 
-                // Save changes
-                await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync();
 
-                return "Doctor deleted successfully";
+                if (result > 0)
+                {
+                    var message = $"{doctorId} {fullName} details successfully removed by Admin.";
+                    var notificationDto = new AdminNotificationDto
+                    {
+                        DoctorId = doctorId,
+                        Message = message,
+                        Title = "Doctor Removed",
+                        Type = "Alert"
+                    };
+
+                    try
+                    {
+                        await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Unexpected error: {ex.Message}";
+                    }
+
+                    return "Success";
+                }
+
+                return "No changes were saved";
             }
             catch (Exception e)
             {
-                return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+                return $"Unexpected error: {e.Message}";
             }
         }
+
 
     }
 }

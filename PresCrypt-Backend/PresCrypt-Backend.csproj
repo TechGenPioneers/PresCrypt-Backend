@@ -25,6 +25,7 @@
     <Content Remove="PresCrypt.Application\Services\NewFolder1\**" />
     <EmbeddedResource Remove="PresCrypt.Application\Services\NewFolder1\**" />
     <None Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <PackageReference Include="PdfSharpCore" Version="1.3.67" />
   </ItemGroup>
 
   <ItemGroup>

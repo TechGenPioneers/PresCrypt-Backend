@@ -24,6 +24,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
         [ForeignKey("Email")]
         public User User { get; set; }
 
@@ -31,6 +32,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         
         public string? NIC { get; set; }
+
 
         [Required]
         public string Address { get; set; }    

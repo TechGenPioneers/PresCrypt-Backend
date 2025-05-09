@@ -18,6 +18,8 @@ using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microsoft.AspNetCore.SignalR;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,12 @@ builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
 //builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
+builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
+builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
+builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
+builder.Services.AddScoped<DoctorReportService>();
+builder.Services.AddScoped<IAdminReportService, AdminReportService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
 builder.Services.AddHttpClient();
 
@@ -100,6 +108,8 @@ builder.Services.AddCors(options =>
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
+// Add SignalR with detailed errors
+builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
@@ -112,7 +122,6 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();  // ✅ Allow credentials if needed
         });
 });
-
 
 var app = builder.Build();
 
@@ -130,10 +139,17 @@ if (app.Environment.IsDevelopment())
 
 // Middleware pipeline setup
 app.UseHttpsRedirection();
-app.UseRouting();                // 🟢 First, define routing
+app.UseRouting();                
 app.UseCors("AllowReactApp");
-app.UseCors("AllowFrontend");// 🟢 CORS after routing
-app.UseAuthentication();         // 🟢 Then auth
-app.UseAuthorization();          // 🟢 Then authorization
-app.MapControllers();            // 🟢 Finally map endpoints
+app.UseCors("AllowFrontend");
+app.UseHttpsRedirection();
+app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
+app.MapHub<PatientNotificationHub>("/patientNotificationHub");
+app.MapHub<AdminNotificationHub>("/adminNotificationHub");
+
+
+app.UseAuthentication(); // Authentication should come before Routing
+app.UseAuthorization(); // Authorization after authentication
+app.UseRouting(); // Routing middleware after auth
+app.MapControllers(); // Map Controllers to Routes
 app.Run();
