@@ -5,13 +5,13 @@
 namespace PresCrypt_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class NICsetToNULL2 : Migration
+    public partial class AddGenderNull : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "NIC",
+                name: "Gender",
                 table: "Patient",
                 type: "nvarchar(max)",
                 nullable: true,
@@ -23,7 +23,7 @@ namespace PresCrypt_Backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "NIC",
+                name: "Gender",
                 table: "Patient",
                 type: "nvarchar(max)",
                 nullable: false,

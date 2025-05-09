@@ -5,7 +5,7 @@
 namespace PresCrypt_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class changeEmailVerfiedStatus : Migration
+    public partial class SetGendertoNull : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
