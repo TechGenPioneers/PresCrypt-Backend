@@ -127,6 +127,7 @@ app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
+app.MapHub<AdminNotificationHub>("/adminNotificationHub");
 
 
 app.UseAuthentication(); // Authentication should come before Routing
