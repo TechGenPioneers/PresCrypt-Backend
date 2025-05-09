@@ -576,11 +576,22 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
 
                 // Check for lockout
-                if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue &&
-                    user.LastFailedLoginTime.Value.AddMinutes(15) > DateTime.UtcNow)
+                // Check and reset if 15 minutes have passed since last failed attempt
+                if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue)
                 {
-                    return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
+                    if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
+                    {
+                        // Reset the lockout
+                        user.FailedLoginAttempts = 0;
+                        user.LastFailedLoginTime = null;
+                        await _applicationDbContext.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
+                    }
                 }
+
 
                 var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
 
@@ -588,7 +599,27 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 {
                     user.FailedLoginAttempts += 1;
                     user.LastFailedLoginTime = DateTime.UtcNow;
-                    _applicationDbContext.SaveChanges();
+                    if (user.FailedLoginAttempts == 4)
+                    {
+                        string emailBody = @"
+        <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+            <p>Dear user,</p>
+            
+            <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
+
+            <p>If you enter the wrong password one more time, your account will be <strong>temporarily locked</strong> for <strong>15 minutes</strong>.</p>
+            
+            <p>If this wasn't you, we recommend changing your password immediately or contacting support.</p>
+
+            <br/>
+            <p>Best regards,<br/>Security Team - PresCrypt</p>
+        </div>";
+
+                        await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Failed Login Attempts", emailBody);
+                    }
+
+
+                    await _applicationDbContext.SaveChangesAsync();
 
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
