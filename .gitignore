@@ -101,6 +101,8 @@ StyleCopReport.xml
 *.nuget.props
 *.nuget.targets
 
+
+
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
@@ -128,3 +130,34 @@ node_modules/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+# NuGet-generated files
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
+project.assets.json
+project.nuget.cache
+/obj
+
+
+
+
+# NuGet-generated files
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
+project.assets.json
+project.nuget.cache
+/obj
+
+
+
+
+# NuGet-generated files
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
+project.assets.json
+project.nuget.cache
+/obj

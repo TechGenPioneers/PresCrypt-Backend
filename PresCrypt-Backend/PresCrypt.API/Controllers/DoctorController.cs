@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
@@ -10,9 +11,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowReactApp")]
     public class DoctorController : ControllerBase
     {
-         private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly IDoctorService _doctorServices;
         public DoctorController(ApplicationDbContext context, IDoctorService doctorServices)
         {
@@ -81,7 +83,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [HttpGet("book/{doctorId}")]//for this I used mapster
         public async Task<ActionResult<List<DoctorBookingDto>>> GetDoctorBookedbyId(string doctorId)
         {
-            var doctor = (await _context.Doctors.FindAsync(doctorId));
+            var doctor = await _context.Doctor.FindAsync(doctorId);
             if (doctor is null)
             {
                 return NotFound();
@@ -94,4 +96,5 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
 
     }
+
 }

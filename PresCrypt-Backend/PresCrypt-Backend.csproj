@@ -5,11 +5,44 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PresCrypt_Backend</RootNamespace>
+    <UserSecretsId>df67fcff-4827-40dd-9e12-055b45cf62f3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <Content Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <EmbeddedResource Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <None Remove="PresCrypt.Application\Services\NewFolder1\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="PresCrypt.Application\Services\AdminServices.AdminDoctorService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.12.0" />
+    <Compile Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <Content Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <EmbeddedResource Remove="PresCrypt.Application\Services\NewFolder1\**" />
+    <None Remove="PresCrypt.Application\Services\NewFolder1\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="PresCrypt.Application\Services\AdminServices.AdminDoctorService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+<!--     <PackageReference Include="MailKit" Version="4.11.0" /> -->
     <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -19,7 +52,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="7.3.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,10 +77,8 @@
     <Folder Include="PresCrypt.Infrastructure\Abstractions\" />
     <Folder Include="PresCrypt.Infrastructure\Payments\" />
     <Folder Include="PresCrypt.Infrastructure\OpenMRSIntegration\" />
-    <Folder Include="PresCrypt.Infrastructure\Repositories\" />
     <Folder Include="PresCrypt.Integration\PaymentGateway\" />
     <Folder Include="PresCrypt.Integration\OpenMRS\" />
-    <Folder Include="PresCrypt.Shared\Helpers\" />
     <Folder Include="PresCrypt.Shared\Constants\" />
     <Folder Include="PresCrypt.Shared\Extensions\" />
     <Folder Include="PresCrypt.Tests\ApplicationTests\" />
