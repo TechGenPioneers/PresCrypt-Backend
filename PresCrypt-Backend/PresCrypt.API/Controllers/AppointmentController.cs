@@ -175,5 +175,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("Appointments/GetByDateRange")]
+        public async Task<IActionResult> GetAppointmentsByDateRange([FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate)
+        {
+            var appointments = await _appointmentService.GetAppointmentsByDateRangeAsync(startDate, endDate);
+            return Ok(appointments);
+        }
+
     }
 }

@@ -5,5 +5,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
     public interface IPDFService
     {
         byte[] GeneratePDF(AppointmentPDFDetailsDto details);
+        Task<byte[]> GeneratePdfAsync(List<PatientAppointmentListDto> appointments);
+
     }
 }

@@ -262,5 +262,29 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             await _context.SaveChangesAsync();
             return appointments.Count;
         }
+
+        public async Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate)
+        {
+            return await _context.Appointments
+                .Where(a => a.Date >= startDate && a.Date <= endDate)
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.Hospital)
+                .Select(a => new PatientAppointmentListDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                    PatientEmail = a.Patient.Email,
+                    DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
+                    DoctorEmail = a.Doctor.Email,
+                    Specialization = a.Doctor.Specialization,
+                    HospitalName = a.Hospital.HospitalName,
+                    Time = a.Time,
+                    Date = a.Date,
+                    Status = a.Status
+                })
+                .ToListAsync();
+        }
+
     }
 }

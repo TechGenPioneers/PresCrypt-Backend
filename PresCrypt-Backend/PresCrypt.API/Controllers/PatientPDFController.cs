@@ -16,12 +16,22 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _pdfService = pdfService;
         }
 
-        [HttpGet("generate")]
+        [HttpPost("generate")]
         public IActionResult GeneratePDF([FromBody] AppointmentPDFDetailsDto details)
         {
             var pdf = _pdfService.GeneratePDF(details);
             return File(pdf, "application/pdf", "PatientReport.pdf");
         }
 
+        [HttpPost("Reports/Generate")]
+        public async Task<IActionResult> GeneratePdf([FromBody] List<PatientAppointmentListDto> appointments)
+        {
+            if (appointments == null || !appointments.Any())
+                return BadRequest("No data to generate PDF");
+
+            var pdfBytes = await _pdfService.GeneratePdfAsync(appointments);
+
+            return File(pdfBytes, "application/pdf", "AppointmentReport.pdf");
+        }
     }
 }
