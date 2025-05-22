@@ -33,15 +33,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest("Doctor and availability details are required.");
             }
 
-            //Debug.WriteLine(newDoctor.Doctor);
-
-            //foreach (var slot in newDoctor.Availability)
-            //{
-            //    Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
-            //}
-
             var savedDoctor = await _adminDoctorServices.SaveDoctor(newDoctor);
-            //Debug.WriteLine($"save : {savedDoctor}");
 
             if (savedDoctor == "Success")
             {
@@ -53,6 +45,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        //update doctor
         [HttpPatch]
         public async Task<IActionResult> UpdateDoctor([FromBody] DoctorAvailabilityDto updatedDoctor)
         {
@@ -105,6 +98,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         }
 
+        //delete Doctor by id
         [HttpDelete ("{doctorId}")]
         public async Task<IActionResult> deleteDoctorById(string doctorId)
         {
