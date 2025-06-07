@@ -30,9 +30,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly ILogger<UserController> _logger;
         private readonly IEmailService _emailService;
-       
+
         private readonly IJwtService _jwtService;
-     
+
 
 
 
@@ -111,7 +111,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
-                     
+
                     };
 
                     _applicationDbContext.Patient.Add(newPatient);
@@ -604,11 +604,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         string emailBody = @"
         <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
             <p>Dear user,</p>
-            
+
             <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
 
             <p>If you enter the wrong password one more time, your account will be <strong>temporarily locked</strong> for <strong>15 minutes</strong>.</p>
-            
+
             <p>If this wasn't you, we recommend changing your password immediately or contacting support.</p>
 
             <br/>
@@ -641,7 +641,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         <p>Your 2FA code is: <strong>{code}</strong></p>
                         <p>This code will expire in 5 minutes.</p>
                         <p>Please <a href='{verifyUrl}'>click here to verify your 2FA code</a> or copy and paste this link into your browser:</p>
-                        
+
                         <br/>
                         <p>If you did not request this login, please ignore this email.</p>";
 
@@ -659,8 +659,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
                 // For other roles, return token directly
                 var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-                _applicationDbContext.SaveChanges();
+                Response.Cookies.Append("authToken", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false, // Set to true in production with HTTPS
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
 
+                await _applicationDbContext.SaveChangesAsync();
                 _logger.LogInformation($"Successful login for {user.UserName}");
 
                 return Ok(new
@@ -697,9 +704,16 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             // Clear the code after successful use
             user.TwoFactorCode = null;
             user.TwoFactorExpiry = null;
-            _applicationDbContext.SaveChanges();
-
             var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+            Response.Cookies.Append("authToken", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false, // Set to true in production
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            _applicationDbContext.SaveChanges();
 
             return Ok(new
             {
@@ -738,7 +752,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        
+
         [HttpGet]
         [Route("GetAllUsers")]
         public IActionResult GetUsers()
@@ -802,7 +816,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
         {
-       
+
             if (string.IsNullOrWhiteSpace(model.Email))
                 return BadRequest("Email is required");
 
@@ -861,14 +875,27 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 emailBody
             );
         }
+        [HttpGet]
+        [Route("GetUserRole")]
+        [Authorize]
+        public IActionResult GetUserRole()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(role))
+            {
+                return Unauthorized(new { message = "Role not found." });
+            }
+            return Ok(new { role });
+        }
 
 
         [HttpGet]
         [Route("GetAllHospitals")]
-        public IActionResult GetHospitals() { 
+        public IActionResult GetHospitals()
+        {
             return Ok(_applicationDbContext.Hospitals.ToList());
         }
-     
+
         [HttpPost]
         [Route("logout")]
         public IActionResult Logout()
