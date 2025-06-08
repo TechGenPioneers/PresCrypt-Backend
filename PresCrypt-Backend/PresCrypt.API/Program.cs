@@ -10,8 +10,10 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
+//using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
 
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 //using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
@@ -36,12 +38,12 @@ builder.Services.AddLogging(config =>
     config.AddConsole();
 });
 
-
+builder.Services.AddLogging();
 // Register services
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
-builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
+//builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
@@ -60,6 +62,9 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration for JwtService
+
+//builder.Services.AddScoped<IAgoraTokenService, AgoraTokenService>();
+
 
 
 
