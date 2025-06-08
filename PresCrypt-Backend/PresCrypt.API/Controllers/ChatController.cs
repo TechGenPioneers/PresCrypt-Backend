@@ -84,5 +84,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteMessage(string messageId)
+        {
+            if(messageId == null)
+            {
+                return BadRequest();
+            }
+            await _chatServices.DeleteMessage(messageId);
+            return Ok("Deleted");
+        }
     }
 }

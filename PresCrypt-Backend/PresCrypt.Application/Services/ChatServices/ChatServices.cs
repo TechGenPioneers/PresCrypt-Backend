@@ -106,7 +106,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
         public async Task MarkMessagesAsRead(string senderId, string receiverId)
         {
             var unreadMessages = await _context.Messages
-                .Where(m => m.SenderId == senderId && m.ReceiverId == receiverId && !m.IsRead)
+                .Where(m => m.SenderId == receiverId && m.ReceiverId == senderId && !m.IsRead)
                 .ToListAsync();
 
             if (unreadMessages.Any())
@@ -153,12 +153,26 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                                 (m.SenderId == patientId && m.ReceiverId == senderId) ||
                                 (m.SenderId == senderId && m.ReceiverId == patientId))
                             .OrderByDescending(m => m.SendAt)
-                            .Select(m => m.Text)
+                            .Select(m => new
+                            {
+                                m.Text,
+                                m.IsRead,
+                                m.SenderId,
+                                m.SendAt
+                            })
                             .FirstOrDefaultAsync();
 
-                        patient.LastMessage = lastMessage;
+                        if (lastMessage != null)
+                        {
+                            patient.LastMessage = lastMessage.Text;
+                            patient.IsRead = lastMessage.IsRead;
+                            patient.LastMessageSenderId=lastMessage.SenderId;
+                            patient.SendAt=lastMessage.SendAt;
+                        }
+
                         chatUsers.Add(patient);
                     }
+
                 }
 
             }
@@ -190,12 +204,26 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                                 (m.SenderId == doctorId && m.ReceiverId == senderId) ||
                                 (m.SenderId == senderId && m.ReceiverId == doctorId))
                             .OrderByDescending(m => m.SendAt)
-                            .Select(m => m.Text)
+                            .Select(m => new
+                            {
+                                m.Text,
+                                m.IsRead,
+                                m.SenderId,
+                                m.SendAt
+                            })
                             .FirstOrDefaultAsync();
 
-                        doctor.LastMessage = lastMessage;
+                        if (lastMessage != null)
+                        {
+                            doctor.LastMessage = lastMessage.Text;
+                            doctor.IsRead = lastMessage.IsRead;
+                            doctor.LastMessageSenderId=lastMessage.SenderId;
+                            doctor.SendAt=lastMessage.SendAt;
+                        }
+
                         chatUsers.Add(doctor);
                     }
+
                 }
 
             }
@@ -204,6 +232,16 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
             return chatUsers;
         }
 
+        public async Task DeleteMessage(string messageId)
+        {
+            var message = await _context.Messages.FindAsync(messageId);
+
+            if (message != null)
+            {
+                _context.Messages.Remove(message);
+                await _context.SaveChangesAsync();
+            }
+        }
 
 
     }
