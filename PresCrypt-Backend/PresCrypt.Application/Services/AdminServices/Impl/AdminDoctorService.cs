@@ -407,7 +407,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     var message = $"{doctorId} {fullName} details successfully removed by Admin.";
                     var notificationDto = new AdminNotificationDto
                     {
-                        DoctorId = doctorId,
                         Message = message,
                         Title = "Doctor Removed",
                         Type = "Alert"
