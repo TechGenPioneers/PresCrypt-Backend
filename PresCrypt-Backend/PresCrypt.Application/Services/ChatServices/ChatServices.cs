@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections.Generic;
 
@@ -8,9 +10,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
     public class ChatServices : IChatServices
     {
         private readonly ApplicationDbContext _context;
-        public ChatServices(ApplicationDbContext context)
+        private readonly IHubContext<ChatHub> _hubContext;
+        public ChatServices(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
         public async Task<List<ChatDto>> GetAllMessages(string senderId, string receiverId)
         {
@@ -24,8 +28,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                     Id = m.Id,
                     SenderId = m.SenderId,
                     ReceiverId = m.ReceiverId,
-                    SenderType = m.SenderType,
-                    ReceiverType = m.ReceiverType,
                     Text = m.Text,
                     Image = m.Image,
                     SendAt = m.SendAt,
@@ -41,33 +43,13 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
 
         public async Task SendMessage(ChatDto chatDto)
         {
-            // Infer sender type
-            if (chatDto.SenderId.StartsWith("D"))
-            {
-                chatDto.SenderType = "Doctor";
-            }
-            else if (chatDto.SenderId.StartsWith("P"))
-            {
-                chatDto.SenderType = "Patient";
-            }
-
-            // Infer receiver type
-            if (chatDto.ReceiverId.StartsWith("D"))
-            {
-                chatDto.ReceiverType = "Doctor";
-            }
-            else if (chatDto.ReceiverId.StartsWith("P"))
-            {
-                chatDto.ReceiverType = "Patient";
-            }
+           
 
             var message = new Message
             {
                 Id = Guid.NewGuid().ToString(),
                 SenderId = chatDto.SenderId,
-                SenderType = chatDto.SenderType,
                 ReceiverId = chatDto.ReceiverId,
-                ReceiverType = chatDto.ReceiverType,
                 Text = chatDto.Text,
                 Image = chatDto.Image,
                 SendAt = DateTime.Now,
@@ -90,8 +72,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                 {
                     SenderId = m.SenderId,
                     ReceiverId = m.ReceiverId,
-                    SenderType = m.SenderType,
-                    ReceiverType = m.ReceiverType,
                     Text = m.Text,
                     Image = m.Image,
                     SendAt = m.SendAt,
@@ -117,8 +97,20 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                 }
 
                 await _context.SaveChangesAsync();
+
+                var readMessageIds = unreadMessages.Select(m => m.Id).ToList();
+
+                // Notify receiver (the user who received the messages) about which messages were marked read
+                await _hubContext.Clients.Group(receiverId)
+                    .SendAsync("MessageRead", new
+                    {
+                        SenderId = senderId,
+                        MessageIds = readMessageIds
+                    });
             }
         }
+
+
 
         public async Task<List<ChatUsersDto>> GetAllUsers(string senderId)
         {
@@ -241,6 +233,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                 _context.Messages.Remove(message);
                 await _context.SaveChangesAsync();
             }
+
+            // Notify both sender and receiver
+            await _hubContext.Clients.Group(message.SenderId.ToString())
+                .SendAsync("MessageDeleted", messageId);
+            await _hubContext.Clients.Group(message.ReceiverId.ToString())
+                .SendAsync("MessageDeleted", messageId);
         }
 
 

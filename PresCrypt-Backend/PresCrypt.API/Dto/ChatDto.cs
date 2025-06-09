@@ -6,9 +6,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
     {
         public string? Id { get; set; }
         public string SenderId { get; set; }
-        public string? SenderType { get; set; }
         public string ReceiverId { get; set; }
-        public string? ReceiverType { get; set; }
         public string Text { get; set; }
         public byte[]? Image { get; set; }
         public DateTime? SendAt { get; set; }

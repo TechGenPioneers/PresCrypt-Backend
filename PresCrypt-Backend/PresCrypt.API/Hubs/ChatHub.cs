@@ -5,6 +5,10 @@ using System.Security.Claims;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using PresCrypt_Backend.PresCrypt.API.Dto;
+using Microsoft.EntityFrameworkCore;
+using MimeKit;
+using PresCrypt_Backend.Migrations;
 
 namespace PresCrypt_Backend.PresCrypt.API.Hubs
 {
@@ -17,7 +21,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Hubs
         {
             _context = context;
         }
+        public async Task JoinGroup(string userId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+        }
 
+        public async Task LeaveGroup(string userId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+        }
         public override async Task OnConnectedAsync()
         {
             // Try get user ID from claims
@@ -66,82 +78,98 @@ namespace PresCrypt_Backend.PresCrypt.API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendMessage(
-            string senderId,
-            string senderType,
-            string receiverId,
-            string receiverType,
-            string text,
-            byte[]? image = null)
+        public async Task SendMessage(ChatDto chatDto)
         {
-            // Optional: Validate senderId matches the current user to prevent spoofing
-            var currentUserId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (senderId != currentUserId)
+            if (chatDto == null || string.IsNullOrEmpty(chatDto.SenderId) || string.IsNullOrEmpty(chatDto.ReceiverId))
             {
-                throw new HubException("Unauthorized senderId");
+                throw new ArgumentException("Invalid chat data.");
             }
 
             var message = new Message
             {
                 Id = Guid.NewGuid().ToString(),
-                SenderId = senderId,
-                SenderType = senderType,
-                ReceiverId = receiverId,
-                ReceiverType = receiverType,
-                Text = text,
-                Image = image,
-                SendAt = DateTime.UtcNow,
+                SenderId = chatDto.SenderId,
+                ReceiverId = chatDto.ReceiverId,
+                Text = chatDto.Text,
+                Image = chatDto.Image,
+                SendAt = DateTime.Now,
                 IsReceived = false,
                 IsRead = false
             };
 
-            // Save message to DB
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
-
-            // Deliver message to receiver group
-            await Clients.Group(receiverId).SendAsync("ReceiveMessage", new
+            try
             {
-                message.Id,
-                message.SenderId,
-                message.SenderType,
-                message.ReceiverId,
-                message.ReceiverType,
-                message.Text,
-                message.Image,
-                message.SendAt
-            });
-
-            // Mark message as received
-            message.IsReceived = true;
-            _context.Messages.Update(message);
-            await _context.SaveChangesAsync();
-
-            // Optional: send confirmation to sender
-            await Clients.Caller.SendAsync("MessageSent", new
-            {
-                message.Id,
-                message.IsReceived
-            });
-        }
-
-        public async Task MarkAsRead(string messageId)
-        {
-            var message = await _context.Messages.FindAsync(messageId);
-            if (message != null)
-            {
-                message.IsRead = true;
-                _context.Messages.Update(message);
+                _context.Messages.Add(message);
                 await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Database error: " + ex.Message);
+                throw;
+            }
 
-                // Notify sender about message read
-                await Clients.Group(message.SenderId).SendAsync("MessageRead", new
+            try
+            {
+                await Clients.Group(chatDto.ReceiverId).SendAsync("ReceiveMessage", new
                 {
-                    messageId = message.Id,
-                    readerId = message.ReceiverId,
-                    timestamp = DateTime.UtcNow
+                    message.Id,
+                    message.SenderId,
+                    message.ReceiverId,
+                    message.Text,
+                    message.Image,
+                    SendAt = message.SendAt.ToString("o")
                 });
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("SignalR send error: " + ex.Message);
+                throw;
+            }
+
+            message.IsReceived = true;
+
+            try
+            {
+                _context.Messages.Update(message);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Database update error: " + ex.Message);
+            }
+
+            try
+            {
+                await Clients.Caller.SendAsync("MessageSent", new
+                {
+                    message.Id,
+                    message.IsReceived
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("SignalR confirmation send error: " + ex.Message);
+            }
         }
+
+
+        public async Task MarkAsRead(string senderId, string messageId)
+        {
+            // Notify sender group that this particular messageId has been read
+            await Clients.Group(senderId).SendAsync("MessageRead", new
+            {
+                MessageIds = new List<string> { messageId }
+            });
+        }
+
+
+        public async Task NotifyMessageDeleted(string userId, string messageId)
+            {
+                await Clients.Group(userId).SendAsync("MessageDeleted", messageId);
+            }
+        
+
+
+
     }
 }

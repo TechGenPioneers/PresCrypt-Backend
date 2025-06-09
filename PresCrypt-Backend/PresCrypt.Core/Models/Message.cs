@@ -9,14 +9,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string Id { get; set; } 
 
         [Required]
-        public string SenderId { get; set; }  
-        [Required]
-        public string SenderType { get; set; } 
+        public string SenderId { get; set; }
 
         [Required]
         public string ReceiverId { get; set; }
-        [Required]
-        public string ReceiverType { get; set; } 
 
         public string Text { get; set; }
         public byte[]? Image { get; set; }
