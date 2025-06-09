@@ -2,6 +2,7 @@
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using System;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
@@ -15,6 +16,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         public AppointmentsController(IAppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
+
         }
 
         [HttpGet("by-doctor/{doctorId}")]
@@ -104,7 +106,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpGet("available-hospitals")]
         public async Task<IActionResult> GetAvailableHospitals([FromQuery] string doctorId, [FromQuery] string date)
         {
@@ -182,6 +184,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var appointments = await _appointmentService.GetAppointmentsByDateRangeAsync(startDate, endDate);
             return Ok(appointments);
         }
+
+
+
 
     }
 }

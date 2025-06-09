@@ -4,7 +4,7 @@ using PresCrypt_Backend.PresCrypt.Core.Models;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
-    [Route("api/Controller")]
+    [Route("api/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
@@ -15,7 +15,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _paymentService = paymentService;
         }
 
-        [HttpPost("payment/add")]
+        [HttpPost("add")]
         
         public async Task<IActionResult> AddPayment([FromBody] Payment payment)
         {

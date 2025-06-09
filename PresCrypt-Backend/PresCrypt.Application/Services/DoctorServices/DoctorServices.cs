@@ -39,6 +39,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 .Select(dh => new DoctorSearchDto
                 {
                     DoctorId = dh.doctor.DoctorId,
+                    HospitalId= dh.hospital.HospitalId,
                     FirstName = dh.doctor.FirstName,
                     LastName = dh.doctor.LastName,
                     AvailableDay = new List<string> { dh.availability.AvailableDay },
@@ -53,7 +54,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
         public async Task<List<string>> GetAllSpecializationsAsync()
         {
             return await _context.Doctor
-                .AsNoTracking()
+                .AsNoTracking()//uses not to track object by .net
                 .Where(d => !string.IsNullOrWhiteSpace(d.Specialization))
                 .Select(d => d.Specialization.Trim())
                 .Distinct()
@@ -68,6 +69,30 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 .Select(d => d.FirstName + " " + d.LastName)
                 .Distinct()
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName)
+        {
+            if (string.IsNullOrWhiteSpace(doctorName))
+                return Enumerable.Empty<object>();
+
+            var lowerName = doctorName.ToLower();
+
+            var data = await _context.Doctor
+                .Where(d => (d.FirstName + " " + d.LastName).ToLower().Contains(lowerName))
+                .Include(d => d.Availabilities)
+                    .ThenInclude(a => a.Hospital)
+                .SelectMany(d => d.Availabilities.Select(a => new
+                {
+                    DoctorName = d.FirstName + " " + d.LastName,
+                    a.AvailableDay,
+                    a.AvailableStartTime,
+                    a.AvailableEndTime,
+                    HospitalName = a.Hospital.HospitalName
+                }))
+                .ToListAsync();
+
+            return data;
         }
 
     }

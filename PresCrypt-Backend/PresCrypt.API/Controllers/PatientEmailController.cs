@@ -19,7 +19,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         [HttpPost]
-
         public IActionResult SendEmail(PatientAppointmentEmailDto request)
         {
 

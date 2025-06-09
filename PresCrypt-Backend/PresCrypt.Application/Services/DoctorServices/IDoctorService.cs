@@ -6,5 +6,7 @@
         Task<List<string>> GetAllSpecializationsAsync();
 
         Task<List<string>> GetAllDoctor();
+
+        Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName);
     }
 }

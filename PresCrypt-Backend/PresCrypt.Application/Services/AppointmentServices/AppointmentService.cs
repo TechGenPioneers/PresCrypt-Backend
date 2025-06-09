@@ -99,29 +99,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         }
 
-        //public async Task CancelAppointmentAsync(string appointmentId)
-        //{
-        //    var appointment = await _context.Appointments.FindAsync(appointmentId);
-        //    if (appointment == null) throw new Exception("Appointment not found");
-
-        //    var oldStatus = appointment.Status;
-        //    appointment.Status = "Cancelled";
-        //    appointment.UpdatedAt = DateTime.UtcNow;
-
-        //    await _context.SaveChangesAsync();
-
-        //    // Only notify if status actually changed to cancelled
-        //    if (oldStatus != "Cancelled")
-        //    {
-        //        await _doctorNotificationService.NotifyCancelledAppointmentAsync(appointment);
-        //    }
-        //}
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
 
-            // First get the IDs of the most recent PAST appointments per patient
+            // get the IDs of the most recent PAST appointments per patient
             var recentAppointmentIds = await _context.Appointments
                 .Where(a => a.DoctorId == doctorId && a.Date < today) // Only past appointments
                 .GroupBy(a => a.PatientId)
@@ -267,9 +250,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         {
             return await _context.Appointments
                 .Where(a => a.Date >= startDate && a.Date <= endDate)
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
-                .Include(a => a.Hospital)
+                .Include(a => a.Patient)//from Patient Table
+                .Include(a => a.Doctor)//from Doctor Table
+                .Include(a => a.Hospital)//from Hospital Table
                 .Select(a => new PatientAppointmentListDto
                 {
                     AppointmentId = a.AppointmentId,
