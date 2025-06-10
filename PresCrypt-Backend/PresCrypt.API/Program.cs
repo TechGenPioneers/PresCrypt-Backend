@@ -21,6 +21,8 @@ using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
