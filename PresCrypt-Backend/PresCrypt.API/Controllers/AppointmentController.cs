@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
 using System.Threading.Tasks;
@@ -12,12 +15,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
+        private readonly IConfiguration _configuration;
+        private readonly IPatientEmailService _patientEmailService;
         private readonly IDoctorNotificationService _doctorNotificationService;
         private readonly ILogger<AppointmentsController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public AppointmentsController(IAppointmentService appointmentService, IDoctorNotificationService doctorNotificationService, ILogger<AppointmentsController> logger)
+        public AppointmentsController(ApplicationDbContext context, 
+            IAppointmentService appointmentService,
+            IConfiguration configuration,
+            IDoctorNotificationService doctorNotificationService,
+            IPatientEmailService patientEmailService,
+            ILogger<AppointmentsController> logger)
         {
+            _context = context;
+            _configuration = configuration;
             _appointmentService = appointmentService;
+            _doctorNotificationService = doctorNotificationService;
+            _patientEmailService = patientEmailService;
             _logger = logger;
         }
 
@@ -135,47 +150,71 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return NoContent();
         }
 
-        [HttpPost("reschedule")]
-        public async Task<IActionResult> RescheduleAppointment([FromBody] AppointmentRescheduleDto dto)
+        [HttpPost("reschedule-appointments")]
+        public async Task<IActionResult> RescheduleAppointments([FromBody] AppointmentIdsRequest request)
         {
+            if (request?.AppointmentIds == null || !request.AppointmentIds.Any())
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "At least one appointment ID must be provided."
+                });
+            }
+
             try
             {
-                var rescheduledCount = await _appointmentService.RescheduleAppointmentsAsync(dto);
+                var results = await _appointmentService.RescheduleAppointmentsAsync(request.AppointmentIds);
 
-                return Ok(new
+                // Check if all operations succeeded
+                if (results.All(r => r.Success))
                 {
-                    success = true,
-                    rescheduledCount,
-                    message = $"Successfully rescheduled {rescheduledCount} appointments."
-                });
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("No upcoming appointments"))
-            {
-                return Ok(new
+                    return Ok(new ApiResponse<List<AppointmentRescheduleResultDto>>
+                    {
+                        Success = true,
+                        Data = results,
+                        Message = "All appointments were rescheduled successfully"
+                    });
+                }
+
+                // Check if all operations failed
+                if (results.All(r => !r.Success))
                 {
-                    success = true,
-                    rescheduledCount = 0,
-                    message = ex.Message
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new
+                    return StatusCode(500, new ApiResponse<List<AppointmentRescheduleResultDto>>
+                    {
+                        Success = false,
+                        Data = results,
+                        Message = "Failed to reschedule all appointments"
+                    });
+                }
+
+                // Partial success
+                return StatusCode(207, new ApiResponse<List<AppointmentRescheduleResultDto>>
                 {
-                    success = false,
-                    errorType = "ValidationError",
-                    message = ex.Message
-                });
+                        Success = false,
+                        Data = results,
+                        Message = "Some appointments failed to reschedule"
+                    });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                _logger.LogError(ex, "Error rescheduling appointments");
+                return StatusCode(500, new ApiResponse<object>
                 {
-                    success = false,
-                    errorType = "ServerError",
-                    message = $"An error occurred: {ex.Message}"
+                    Success = false,
+                    Message = "An error occurred while rescheduling appointments.",
+                    Error = ex.Message
                 });
             }
+            
+        }
+
+        public class ApiResponse<T>
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public string Error { get; set; }
+            public T Data { get; set; }
         }
 
         [HttpPost("{appointmentId}/cancel")]
@@ -220,5 +259,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 });
             }
         }
+        
     }
 }

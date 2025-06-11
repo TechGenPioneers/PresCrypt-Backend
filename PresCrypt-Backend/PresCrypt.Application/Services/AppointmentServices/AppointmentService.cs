@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using Mapster;
 using System;
 using System.Collections.Generic;
@@ -16,15 +17,25 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
     public class AppointmentService : IAppointmentService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
         private readonly IHubContext<DoctorNotificationHub> _hubContext;
         private readonly IDoctorNotificationService _doctorNotificationService;
+        private readonly IPatientEmailService _patientEmailService;
         private readonly ILogger<AppointmentService> _logger;
 
-        public AppointmentService(ApplicationDbContext context, IHubContext<DoctorNotificationHub> hubContext, IDoctorNotificationService doctorNotificationService)
+        public AppointmentService(ApplicationDbContext context, 
+            IConfiguration configuration, 
+            IHubContext<DoctorNotificationHub> hubContext, 
+            IDoctorNotificationService doctorNotificationService,
+            IPatientEmailService patientEmailService,
+            ILogger<AppointmentService> logger)
         {
             _context = context;
             _hubContext = hubContext;
             _doctorNotificationService = doctorNotificationService;
+            _patientEmailService = patientEmailService;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null)
@@ -185,7 +196,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             }
         }
 
-
         public async Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
@@ -256,7 +266,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                     PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
                     PatientEmail = a.Patient.Email,
                     DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
-                    DoctorEmail= a.Doctor.Email,
+                    DoctorEmail = a.Doctor.Email,
                     Specialization = a.Doctor.Specialization,
                     HospitalName = a.Hospital.HospitalName,
                     Time = a.Time,
@@ -265,6 +275,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 })
                 .ToListAsync();
         }
+
         public async Task<bool> DeleteAppointmentAsync(string appointmentId)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
@@ -276,7 +287,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             await _context.SaveChangesAsync();
             return true;
         }
-
 
         public async Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId)
         {
@@ -296,41 +306,208 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             return hospitals;
         }
 
-        public async Task<int> RescheduleAppointmentsAsync(AppointmentRescheduleDto dto)
+        public async Task<List<AppointmentRescheduleResultDto>> RescheduleAppointmentsAsync(List<string> appointmentIds)
         {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
+            var results = new List<AppointmentRescheduleResultDto>();
 
-            // Validate required fields
-            if (string.IsNullOrEmpty(dto.DoctorId) ||
-                string.IsNullOrEmpty(dto.HospitalId) ||
-                dto.Date == default ||
-                dto.Time == default)
-            {
-                throw new ArgumentException("Doctor, hospital, date, and time must be specified");
-            }
-
+            // Fetch all eligible appointments with patient information
             var appointments = await _context.Appointments
-                .Where(a => a.DoctorId == dto.DoctorId
-                         && a.HospitalId == dto.HospitalId
-                         && a.Status == "Upcoming"
-                         && (a.Date > dto.Date ||
-                            (a.Date == dto.Date && a.Time >= dto.Time)))
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.Hospital)
+                .Where(a => appointmentIds.Contains(a.AppointmentId) &&
+                           a.Status != "Confirmed" &&
+                           a.Status != "Rescheduled" &&
+                           a.Status != "Completed")
                 .ToListAsync();
-
-            if (!appointments.Any())
-            {
-                throw new InvalidOperationException("No upcoming appointments found to reschedule.");
-            }
 
             foreach (var appointment in appointments)
             {
-                appointment.Status = "Rescheduled";
-                appointment.UpdatedAt = DateTime.UtcNow;
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    _logger.LogInformation("Starting reschedule for appointment {AppointmentId}", appointment.AppointmentId);
+
+                    var nextSlot = await GetNextAvailableSlotAsync(
+                        appointment.DoctorId,
+                        appointment.HospitalId,
+                        appointment.Date.ToDateTime(appointment.Time));
+
+                    if (nextSlot == null)
+                    {
+                        _logger.LogWarning("No available slot found for appointment {AppointmentId}", appointment.AppointmentId);
+                        results.Add(new AppointmentRescheduleResultDto
+                        {
+                            Success = false,
+                            OriginalAppointmentId = appointment.AppointmentId,
+                            Message = "No available slots found for rescheduling."
+                        });
+                        continue;
+                    }
+
+                    // Update original appointment
+                    appointment.Status = "Rescheduled";
+                    appointment.UpdatedAt = DateTime.UtcNow;
+
+                    // Create new appointment
+                    var newAppointment = new Appointment
+                    {
+                        AppointmentId = Guid.NewGuid().ToString(),
+                        PatientId = appointment.PatientId,
+                        DoctorId = appointment.DoctorId,
+                        HospitalId = appointment.HospitalId,
+                        Date = DateOnly.FromDateTime(nextSlot.Value),
+                        Time = TimeOnly.FromDateTime(nextSlot.Value),
+                        Charge = appointment.Charge,
+                        Status = "Pending Confirmation",
+                        TypeOfAppointment = appointment.TypeOfAppointment,
+                        CreatedAt = DateTime.UtcNow,
+                        SpecialNote = $"Auto rescheduled from {appointment.AppointmentId}"
+                    };
+
+                    _context.Appointments.Add(newAppointment);
+                    await _context.SaveChangesAsync();
+
+                    // Email sending with detailed logging
+                    if (!string.IsNullOrEmpty(appointment.Patient?.Email))
+                    {
+                        try
+                        {
+                            _logger.LogInformation("Preparing to send email for new appointment {NewAppointmentId}",
+                                newAppointment.AppointmentId);
+
+                            var originalAppointmentDateTime = appointment.Date.ToDateTime(appointment.Time);
+                            var rescheduledDateTime = nextSlot.Value;
+
+                            var emailDto = new AppointmentRescheduleEmailDto
+                            {
+                                Email = appointment.Patient.Email,
+                                Name = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}",
+                                AppointmentId = newAppointment.AppointmentId,
+                                OldDateTime = originalAppointmentDateTime, // The original appointment date/time
+                                NewDateTime = rescheduledDateTime,
+                            };
+
+                            _logger.LogDebug("Email details: {@EmailDto}", emailDto);
+
+                            await _patientEmailService.SendRescheduleConfirmationEmailAsync(emailDto);
+
+                            _logger.LogInformation("Email sent successfully for appointment {AppointmentId}",
+                                newAppointment.AppointmentId);
+                        }
+                        catch (Exception emailEx)
+                        {
+                            _logger.LogError(emailEx,
+                                "Failed to send email for rescheduled appointment {AppointmentId}. Error: {ErrorMessage}",
+                                newAppointment.AppointmentId, emailEx.Message);
+
+                            // Add email failure information to the result
+                            results.Add(new AppointmentRescheduleResultDto
+                            {
+                                Success = true, // Reschedule succeeded, email failed
+                                OriginalAppointmentId = appointment.AppointmentId,
+                                NewAppointmentId = newAppointment.AppointmentId,
+                                NewDateTime = nextSlot.Value,
+                                Message = $"Successfully rescheduled but email failed: {emailEx.Message}"
+                            });
+
+                            await transaction.CommitAsync();
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No email address found for patient {PatientId}", appointment.PatientId);
+                    }
+
+                    await transaction.CommitAsync();
+
+                    results.Add(new AppointmentRescheduleResultDto
+                    {
+                        Success = true,
+                        OriginalAppointmentId = appointment.AppointmentId,
+                        NewAppointmentId = newAppointment.AppointmentId,
+                        NewDateTime = nextSlot.Value,
+                        Message = $"Successfully rescheduled to {nextSlot.Value:MMMM dd, yyyy hh:mm tt}"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex,
+                        "Failed to reschedule appointment {AppointmentId}. Error: {ErrorMessage}",
+                        appointment.AppointmentId, ex.Message);
+
+                    results.Add(new AppointmentRescheduleResultDto
+                    {
+                        Success = false,
+                        OriginalAppointmentId = appointment.AppointmentId,
+                        Message = $"Failed to reschedule: {ex.Message}"
+                    });
+                }
             }
 
-            await _context.SaveChangesAsync();
-            return appointments.Count;
+            return results;
         }
+
+        public async Task<DateTime?> GetNextAvailableSlotAsync(string doctorId, string hospitalId, DateTime afterDate)
+        {
+            var availabilities = await _context.DoctorAvailability
+                .Where(a => a.DoctorId == doctorId && a.HospitalId == hospitalId)
+                .ToListAsync();
+
+            var checkDate = afterDate.Date.AddDays(1); // start from next day
+
+            for (int i = 0; i < 30; i++) // Check up to 30 days in advance
+            {
+                var currentDate = checkDate.AddDays(i);
+                var currentDayOfWeek = currentDate.DayOfWeek;
+
+                foreach (var availability in availabilities)
+                {
+                    var availableDayOfWeek = Enum.Parse<DayOfWeek>(availability.AvailableDay);
+                    if (availableDayOfWeek != currentDayOfWeek)
+                        continue;
+
+                    var currentDateOnly = DateOnly.FromDateTime(currentDate);
+
+                    for (var time = availability.AvailableStartTime;
+                        time < availability.AvailableEndTime;
+                        time = time.AddMinutes(30))
+                    {
+                        bool isBooked = await _context.Appointments.AnyAsync(a =>
+                            a.DoctorId == doctorId &&
+                            a.HospitalId == hospitalId &&
+                            a.Date == currentDateOnly &&
+                            a.Time == time &&
+                            a.Status != "Cancelled" &&
+                            a.Status != "Completed");
+
+                        if (!isBooked)
+                        {
+                            return new DateTime(
+                                currentDate.Year,
+                                currentDate.Month,
+                                currentDate.Day,
+                                time.Hour,
+                                time.Minute,
+                                0);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private AppointmentRescheduleResultDto CreateFailureResult(string message)
+        {
+            return new AppointmentRescheduleResultDto
+            {
+                Success = false,
+                Message = message
+            };
+        }
+
     }
 }
