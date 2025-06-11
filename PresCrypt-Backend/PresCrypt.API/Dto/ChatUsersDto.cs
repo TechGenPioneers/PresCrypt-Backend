@@ -9,5 +9,6 @@
         public DateTime SendAt { get; set; }
         public string LastMessage { get; set; }
         public Boolean IsRead { get; set; }
+        public Boolean IsReceived { get; set; }
     }
 }

@@ -43,8 +43,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
 
         public async Task SendMessage(ChatDto chatDto)
         {
-           
-
             var message = new Message
             {
                 Id = Guid.NewGuid().ToString(),
@@ -52,14 +50,22 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                 ReceiverId = chatDto.ReceiverId,
                 Text = chatDto.Text,
                 Image = chatDto.Image,
-                SendAt = DateTime.Now,
-                IsReceived = false,
+                SendAt = DateTime.Now,   // Better to use UTC time
+                IsReceived = true,
                 IsRead = false
             };
 
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
+
+            // Notify sender and receiver groups about the new message
+            await _hubContext.Clients.Group(message.SenderId.ToString())
+                .SendAsync("SendMessage", message);
+
+            await _hubContext.Clients.Group(message.ReceiverId.ToString())
+                .SendAsync("ReceiveMessage", message);
         }
+
 
         public async Task<ChatDto> GetLastMessage(string senderId, string receiverId)
         {
@@ -150,16 +156,20 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                                 m.Text,
                                 m.IsRead,
                                 m.SenderId,
-                                m.SendAt
+                                m.SendAt,
+                                m.IsReceived,
+                                m.Image
                             })
                             .FirstOrDefaultAsync();
 
                         if (lastMessage != null)
                         {
                             patient.LastMessage = lastMessage.Text;
+                            patient.Image = lastMessage.Image;
                             patient.IsRead = lastMessage.IsRead;
                             patient.LastMessageSenderId=lastMessage.SenderId;
                             patient.SendAt=lastMessage.SendAt;
+                            patient.IsReceived=lastMessage.IsReceived;
                         }
 
                         chatUsers.Add(patient);
