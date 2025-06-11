@@ -21,6 +21,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<PatientNotifications> PatientNotifications { get; set; }
     public DbSet<DoctorNotification> DoctorNotifications { get; set; }
     public DbSet<AdminNotification> AdminNotifications { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

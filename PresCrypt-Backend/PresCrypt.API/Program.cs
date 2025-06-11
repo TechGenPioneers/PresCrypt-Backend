@@ -21,6 +21,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
+using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
 
@@ -58,6 +59,7 @@ builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IChatServices, ChatServices>();
 
 builder.Services.AddHttpClient();
 
@@ -153,6 +155,7 @@ app.UseHttpsRedirection();
 app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 app.MapHub<AdminNotificationHub>("/adminNotificationHub");
+app.MapHub<ChatHub>("/chatHub");
 
 
 app.UseAuthentication(); // Authentication should come before Routing
