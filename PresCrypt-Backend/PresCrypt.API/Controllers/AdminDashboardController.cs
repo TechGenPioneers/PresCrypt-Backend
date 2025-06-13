@@ -18,6 +18,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _logger = logger;
         }
 
+        //get all dashboard data (patient vists , today appointments , doctor count and patient count)
         [HttpGet ("GetAllData")]
         public async Task<IActionResult> GetDashboardData()
         {
@@ -29,7 +30,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
             return Ok(dashboardData);
         }
-
+        
+        //get all notifications
         [HttpGet("GetAllNotifications")]
         public async Task<IActionResult> GetAllNotifications()
         {
@@ -49,6 +51,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        //mark as read notification
         [HttpPost("{notificationId}")]
         public async Task<IActionResult> MarkAsRead(string notificationId)
         {
@@ -61,6 +64,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return BadRequest(response);
         }
 
+        //mark all as read all the notifications
         [HttpPut("MarkAllAsRead")]
         public async Task<IActionResult> MarkAllAsRead()
         {

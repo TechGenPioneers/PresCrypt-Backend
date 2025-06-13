@@ -22,6 +22,9 @@ using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
+using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,9 +59,14 @@ builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+
+builder.Services.AddScoped<IChatServices, ChatServices>();
+
+
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -148,7 +156,9 @@ app.UseHttpsRedirection();
 app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 app.MapHub<AdminNotificationHub>("/adminNotificationHub");
+app.MapHub<ChatHub>("/chatHub");
 app.MapHub<VideoCallHub>("/videocallhub");
+
 
 
 app.UseAuthentication(); // Authentication should come before Routing
