@@ -14,17 +14,16 @@ using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmai
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
 using PresCrypt_Backend.PresCrypt.Infrastructure.Repositories;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
-using PresCrypt_Backend.PresCrypt.API.Hubs;
-
-
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.PatientPDFServices;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
 using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
-using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,20 +56,25 @@ builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
+
+// From dev
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
-
 builder.Services.AddScoped<IChatServices, ChatServices>();
-
-
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
 
-builder.Services.AddHttpClient();
+// From SCRUM-29
+builder.Services.AddScoped<IPDFService, PDFService>();
+builder.Services.AddScoped<IHospitalService, HospitalService>();
+builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+// Common services
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration for JwtService
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 
 // Configure JWT Authentication

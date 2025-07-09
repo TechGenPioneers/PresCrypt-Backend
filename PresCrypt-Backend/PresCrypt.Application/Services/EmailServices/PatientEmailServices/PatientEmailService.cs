@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
-using MimeKit;
+﻿using MimeKit;
 using MailKit.Net.Smtp;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MimeKit.Utils;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices
 {
@@ -14,11 +13,18 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
         private readonly IConfiguration _configuration;
         private readonly ILogger<PatientEmailService> _logger;
 
+        public PatientEmailService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            _logger = null;  // No logger provided here
+        }
+
         public PatientEmailService(IConfiguration configuration, ILogger<PatientEmailService> logger)
         {
             _configuration = configuration;
-            _logger = logger;
+            _logger = logger;  // Logger provided here
         }
+
 
         public void SendEmail(PatientAppointmentEmailDto request)
         {
@@ -26,12 +32,25 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
             email.From.Add(MailboxAddress.Parse("prescrypt.health@gmail.com"));
             email.To.Add(MailboxAddress.Parse(request.Receptor));
             email.Subject = request.Title;
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = request.Message };
+
+            // Create the body builder
+            var builder = new BodyBuilder
+            {
+                HtmlBody = request.Message
+            };
+
+            // Attach PDF if present
+            if (request.Attachment != null && !string.IsNullOrEmpty(request.Attachment.Base64Content))
+            {
+                var pdfBytes = Convert.FromBase64String(request.Attachment.Base64Content);
+                builder.Attachments.Add(request.Attachment.FileName, pdfBytes, ContentType.Parse(request.Attachment.ContentType));
+            }
+
+            email.Body = builder.ToMessageBody();
 
             using var smtp = new SmtpClient();
-            smtp.Connect(_configuration.GetSection("EmailHost").Value, 587, MailKit.Security.SecureSocketOptions.StartTls);
-
-            smtp.Authenticate(_configuration.GetSection("EmailUserName").Value, _configuration.GetSection("EmailPassword").Value);
+            smtp.Connect(_configuration["EmailHost"], 587, MailKit.Security.SecureSocketOptions.StartTls);
+            smtp.Authenticate(_configuration["EmailUserName"], _configuration["EmailPassword"]);
             smtp.Send(email);
             smtp.Disconnect(true);
         }
