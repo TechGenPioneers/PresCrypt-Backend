@@ -16,8 +16,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
 
         public string Email { get; set; }
 
-        public string BloodGroup { get; set; }
-
         public string NIC { get; set; }
 
         public byte[] ProfileImage { get; set; }

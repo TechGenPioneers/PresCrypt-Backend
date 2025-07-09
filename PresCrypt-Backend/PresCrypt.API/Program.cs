@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl;
@@ -9,16 +10,18 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AuthServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
-using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
+using PresCrypt_Backend.PresCrypt.Infrastructure.Repositories;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.PatientPDFServices;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
-using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
+using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 
@@ -31,7 +34,6 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging(config =>
@@ -39,29 +41,40 @@ builder.Services.AddLogging(config =>
     config.AddConsole();
 });
 
-
+builder.Services.AddLogging();
 // Register services
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
-builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
+//builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
-//builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
+builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
+
+// From dev
+builder.Services.AddScoped<IAdminReportService, AdminReportService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IChatServices, ChatServices>();
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
+
+// From SCRUM-29
 builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+// Common services
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration for JwtService
-
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 
 // Configure JWT Authentication
@@ -74,7 +87,7 @@ builder.Services.AddAuthentication("Bearer")
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true, 
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -87,33 +100,48 @@ builder.Services.AddAuthentication("Bearer")
 // Register controllers for Dependency Injection
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
-
+builder.Services.AddControllers();
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Set up Entity Framework DbContext with SQL Server
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configure CORS to allow frontend access
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // Update this if frontend URL changes
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
+// Add SignalR with detailed errors
+builder.Services.AddSignalR();
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000") 
-                  .AllowAnyMethod() 
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyMethod()
                   .AllowAnyHeader()
-                  .AllowCredentials();
+                  .AllowCredentials();  // ✅ Allow credentials if needed
         });
 });
-
 
 var app = builder.Build();
 
 
 // Apply CORS middleware
-app.UseCors("AllowReactApp");
+app.UseCors("AllowLocalhost3000");
 
 
 // Enable Swagger in Development environment
@@ -125,11 +153,16 @@ if (app.Environment.IsDevelopment())
 
 // Middleware pipeline setup
 app.UseHttpsRedirection();
-app.UseRouting();                // 🟢 First, define routing
+app.UseRouting();                
 app.UseCors("AllowReactApp");
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
+app.MapHub<AdminNotificationHub>("/adminNotificationHub");
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VideoCallHub>("/videocallhub");
+
 
 
 app.UseAuthentication(); // Authentication should come before Routing

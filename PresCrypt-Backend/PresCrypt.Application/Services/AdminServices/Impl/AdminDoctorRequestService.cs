@@ -7,10 +7,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
     public class AdminDoctorRequestService : IAdminDoctorRequestService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAdminDashboardService _adminDashboardService;
 
-        public AdminDoctorRequestService(ApplicationDbContext context)
+        public AdminDoctorRequestService(ApplicationDbContext context, IAdminDashboardService adminDashboardService)
         {
             _context = context;
+            _adminDashboardService=adminDashboardService;
         }
 
         public async Task<List<AdminAllDoctorRequestDto>> GetAllDoctorRequest()
@@ -108,12 +110,37 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
             try
             {
+                // Fetch the request
+                var request = await _context.DoctorRequest
+                    .FirstOrDefaultAsync(d => d.RequestId == rejected.RequestId);
+
                 doctorRequest.RequestStatus = "Rejected";
                 doctorRequest.CheckedAt = DateTime.Now;
                 doctorRequest.Reason = rejected.Reason;
                 _context.DoctorRequest.Update(doctorRequest);
                 int result = await _context.SaveChangesAsync();
-               return result > 0 ? "Success" : "Error";
+
+                // Prepare notification details
+                var message = $"{rejected.RequestId} {request.FirstName} {request.LastName} - Request Rejected.";
+                var notificationDto = new AdminNotificationDto
+                {
+                    RequestId = rejected.RequestId,
+                    Message = message,
+                    Title = "Doctor Request Rejected",
+                    Type = "Alert"
+                };
+
+                try
+                {
+                    //call the notification service
+                    await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                }
+                catch (Exception ex)
+                {
+                    return $"Unexpected error: {ex.Message} ";
+                }
+
+                return result > 0 ? "Success" : "Error";
             }
             catch (Exception e)
             {
@@ -131,10 +158,35 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
             try
             {
+                // Fetch the request
+                var request = await _context.DoctorRequest
+                    .FirstOrDefaultAsync(d => d.RequestId == requestId);
+
                 doctorRequest.RequestStatus = "Approved";
                 doctorRequest.CheckedAt = DateTime.Now;
                 _context.DoctorRequest.Update(doctorRequest);
                 int result = await _context.SaveChangesAsync();
+
+                // Prepare notification details
+                var message = $"{requestId} {request.FirstName} {request.LastName} - Request Approved.";
+                var notificationDto = new AdminNotificationDto
+                {
+                    RequestId = requestId,
+                    Message = message,
+                    Title = "Doctor Request Approved",
+                    Type = "Alert"
+                };
+
+                try
+                {
+                    //call the notification service
+                    await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                }
+                catch (Exception ex)
+                {
+                    return $"Unexpected error: {ex.Message} ";
+                }
+
                 return result > 0 ? "Success" : "Error";
             }
             catch (Exception e)

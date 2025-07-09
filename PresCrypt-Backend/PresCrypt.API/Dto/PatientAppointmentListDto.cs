@@ -5,7 +5,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
     public class PatientAppointmentListDto
     {
         public string AppointmentId { get; set; }
-
         public string PatientName { get; set; }
         public string PatientEmail { get; set; }
         public string DoctorName { get; set; }

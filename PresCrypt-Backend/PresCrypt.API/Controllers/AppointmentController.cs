@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
@@ -12,11 +16,25 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
+        private readonly IConfiguration _configuration;
+        private readonly IPatientEmailService _patientEmailService;
+        private readonly IDoctorNotificationService _doctorNotificationService;
+        private readonly ILogger<AppointmentsController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public AppointmentsController(IAppointmentService appointmentService)
+        public AppointmentsController(ApplicationDbContext context, 
+            IAppointmentService appointmentService,
+            IConfiguration configuration,
+            IDoctorNotificationService doctorNotificationService,
+            IPatientEmailService patientEmailService,
+            ILogger<AppointmentsController> logger)
         {
+            _context = context;
+            _configuration = configuration;
             _appointmentService = appointmentService;
-
+            _doctorNotificationService = doctorNotificationService;
+            _patientEmailService = patientEmailService;
+            _logger = logger;
         }
 
         [HttpGet("by-doctor/{doctorId}")]
@@ -113,7 +131,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             if (string.IsNullOrEmpty(doctorId) || string.IsNullOrEmpty(date))
                 return BadRequest("Doctor ID and date are required.");
 
-
             if (!DateTime.TryParse(date, out var parsedDate))
                 return BadRequest("Invalid date format. Use YYYY-MM-DD.");
 
@@ -122,45 +139,124 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(hospitals);
         }
 
-        [HttpPost("reschedule")]
-        public async Task<IActionResult> RescheduleAppointment([FromBody] AppointmentRescheduleDto dto)
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAppointment(string id)
+        {
+            var result = await _appointmentService.DeleteAppointmentAsync(id);
+
+            if (!result)
+                return NotFound("Appointment not found");
+
+            return NoContent();
+        }
+
+        [HttpPost("reschedule-appointments")]
+        public async Task<IActionResult> RescheduleAppointments([FromBody] AppointmentIdsRequest request)
+        {
+            if (request?.AppointmentIds == null || !request.AppointmentIds.Any())
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "At least one appointment ID must be provided."
+                });
+            }
+
+            try
+            {
+                var results = await _appointmentService.RescheduleAppointmentsAsync(request.AppointmentIds);
+
+                // Check if all operations succeeded
+                if (results.All(r => r.Success))
+                {
+                    return Ok(new ApiResponse<List<AppointmentRescheduleResultDto>>
+                    {
+                        Success = true,
+                        Data = results,
+                        Message = "All appointments were rescheduled successfully"
+                    });
+                }
+
+                // Check if all operations failed
+                if (results.All(r => !r.Success))
+                {
+                    return StatusCode(500, new ApiResponse<List<AppointmentRescheduleResultDto>>
+                    {
+                        Success = false,
+                        Data = results,
+                        Message = "Failed to reschedule all appointments"
+                    });
+                }
+
+                // Partial success
+                return StatusCode(207, new ApiResponse<List<AppointmentRescheduleResultDto>>
+                {
+                        Success = false,
+                        Data = results,
+                        Message = "Some appointments failed to reschedule"
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error rescheduling appointments");
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "An error occurred while rescheduling appointments.",
+                    Error = ex.Message
+                });
+            }
+            
+        }
+
+        public class ApiResponse<T>
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public string Error { get; set; }
+            public T Data { get; set; }
+        }
+
+        [HttpPost("{appointmentId}/cancel")]
+        public async Task<IActionResult> CancelAppointment(string appointmentId)
         {
             try
             {
-                var rescheduledCount = await _appointmentService.RescheduleAppointmentsAsync(dto);
+                var patientId = User.Claims.FirstOrDefault(c => c.Type == "patientId")?.Value;
+
+                if (string.IsNullOrEmpty(patientId))
+                {
+                    return Unauthorized(new
+                    {
+                        Success = false,
+                        Message = "Patient authentication required",
+                        Code = "PATIENT_ID_MISSING"
+                    });
+                }
+
+                await _appointmentService.CancelAppointmentAsync(appointmentId, patientId);
+
+                _logger.LogInformation("Appointment cancelled - ID: {AppointmentId}, Patient: {PatientId}",
+                    appointmentId, patientId);
 
                 return Ok(new
                 {
-                    success = true,
-                    rescheduledCount,
-                    message = $"Successfully rescheduled {rescheduledCount} appointments."
-                });
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("No upcoming appointments"))
-            {
-                return Ok(new
-                {
-                    success = true,
-                    rescheduledCount = 0,
-                    message = ex.Message
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    errorType = "ValidationError",
-                    message = ex.Message
+                    Success = true,
+                    Message = "Appointment cancelled successfully",
+                    Data = new { AppointmentId = appointmentId }
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                _logger.LogError(ex, "Appointment cancellation failed - ID: {AppointmentId}", appointmentId);
+
+                return BadRequest(new
                 {
-                    success = false,
-                    errorType = "ServerError",
-                    message = $"An error occurred: {ex.Message}"
+                    Success = false,
+                    Message = ex.Message,
+                    Code = ex is InvalidOperationException ? "INVALID_OPERATION" : "CANCELLATION_FAILED",
+                    AppointmentId = appointmentId
                 });
             }
 
@@ -184,9 +280,5 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var appointments = await _appointmentService.GetAppointmentsByDateRangeAsync(startDate, endDate);
             return Ok(appointments);
         }
-
-
-
-
     }
 }

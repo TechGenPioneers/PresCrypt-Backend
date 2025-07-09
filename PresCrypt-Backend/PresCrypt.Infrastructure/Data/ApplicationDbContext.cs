@@ -19,6 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<DoctorRequest> DoctorRequest { get; set; }
     public DbSet<RequestAvailability> RequestAvailability { get; set; }
     public DbSet<PatientNotifications> PatientNotifications { get; set; }
+    public DbSet<DoctorNotification> DoctorNotifications { get; set; }
+    public DbSet<AdminNotification> AdminNotifications { get; set; }
+    public DbSet<Message> Messages { get; set; }
     public DbSet<Payment> Payments { get; set; }
 
 
@@ -52,6 +55,28 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(a => a.Email)
             .HasPrincipalKey(u => u.UserName)  // Link to UserName
             .OnDelete(DeleteBehavior.Restrict);
+
+
+        // Cascade Delete
+        modelBuilder.Entity<AdminNotification>()
+            .HasOne(an => an.Doctor)
+            .WithMany()
+            .HasForeignKey(an => an.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cascade Delete
+        modelBuilder.Entity<AdminNotification>()
+            .HasOne(an => an.Patient)
+            .WithMany()
+            .HasForeignKey(an => an.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Cascade Delete
+        modelBuilder.Entity<AdminNotification>()
+             .HasOne(an => an.DoctorRequest)
+             .WithMany()
+             .HasForeignKey(an => an.RequestId)
+             .OnDelete(DeleteBehavior.Cascade);
 
     }
 }

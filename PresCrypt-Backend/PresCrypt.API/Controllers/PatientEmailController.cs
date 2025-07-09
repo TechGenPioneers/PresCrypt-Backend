@@ -21,12 +21,23 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [HttpPost]
         public IActionResult SendEmail(PatientAppointmentEmailDto request)
         {
-
             _patientEmailService.SendEmail(request);
 
             return Ok();
+        }
 
+        [HttpPost("reschedule")]
+        public async Task<IActionResult> SendRescheduleEmail([FromBody] AppointmentRescheduleEmailDto request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.Email) ||
+                string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.AppointmentId))
+            {
+                return BadRequest("Invalid request data.");
+            }
 
+            await _patientEmailService.SendRescheduleConfirmationEmailAsync(request);
+
+            return Ok("Reschedule confirmation email sent successfully.");
         }
 
 
