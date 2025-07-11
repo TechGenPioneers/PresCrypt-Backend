@@ -44,7 +44,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             var patient = await _context.Patient
                 .Where(p => p.PatientId == patientId)
                 .Select(p => new PatientNavBarDto
-                {
+                
                     Name = p.FirstName+ " " + p.LastName,
                     DOB =p.DOB,
                     CreatedAt = p.CreatedAt

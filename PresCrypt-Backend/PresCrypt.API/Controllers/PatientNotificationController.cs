@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Core.Models; // Use your correct namespace heere
 using PresCrypt_Backend.PresCrypt.API.Hubs;
-using System.Globalization;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Controllers
 {
@@ -47,7 +46,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
 
             await _hub.Clients.User(req.PatientId).SendAsync("ReceiveNotification", new
             {
-                id = notification.Id,         // ✅ Include id!
+                id = notification.Id,         // Include id!
                 title = notification.Title,
                 message = notification.Message
             });
