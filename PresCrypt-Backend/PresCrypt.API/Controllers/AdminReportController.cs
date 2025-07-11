@@ -14,7 +14,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         {
             _adminReportService = adminReportService;
         }
-        //get all details
+
+        //get all details (pateint names , doctor names, Specializations)
         [HttpGet ("GetAll")]
         public async Task<IActionResult> GetAllDetails()
         {
@@ -32,6 +33,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        //get filtered details for admin request
         [HttpPost]
         public async Task<IActionResult> GetFilteredDetails([FromBody] AdminGetReportDetailsDto reportDetails)
         {

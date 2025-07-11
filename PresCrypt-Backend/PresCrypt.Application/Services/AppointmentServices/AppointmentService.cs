@@ -200,7 +200,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
 
-            // First get the IDs of the most recent PAST appointments per patient
+            // get the IDs of the most recent PAST appointments per patient
             var recentAppointmentIds = await _context.Appointments
                 .Where(a => a.DoctorId == doctorId && a.Date < today) // Only past appointments
                 .GroupBy(a => a.PatientId)
@@ -507,6 +507,28 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 Success = false,
                 Message = message
             };
+        }
+        public async Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate)
+        {
+            return await _context.Appointments
+                .Where(a => a.Date >= startDate && a.Date <= endDate)
+                .Include(a => a.Patient)//from Patient Table
+                .Include(a => a.Doctor)//from Doctor Table
+                .Include(a => a.Hospital)//from Hospital Table
+                .Select(a => new PatientAppointmentListDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                    PatientEmail = a.Patient.Email,
+                    DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
+                    DoctorEmail = a.Doctor.Email,
+                    Specialization = a.Doctor.Specialization,
+                    HospitalName = a.Hospital.HospitalName,
+                    Time = a.Time,
+                    Date = a.Date,
+                    Status = a.Status
+                })
+                .ToListAsync();
         }
 
     }

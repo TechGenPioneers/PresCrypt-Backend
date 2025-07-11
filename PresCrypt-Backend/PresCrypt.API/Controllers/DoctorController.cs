@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
-using static Azure.Core.HttpHeader;
+using System.ComponentModel.DataAnnotations;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -16,6 +16,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IDoctorService _doctorServices;
+
         public DoctorController(ApplicationDbContext context, IDoctorService doctorServices)
         {
             _context = context;
@@ -23,64 +24,18 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<List<DoctorSearchDto>>> GetDoctors([FromQuery] string specialization, [FromQuery] string hospitalName)//ORM Mapping
+        public async Task<ActionResult<List<DoctorSearchDto>>> GetDoctors([FromQuery] SearchDoctorRequest request)
         {
-            var doctors = await _doctorServices.GetDoctorAsync(specialization, hospitalName);
-            return Ok(doctors);
-            //var doctors = await _context.Doctors  //<--Here I used LINQ instead of ORM-->
-            //    .Join(
-            //        _context.Hospitals, 
-            //        doctor => doctor.DoctorId, 
-            //        hospital => hospital.DoctorId, 
-            //        (doctor, hospital) => new { doctor, hospital }
-            //    )
-            //    .Where(dh =>
-            //        (string.IsNullOrEmpty(specialization) || dh.doctor.Specialization.Contains(specialization)) && // Filter by specialization
-            //        (string.IsNullOrEmpty(hospitalName) || dh.hospital.HospitalName.Contains(hospitalName)) // Filter by hospital name
-            //    )
-            //    .GroupJoin(
-            //        _context.Doctor_Availability,
-            //        doctor => doctor.doctor.DoctorId,
-            //        doctorAvailability => doctorAvailability.DoctorId,
-            //        (doctor, availability) => new DoctorSearchDto
-            //        {
-            //            DoctorName = doctor.doctor.DoctorName,
-            //            AvailableDates = availability.Select(a => a.AvailableDate.ToDateTime(TimeOnly.MinValue)).ToList(), // Convert DateOnly to DateTime
-            //            AvailableTimes = availability.Select(a => a.AvailableTime.ToTimeSpan()).ToList() // Convert time format
-            //        }
-            //    )
-            //    .ToListAsync(); // Execute the query
+            var doctors = await _doctorServices.GetDoctorAsync(
+                request.Specialization,
+                request.HospitalName,
+                request.Name
+            );
 
-            //return Ok(doctors);
+            return Ok(doctors);
         }
 
-
-        //[HttpGet("search")] // <--------here there is an issue with mapster automatic mapping------->
-        //public async Task<ActionResult<List<DoctorSearchDto>>> GetDoctors()
-        //{
-        //    var doctors = await _context.Doctors
-        //        .GroupJoin(
-        //            _context.Doctor_Availability,
-        //            doctor => doctor.DoctorId,
-        //            doctorAvailability => doctorAvailability.DoctorId,
-        //            (doctor, availability) => new
-        //            {
-        //                Doctor = doctor,
-        //                AvailableDates = availability.Select(a => a.AvailableDate).ToList(), // Corrected: Use AvailableDate
-        //                AvailableTimes = availability.Select(a => a.AvailableTime.ToTimeSpan()).ToList() // Corrected: Use ToTimeSpan()
-        //            })
-        //        .ToListAsync();
-
-        //    // Now, map the data from the anonymous object to DoctorDto using Mapster
-        //    var response = doctors.Adapt<List<DoctorSearchDto>>();
-
-        //    return Ok(response);
-        //}
-
-
-
-
-        [HttpGet("book/{doctorId}")]//for this I used mapster
+        [HttpGet("book/{doctorId}")] // Uses Mapster
         public async Task<ActionResult<List<DoctorBookingDto>>> GetDoctorBookedbyId(string doctorId)
         {
             var doctor = await _context.Doctor.FindAsync(doctorId);
@@ -88,13 +43,60 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             {
                 return NotFound();
             }
+
             var response = doctor.Adapt<DoctorBookingDto>();
-
             return Ok(response);
-
         }
 
+        [HttpGet("specializations")]
+        public async Task<IActionResult> GetSpecializations()
+        {
+            var specializations = await _doctorServices.GetAllSpecializationsAsync();
+            return Ok(specializations);
+        }
+
+        [HttpGet("doctors")]
+        public async Task<IActionResult> GetAllDoctors()
+        {
+            var doctors = await _doctorServices.GetAllDoctor();
+            return Ok(doctors);
+        }
+
+        [HttpGet("availability-by-name")]
+        public async Task<IActionResult> GetDoctorAvailabilityByName([FromQuery] string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return BadRequest("Doctor name is required.");
+
+            var results = await _doctorServices.GetDoctorAvailabilityByNameAsync(name);
+
+            if (!results.Any())
+                return NotFound("No availability found for the given doctor name.");
+
+            return Ok(results);
+        }
+
+        // ✅ SearchDoctorRequest can be defined inside the same controller file
+        public class SearchDoctorRequest : IValidatableObject
+        {
+            public string? Specialization { get; set; }
+            public string? HospitalName { get; set; }
+            public string? Name { get; set; }
+
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                bool hasName = !string.IsNullOrWhiteSpace(Name);
+                bool hasSpecAndHospital = !string.IsNullOrWhiteSpace(Specialization) && !string.IsNullOrWhiteSpace(HospitalName);
+
+                if (!hasName && !hasSpecAndHospital)
+                {
+                    yield return new ValidationResult(
+                        "Provide either a doctor name, or both specialization and hospital name.",
+                        new[] { nameof(Name), nameof(Specialization), nameof(HospitalName) }
+                    );
+                }
+            }
+        }
 
     }
-
 }

@@ -27,9 +27,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         [ForeignKey("Email")]
         public User User { get; set; }
-
         public string? BloodGroup { get; set; }
-
         
         public string? NIC { get; set; }
 

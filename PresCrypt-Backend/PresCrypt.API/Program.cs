@@ -11,18 +11,19 @@ using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
+using PresCrypt_Backend.PresCrypt.Infrastructure.Repositories;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
-using PresCrypt_Backend.PresCrypt.API.Hubs;
-//using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
-
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
-//using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPrescriptionServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.PatientPDFServices;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 using PresCrypt_Backend.PresCrypt.Application.Services.UserServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
-using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
-using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,24 +51,30 @@ builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorPatientService, DoctorPatientService>();
-//builder.Services.AddScoped<IDoctorPrescriptionSubmitService, DoctorPrescriptionSubmitService>();
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<DoctorReportService>();
+
+// From dev
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IChatServices, ChatServices>();
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
 
+// From SCRUM-29
+builder.Services.AddScoped<IPDFService, PDFService>();
+builder.Services.AddScoped<IHospitalService, HospitalService>();
+builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+// Common services
 builder.Services.AddHttpClient();
-
-
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IJwtService, JwtService>(); // Scoped registration for JwtService
-
-//builder.Services.AddScoped<IAgoraTokenService, AgoraTokenService>();
-
-
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 
 // Configure JWT Authentication
@@ -93,7 +100,7 @@ builder.Services.AddAuthentication("Bearer")
 // Register controllers for Dependency Injection
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
-
+builder.Services.AddControllers();
 var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -153,6 +160,9 @@ app.UseHttpsRedirection();
 app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 app.MapHub<AdminNotificationHub>("/adminNotificationHub");
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VideoCallHub>("/videocallhub");
+
 
 
 app.UseAuthentication(); // Authentication should come before Routing

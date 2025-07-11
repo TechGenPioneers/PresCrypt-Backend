@@ -6,6 +6,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
@@ -258,7 +259,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     AppointmentId = appointmentId
                 });
             }
+
+
         }
-        
+
+        [HttpGet("Appointments/GetByDateRange")]
+        public async Task<IActionResult> GetAppointmentsByDateRange([FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate)
+        {
+            var appointments = await _appointmentService.GetAppointmentsByDateRangeAsync(startDate, endDate);
+            return Ok(appointments);
+        }
     }
 }
