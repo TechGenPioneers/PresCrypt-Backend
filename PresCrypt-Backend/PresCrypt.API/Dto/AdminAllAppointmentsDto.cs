@@ -5,6 +5,8 @@
         public string AppointmentId { get; set; }
         public string DoctorId { get; set; }
         public string DoctorName { get; set; }
+        public string PatientId { get; set; }
+        public string PatientName { get; set; }
         public string HospitalId { get; set; }
         public string HospitalName { get; set; }
         public string Date { get; set; }

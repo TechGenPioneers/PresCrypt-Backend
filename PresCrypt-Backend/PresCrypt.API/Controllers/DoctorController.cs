@@ -27,31 +27,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         {
             var doctors = await _doctorServices.GetDoctorAsync(specialization, hospitalName);
             return Ok(doctors);
-            //var doctors = await _context.Doctors  //<--Here I used LINQ instead of ORM-->
-            //    .Join(
-            //        _context.Hospitals, 
-            //        doctor => doctor.DoctorId, 
-            //        hospital => hospital.DoctorId, 
-            //        (doctor, hospital) => new { doctor, hospital }
-            //    )
-            //    .Where(dh =>
-            //        (string.IsNullOrEmpty(specialization) || dh.doctor.Specialization.Contains(specialization)) && // Filter by specialization
-            //        (string.IsNullOrEmpty(hospitalName) || dh.hospital.HospitalName.Contains(hospitalName)) // Filter by hospital name
-            //    )
-            //    .GroupJoin(
-            //        _context.Doctor_Availability,
-            //        doctor => doctor.doctor.DoctorId,
-            //        doctorAvailability => doctorAvailability.DoctorId,
-            //        (doctor, availability) => new DoctorSearchDto
-            //        {
-            //            DoctorName = doctor.doctor.DoctorName,
-            //            AvailableDates = availability.Select(a => a.AvailableDate.ToDateTime(TimeOnly.MinValue)).ToList(), // Convert DateOnly to DateTime
-            //            AvailableTimes = availability.Select(a => a.AvailableTime.ToTimeSpan()).ToList() // Convert time format
-            //        }
-            //    )
-            //    .ToListAsync(); // Execute the query
-
-            //return Ok(doctors);
+         
         }
 
 
@@ -94,6 +70,36 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         }
 
+        [HttpGet("specializations")]
+        public async Task<IActionResult> GetSpecializations()
+        {
+            var specializations = await _doctorServices.GetAllSpecializationsAsync();
+            return Ok(specializations);
+        }
+
+
+        [HttpGet("doctors")]
+        
+        public async Task<IActionResult> GetAllDoctors()
+        {
+            var doctors = await _doctorServices.GetAllDoctor();
+            return Ok(doctors);
+
+        }
+
+        [HttpGet("availability-by-name")]
+        public async Task<IActionResult> GetDoctorAvailabilityByName([FromQuery] string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return BadRequest("Doctor name is required.");
+
+            var results = await _doctorServices.GetDoctorAvailabilityByNameAsync(name);
+
+            if (!results.Any())
+                return NotFound("No availability found for the given doctor name.");
+
+            return Ok(results);
+        }
 
     }
 
