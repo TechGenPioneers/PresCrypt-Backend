@@ -172,5 +172,36 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
                 </div>
             </div>";
         }
+
+        public void SendOtpEmail(PatientOtpEmailDto request)
+        {
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(_configuration["EmailUserName"]));
+            email.To.Add(MailboxAddress.Parse(request.Email));
+            email.Subject = "Your PresCrypt OTP Code";
+
+            var body = $@"
+                <div style='font-family: Arial, sans-serif;'>
+                    <h2>Your Verification Code</h2>
+                    <p>Use the following OTP to verify your booking:</p>
+                    <h1 style='font-size: 48px; color: #4CAF50;'>{request.Otp}</h1>
+                    <p>Do not share it with anyone.</p>
+                    <p>Thank you,<br />The PresCrypt Team</p>
+                </div>";
+
+            var builder = new BodyBuilder
+            {
+                HtmlBody = body
+            };
+            email.Body = builder.ToMessageBody();
+
+            using var smtp = new SmtpClient();
+            smtp.Connect(_configuration["EmailHost"], 587, SecureSocketOptions.StartTls);
+            smtp.Authenticate(_configuration["EmailUserName"], _configuration["EmailPassword"]);
+            smtp.Send(email);
+            smtp.Disconnect(true);
+
+            _logger.LogInformation("OTP email sent to {Email}", request.Email);
+        }
     }
 }

@@ -9,5 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
 
         void SendEmail(PatientAppointmentEmailDto requets);
         Task SendRescheduleConfirmationEmailAsync(AppointmentRescheduleEmailDto request);
+
+        void SendOtpEmail(PatientOtpEmailDto request);
     }
 }
