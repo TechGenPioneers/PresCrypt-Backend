@@ -542,6 +542,154 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
+        //[HttpPost]
+        //[Route("Login")]
+        //public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
+        //        {
+        //            return BadRequest(new { message = "Email and password are required." });
+        //        }
+
+        //        string inputEmail = loginDTO.Email.Trim().ToLower();
+
+        //        var user = _applicationDbContext.User.FirstOrDefault(u => u.UserName.ToLower() == inputEmail);
+
+        //        if (user == null)
+        //        {
+        //            return BadRequest(new { success = false, message = "Invalid email or password." });
+        //        }
+
+        //        if (user.Role == "DoctorPending")
+        //        {
+        //            return BadRequest(new
+        //            {
+        //                success = false,
+        //                message = "Your doctor account is pending approval. Please wait for confirmation."
+        //            });
+        //        }
+        //        else if (!user.EmailVerified)
+        //        {
+        //            return BadRequest(new { success = false, message = "Please verify your email before logging in." });
+        //        }
+
+        //        // Check for lockout
+        //        // Check and reset if 15 minutes have passed since last failed attempt
+        //        if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue)
+        //        {
+        //            if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
+        //            {
+        //                // Reset the lockout
+        //                user.FailedLoginAttempts = 0;
+        //                user.LastFailedLoginTime = null;
+        //                await _applicationDbContext.SaveChangesAsync();
+        //            }
+        //            else
+        //            {
+        //                return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
+        //            }
+        //        }
+
+
+        //        var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
+
+        //        if (result != PasswordVerificationResult.Success)
+        //        {
+        //            user.FailedLoginAttempts += 1;
+        //            user.LastFailedLoginTime = DateTime.UtcNow;
+        //            if (user.FailedLoginAttempts == 4)
+        //            {
+        //                string emailBody = @"
+        //<div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+        //    <p>Dear user,</p>
+
+        //    <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
+
+        //    <p>If you enter the wrong password one more time, your account will be <strong>temporarily locked</strong> for <strong>15 minutes</strong>.</p>
+
+        //    <p>If this wasn't you, we recommend changing your password immediately or contacting support.</p>
+
+        //    <br/>
+        //    <p>Best regards,<br/>Security Team - PresCrypt</p>
+        //</div>";
+
+        //                await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Failed Login Attempts", emailBody);
+        //            }
+
+
+        //            await _applicationDbContext.SaveChangesAsync();
+
+        //            return BadRequest(new { success = false, message = "Invalid email or password." });
+        //        }
+
+        //        // Reset failed attempts after successful login
+        //        user.FailedLoginAttempts = 0;
+        //        user.LastFailedLoginTime = null;
+
+        //        // 🔐 ADMIN ONLY 2FA
+        //        if (user.Role == "Admin")
+        //        {
+        //            string code = new Random().Next(100000, 999999).ToString();
+        //            user.TwoFactorCode = code;
+        //            user.TwoFactorExpiry = DateTime.UtcNow.AddMinutes(5);
+        //            await _applicationDbContext.SaveChangesAsync();
+
+        //            string verifyUrl = $"http://localhost:3000/Auth/Verify2FA?email={Uri.EscapeDataString(user.UserName)}";
+        //            string emailBody = $@"
+        //                <p>Your 2FA code is: <strong>{code}</strong></p>
+        //                <p>This code will expire in 5 minutes.</p>
+        //                <p>Please <a href='{verifyUrl}'>click here to verify your 2FA code</a> or copy and paste this link into your browser:</p>
+
+        //                <br/>
+        //                <p>If you did not request this login, please ignore this email.</p>";
+
+
+        //            await _emailService.SendEmailAsync(user.UserName, "Your Admin 2FA Code", emailBody);
+
+        //            return Ok(new
+        //            {
+        //                success = true,
+        //                message = "2FA code sent to your email.",
+        //                twoFactorRequired = true,
+        //                email = user.UserName
+        //            });
+        //        }
+
+        //        // For other roles, return token directly
+        //        var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+        //        Response.Cookies.Append("authToken", token, new CookieOptions
+        //        {
+        //            HttpOnly = true,
+        //            Secure = false, // Set to true in production with HTTPS
+        //            SameSite = SameSiteMode.Strict,
+        //            Expires = DateTimeOffset.UtcNow.AddHours(1)
+        //        });
+
+        //        await _applicationDbContext.SaveChangesAsync();
+        //        _logger.LogInformation($"Successful login for {user.UserName}");
+
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = $"{user.Role} login successful",
+        //            token = token,
+        //            user = new
+        //            {
+        //                id = user.UserId,
+        //                username = user.UserName,
+        //                role = user.Role
+        //            }
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Login error: {ex.Message}", ex);
+        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+        //    }
+        //}
+
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
@@ -562,6 +710,16 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
+                // ✅ NEW: Check if account is manually blocked
+                if (user.IsBlocked)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "🚫 Your account is blocked due to multiple failed attempts. Please contact admin to unlock it."
+                    });
+                }
+
                 if (user.Role == "DoctorPending")
                 {
                     return BadRequest(new
@@ -575,23 +733,21 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Please verify your email before logging in." });
                 }
 
-                // Check for lockout
-                // Check and reset if 15 minutes have passed since last failed attempt
+                // ✅ Auto-reset if 15 min passed, but only if not blocked
                 if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue)
                 {
                     if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
                     {
-                        // Reset the lockout
                         user.FailedLoginAttempts = 0;
                         user.LastFailedLoginTime = null;
+                        // ⚠️ Do NOT reset IsBlocked here — this must be done manually by admin
                         await _applicationDbContext.SaveChangesAsync();
                     }
                     else
                     {
-                        return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
+                        return BadRequest(new { message = "Account temporarily locked due to multiple failed login attempts. Try again later." });
                     }
                 }
-
 
                 var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
 
@@ -599,36 +755,42 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 {
                     user.FailedLoginAttempts += 1;
                     user.LastFailedLoginTime = DateTime.UtcNow;
-                    if (user.FailedLoginAttempts == 4)
+
+                    // ✅ NEW: Lock permanently if 5+ attempts
+                    if (user.FailedLoginAttempts >= 5)
+                    {
+                        user.IsBlocked = true;
+
+                        // Optional: Notify admin or user
+                        string blockEmail = @"
+                    <p><strong>Security Notice:</strong><br/>
+                    Your account has been <strong>blocked</strong> after 5 failed login attempts.<br/>
+                    Please contact the system administrator to reactivate your account.</p>";
+                        await _emailService.SendEmailAsync(user.UserName, "🚫 Account Blocked", blockEmail);
+                    }
+                    else if (user.FailedLoginAttempts == 4)
                     {
                         string emailBody = @"
-        <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
-            <p>Dear user,</p>
-
-            <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
-
-            <p>If you enter the wrong password one more time, your account will be <strong>temporarily locked</strong> for <strong>15 minutes</strong>.</p>
-
-            <p>If this wasn't you, we recommend changing your password immediately or contacting support.</p>
-
-            <br/>
-            <p>Best regards,<br/>Security Team - PresCrypt</p>
-        </div>";
-
+                    <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                        <p>Dear user,</p>
+                        <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
+                        <p>If you enter the wrong password one more time, your account will be <strong>locked</strong>.</p>
+                        <br/>
+                        <p>Best regards,<br/>PresCrypt Security Team</p>
+                    </div>";
                         await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Failed Login Attempts", emailBody);
                     }
 
-
                     await _applicationDbContext.SaveChangesAsync();
-
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
-                // Reset failed attempts after successful login
+                // ✅ Reset on successful login
                 user.FailedLoginAttempts = 0;
                 user.LastFailedLoginTime = null;
+                user.IsBlocked = false;
 
-                // 🔐 ADMIN ONLY 2FA
+                // Admin 2FA
                 if (user.Role == "Admin")
                 {
                     string code = new Random().Next(100000, 999999).ToString();
@@ -638,14 +800,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
                     string verifyUrl = $"http://localhost:3000/Auth/Verify2FA?email={Uri.EscapeDataString(user.UserName)}";
                     string emailBody = $@"
-                        <p>Your 2FA code is: <strong>{code}</strong></p>
-                        <p>This code will expire in 5 minutes.</p>
-                        <p>Please <a href='{verifyUrl}'>click here to verify your 2FA code</a> or copy and paste this link into your browser:</p>
-
-                        <br/>
-                        <p>If you did not request this login, please ignore this email.</p>";
-
-
+                <p>Your 2FA code is: <strong>{code}</strong></p>
+                <p>This code will expire in 5 minutes.</p>
+                <p><a href='{verifyUrl}'>Click here to verify</a></p>";
                     await _emailService.SendEmailAsync(user.UserName, "Your Admin 2FA Code", emailBody);
 
                     return Ok(new
@@ -657,18 +814,18 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     });
                 }
 
-                // For other roles, return token directly
+                // Generate JWT
                 var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
                 Response.Cookies.Append("authToken", token, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false, // Set to true in production with HTTPS
+                    Secure = false,
                     SameSite = SameSiteMode.Strict,
                     Expires = DateTimeOffset.UtcNow.AddHours(1)
                 });
 
                 await _applicationDbContext.SaveChangesAsync();
-                _logger.LogInformation($"Successful login for {user.UserName}");
+                _logger.LogInformation($"✅ Login successful for {user.UserName}");
 
                 return Ok(new
                 {
@@ -690,6 +847,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+
         [HttpPost]
         [Route("Verify2FA")]
         public IActionResult Verify2FA([FromBody] TwoFactorDTO model)
@@ -704,11 +862,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             // Clear the code after successful use
             user.TwoFactorCode = null;
             user.TwoFactorExpiry = null;
+
             var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-            Response.Cookies.Append("authToken", token, new CookieOptions
+
+            Response.Cookies.Append("token", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, // Set to true in production
+                Secure = false, // Set to true in production with HTTPS
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
@@ -728,8 +888,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
             });
         }
-
-
 
 
 
