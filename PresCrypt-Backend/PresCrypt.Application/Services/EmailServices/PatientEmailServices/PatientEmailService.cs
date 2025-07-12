@@ -12,6 +12,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<PatientEmailService> _logger;
+        private readonly IWebHostEnvironment _env;
 
         public PatientEmailService(IConfiguration configuration)
         {
@@ -19,41 +20,67 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
             _logger = null;  // No logger provided here
         }
 
-        public PatientEmailService(IConfiguration configuration, ILogger<PatientEmailService> logger)
+        public PatientEmailService(IConfiguration configuration, IWebHostEnvironment env, ILogger<PatientEmailService> logger)
         {
             _configuration = configuration;
             _logger = logger;  // Logger provided here
+            _env = env;
         }
 
 
         public void SendEmail(PatientAppointmentEmailDto request)
         {
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("prescrypt.health@gmail.com"));
-            email.To.Add(MailboxAddress.Parse(request.Receptor));
-            email.Subject = request.Title;
-
-            // Create the body builder
-            var builder = new BodyBuilder
+            try
             {
-                HtmlBody = request.Message
-            };
+                var email = new MimeMessage();
+                email.From.Add(MailboxAddress.Parse("prescrypt.health@gmail.com"));
+                email.To.Add(MailboxAddress.Parse(request.Receptor));
+                email.Subject = request.Title;
 
-            // Attach PDF if present
-            if (request.Attachment != null && !string.IsNullOrEmpty(request.Attachment.Base64Content))
-            {
-                var pdfBytes = Convert.FromBase64String(request.Attachment.Base64Content);
-                builder.Attachments.Add(request.Attachment.FileName, pdfBytes, ContentType.Parse(request.Attachment.ContentType));
+                var builder = new BodyBuilder();
+
+                // Embed logo image from wwwroot/images/logo.png
+                var logoPath = Path.Combine(_env.WebRootPath, "images", "logo.png");
+
+                if (File.Exists(logoPath))
+                {
+                    var logo = builder.LinkedResources.Add(logoPath);
+                    logo.ContentId = MimeUtils.GenerateMessageId();
+
+                    // Build HTML body with embedded image reference
+                    builder.HtmlBody = BuildAppointmentConfirmEmailBody(request.Title, request.Message, logo.ContentId);
+                }
+                else
+                {
+                    _logger?.LogWarning("Logo image not found at path: {Path}", logoPath);
+                    // fallback: use external URL or no image
+                    builder.HtmlBody = BuildAppointmentConfirmEmailBody(request.Title, request.Message, null);
+                }
+
+                // Attach PDF if present
+                if (request.Attachment != null && !string.IsNullOrEmpty(request.Attachment.Base64Content))
+                {
+                    var pdfBytes = Convert.FromBase64String(request.Attachment.Base64Content);
+                    builder.Attachments.Add(request.Attachment.FileName, pdfBytes, ContentType.Parse(request.Attachment.ContentType));
+                }
+
+                email.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                smtp.Connect(_configuration["EmailHost"], 587, SecureSocketOptions.StartTls);
+                smtp.Authenticate(_configuration["EmailUserName"], _configuration["EmailPassword"]);
+                smtp.Send(email);
+                smtp.Disconnect(true);
+
+                _logger?.LogInformation("Appointment confirmation email sent to {Email}", request.Receptor);
             }
-
-            email.Body = builder.ToMessageBody();
-
-            using var smtp = new SmtpClient();
-            smtp.Connect(_configuration["EmailHost"], 587, MailKit.Security.SecureSocketOptions.StartTls);
-            smtp.Authenticate(_configuration["EmailUserName"], _configuration["EmailPassword"]);
-            smtp.Send(email);
-            smtp.Disconnect(true);
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to send appointment confirmation email to {Email}", request.Receptor);
+                throw;
+            }
         }
+
 
 
         public async Task SendRescheduleConfirmationEmailAsync(AppointmentRescheduleEmailDto request)
@@ -172,6 +199,42 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
                 </div>
             </div>";
         }
+
+        private string BuildAppointmentConfirmEmailBody(string title, string message, string logoContentId)
+        {
+            // Use cid: for both header and footer images if logoContentId is provided
+            var logoSrc = !string.IsNullOrEmpty(logoContentId) ? $"cid:{logoContentId}" : "https://localhost:7021/images/logo.png";
+
+            return $@"
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6; border: 1px solid #ccc; border-radius: 8px; overflow: hidden;'>
+                <div style='background-color: #047857; padding: 20px; text-align: center;'>
+                    <img src='{logoSrc}' alt='PresCrypt Logo' style='height: 50px; margin-bottom: 10px;'/>
+                    <h1 style='color: #4CAF50; margin: 0;'>{title}</h1>
+                </div>
+
+                <div style='padding: 20px;'>
+                    <p>Dear Patient,</p>
+
+                    <p>{message}</p>
+
+                    <p><strong>Please do not reply to this email, as it is automated. For any queries, please contact us at <a href='mailto:prescrypt.customercare@gmail.com'>prescrypt.customercare@gmail.com</a>.</strong></p>
+                </div>
+
+                <div style='background-color: #f0f8ff; padding: 15px 20px; border-top: 1px solid #ddd;'>
+                    <h3 style='color: #094A4D; margin-top: 0;'>Contact Info</h3>
+                    <p style='margin: 4px 0;'><strong>Inquiry Hotline:</strong> 0762085246</p>
+                    <p style='margin: 4px 0;'><strong>Address:</strong> Bandaranayake Mawatha, Moratuwa 10400, Sri Lanka.</p>
+                    <p style='margin: 4px 0;'><strong>Email:</strong> <a href='mailto:prescrypt.health@gmail.com'>prescrypt.health@gmail.com</a></p>
+                </div>
+
+                <div style='background-color: #047857; padding: 15px 20px; color: white; text-align: center;'>
+                    <img src='{logoSrc}' alt='PresCrypt Logo' style='height: 50px; margin-bottom: 10px;'/>
+                    <p style='margin: 0;'>SERVICE PROVIDED BY<br/><strong>PresCrypt Health</strong></p>
+                </div>
+            </div>";
+        }
+
+
 
         public void SendOtpEmail(PatientOtpEmailDto request)
         {
