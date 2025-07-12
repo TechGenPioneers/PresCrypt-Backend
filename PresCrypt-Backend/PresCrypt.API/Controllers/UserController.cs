@@ -704,11 +704,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             // Clear the code after successful use
             user.TwoFactorCode = null;
             user.TwoFactorExpiry = null;
+
             var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-            Response.Cookies.Append("authToken", token, new CookieOptions
+
+            Response.Cookies.Append("token", token, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, // Set to true in production
+                Secure = false, // Set to true in production with HTTPS
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
@@ -728,8 +730,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
             });
         }
-
-
 
 
 
