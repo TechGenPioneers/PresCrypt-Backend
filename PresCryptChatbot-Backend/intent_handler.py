@@ -3,8 +3,6 @@ import re
 from google.generativeai import GenerativeModel
 import google.generativeai as genai
 from dotenv import load_dotenv
-
-
 from flask import request  # Assuming this is part of a Flask app
 
 load_dotenv()
@@ -35,7 +33,7 @@ def is_authorized(patient_id):
     if not token:
         return False
     try:
-        from jwt import decode  # type: ignore # Assume jwt is installed
+        from jwt import decode  # Assume jwt is installed
         decoded = decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
         return decoded.get("role") == "patient" and decoded.get("patient_id") == patient_id
     except Exception:

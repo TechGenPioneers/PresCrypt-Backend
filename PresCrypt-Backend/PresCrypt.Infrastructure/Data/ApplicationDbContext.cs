@@ -23,8 +23,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<AdminNotification> AdminNotifications { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<Payment> Payments { get; set; }
-    public DbSet<DoctorPatientAccessRequest> DoctorPatientAccessRequests { get; set; }
-
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

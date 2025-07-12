@@ -6,23 +6,51 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PresCrypt_Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDoctorPatientAccessTable : Migration
+    public partial class PythonBackendMerge : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsBlocked",
-                table: "User",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
+            migrationBuilder.DropColumn(
+                name: "PasswordHash",
+                table: "Patient");
+
+            migrationBuilder.DropColumn(
+                name: "ResetTokenExpiry",
+                table: "Patient");
+
+            migrationBuilder.RenameColumn(
+                name: "ResetToken",
+                table: "Patient",
+                newName: "BloodGroup");
 
             migrationBuilder.AddColumn<string>(
-                name: "PaymentId",
-                table: "Appointments",
-                type: "nvarchar(450)",
+                name: "TwoFactorCode",
+                table: "User",
+                type: "nvarchar(max)",
                 nullable: true);
+
+            migrationBuilder.AddColumn<DateTime>(
+                name: "TwoFactorExpiry",
+                table: "User",
+                type: "datetime2",
+                nullable: true);
+
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "ProfileImage",
+                table: "Patient",
+                type: "varbinary(max)",
+                nullable: true,
+                oldClrType: typeof(byte[]),
+                oldType: "varbinary(max)");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Gender",
+                table: "Patient",
+                type: "nvarchar(max)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
 
             migrationBuilder.CreateTable(
                 name: "AdminNotifications",
@@ -85,34 +113,6 @@ namespace PresCrypt_Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DoctorPatientAccessRequests",
-                columns: table => new
-                {
-                    RequestId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DoctorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PatientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RequestDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DoctorPatientAccessRequests", x => x.RequestId);
-                    table.ForeignKey(
-                        name: "FK_DoctorPatientAccessRequests_Doctor_DoctorId",
-                        column: x => x.DoctorId,
-                        principalTable: "Doctor",
-                        principalColumn: "DoctorId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DoctorPatientAccessRequests_Patient_PatientId",
-                        column: x => x.PatientId,
-                        principalTable: "Patient",
-                        principalColumn: "PatientId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Messages",
                 columns: table => new
                 {
@@ -129,25 +129,6 @@ namespace PresCrypt_Backend.Migrations
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "Payments",
-                columns: table => new
-                {
-                    PaymentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PaymentAmount = table.Column<double>(type: "float", nullable: false),
-                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Payments", x => x.PaymentId);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Appointments_PaymentId",
-                table: "Appointments",
-                column: "PaymentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AdminNotifications_DoctorId",
@@ -168,32 +149,11 @@ namespace PresCrypt_Backend.Migrations
                 name: "IX_DoctorNotifications_DoctorId",
                 table: "DoctorNotifications",
                 column: "DoctorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DoctorPatientAccessRequests_DoctorId",
-                table: "DoctorPatientAccessRequests",
-                column: "DoctorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DoctorPatientAccessRequests_PatientId",
-                table: "DoctorPatientAccessRequests",
-                column: "PatientId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Appointments_Payments_PaymentId",
-                table: "Appointments",
-                column: "PaymentId",
-                principalTable: "Payments",
-                principalColumn: "PaymentId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Appointments_Payments_PaymentId",
-                table: "Appointments");
-
             migrationBuilder.DropTable(
                 name: "AdminNotifications");
 
@@ -201,25 +161,53 @@ namespace PresCrypt_Backend.Migrations
                 name: "DoctorNotifications");
 
             migrationBuilder.DropTable(
-                name: "DoctorPatientAccessRequests");
-
-            migrationBuilder.DropTable(
                 name: "Messages");
 
-            migrationBuilder.DropTable(
-                name: "Payments");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Appointments_PaymentId",
-                table: "Appointments");
-
             migrationBuilder.DropColumn(
-                name: "IsBlocked",
+                name: "TwoFactorCode",
                 table: "User");
 
             migrationBuilder.DropColumn(
-                name: "PaymentId",
-                table: "Appointments");
+                name: "TwoFactorExpiry",
+                table: "User");
+
+            migrationBuilder.RenameColumn(
+                name: "BloodGroup",
+                table: "Patient",
+                newName: "ResetToken");
+
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "ProfileImage",
+                table: "Patient",
+                type: "varbinary(max)",
+                nullable: false,
+                defaultValue: new byte[0],
+                oldClrType: typeof(byte[]),
+                oldType: "varbinary(max)",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Gender",
+                table: "Patient",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)",
+                oldNullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "PasswordHash",
+                table: "Patient",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<DateTime>(
+                name: "ResetTokenExpiry",
+                table: "Patient",
+                type: "datetime2",
+                nullable: true);
         }
     }
 }

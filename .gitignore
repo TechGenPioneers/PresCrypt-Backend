@@ -137,12 +137,3 @@ FodyWeavers.xsd
 project.assets.json
 project.nuget.cache
 /obj
-# Python virtualenv
-PresCryptChatbot-Backend/venv/
-
-# Python cache
-PresCryptChatbot-Backend/__pycache__/
-
-# Secrets
-PresCryptChatbot-Backend/.env
-
