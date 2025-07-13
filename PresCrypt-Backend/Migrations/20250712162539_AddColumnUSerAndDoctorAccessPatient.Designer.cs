@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250711181130_RemoveFKPayment")]
-    partial class RemoveFKPayment
+    [Migration("20250712162539_AddColumnUSerAndDoctorAccessPatient")]
+    partial class AddColumnUSerAndDoctorAccessPatient
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -312,6 +312,39 @@ namespace PresCrypt_Backend.Migrations
                     b.HasIndex("DoctorId");
 
                     b.ToTable("DoctorNotifications");
+                });
+
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorPatientAccessRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<string>("DoctorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PatientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("RequestDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("DoctorPatientAccessRequests");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorRequest", b =>
@@ -614,6 +647,9 @@ namespace PresCrypt_Backend.Migrations
                     b.Property<int>("FailedLoginAttempts")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastFailedLoginTime")
                         .HasColumnType("datetime2");
 
@@ -758,6 +794,25 @@ namespace PresCrypt_Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.DoctorPatientAccessRequest", b =>
+                {
+                    b.HasOne("Doctor", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PresCrypt_Backend.PresCrypt.Core.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("PresCrypt_Backend.PresCrypt.Core.Models.Patient", b =>

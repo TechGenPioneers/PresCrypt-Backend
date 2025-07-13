@@ -20,7 +20,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         public IActionResult GeneratePDF([FromBody] AppointmentPDFDetailsDto details)
         {
             var pdf = _pdfService.GeneratePDF(details);
-            return File(pdf, "application/pdf", "PatientReport.pdf");
+            return File(pdf, "application/pdf", "Appointment Slip.pdf");
         }
 
         [HttpPost("Reports/Generate")]

@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PresCrypt_Backend.PresCrypt.API.Dto;
-using PresCrypt_Backend.PresCrypt.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
 {
@@ -54,5 +54,37 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
 
             return patient;
         }
+
+        public async Task AddInquiryAsync(PatientContactUsDto dto)
+        {
+            
+            var lastInquiry = await _context.PatientContactUs
+                                    .OrderByDescending(i => i.InquiryId)
+                                    .FirstOrDefaultAsync();
+
+            string newId = "IN000";
+            if (lastInquiry != null)
+            {
+                // Extract number and increment
+                int lastNumber = int.Parse(lastInquiry.InquiryId.Substring(2));
+                newId = "IN" + (lastNumber + 1).ToString("D3");
+            }
+
+            var entity = new PatientContactUs
+            {
+                InquiryId = newId,
+                PatientId = dto.PatientId,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                Topic = dto.Topic,
+                Description = dto.Description
+            };
+
+            _context.PatientContactUs.Add(entity);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
