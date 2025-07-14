@@ -26,6 +26,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public bool EmailVerified { get; set; } = true;
 
         public int FailedLoginAttempts { get; set; } = 0;
+        public bool IsBlocked { get; set; } = false;
+
         public string? TwoFactorCode { get; set; }
 
         public DateTime? TwoFactorExpiry { get; set; }

@@ -21,7 +21,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<DateTime?> GetNextAvailableSlotAsync(string doctorId, string hospitalId, DateTime afterDate);
         Task<List<AppointmentRescheduleResultDto>> RescheduleAppointmentsAsync(List<string> appointmentIds);
         Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId);
-        Task<int> RescheduleAppointmentsAsync(AppointmentRescheduleDto dto);
+        //Task<int> RescheduleAppointmentsAsync(AppointmentRescheduleDto dto);
         Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate);
         Task CancelAppointmentAsync(string appointmentId, string patientId);
 

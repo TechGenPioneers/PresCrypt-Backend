@@ -7,10 +7,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ChatController : ControllerBase
+    public class ChatMsgController : ControllerBase
     {
         private readonly IChatServices _chatServices;
-        public ChatController(IChatServices chatServices)
+        public ChatMsgController(IChatServices chatServices)
         {
             _chatServices = chatServices;
         }

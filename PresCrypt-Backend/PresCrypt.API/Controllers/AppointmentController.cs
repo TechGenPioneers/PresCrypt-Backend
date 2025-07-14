@@ -81,6 +81,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
+
+
         [HttpGet("recent-by-doctor/{doctorId}")]
         public async Task<IActionResult> GetRecentAppointmentsByDoctor(string doctorId)
         {
@@ -261,17 +263,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
 
 
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAppointment(string id)
-        {
-            var result = await _appointmentService.DeleteAppointmentAsync(id);
-
-            if (!result)
-                return NotFound("Appointment not found");
-
-            return NoContent();
         }
 
         [HttpGet("Appointments/GetByDateRange")]
