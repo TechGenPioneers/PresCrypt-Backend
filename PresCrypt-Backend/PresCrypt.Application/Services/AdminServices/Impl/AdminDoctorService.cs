@@ -156,6 +156,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         var user = await _context.User.FirstAsync(u => u.UserName == newDoctorDto.Doctor.Email);
                         Debug.WriteLine(user.Role);
                         user.Role = "Doctor";
+                        user.EmailVerified=true;
                         await _context.SaveChangesAsync();
 
                     }
@@ -184,9 +185,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
                         try
                         {
-
-
-
                             //call the notification service
                             await _adminDashboardService.CreateAndSendNotification(notificationDto);
                         }
