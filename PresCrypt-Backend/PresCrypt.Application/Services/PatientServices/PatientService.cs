@@ -85,6 +85,5 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             _context.PatientContactUs.Add(entity);
             await _context.SaveChangesAsync();
         }
-
     }
 }

@@ -6,8 +6,9 @@ using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
-using PresCrypt_Backend.PresCrypt.Infrastructure.Repositories;
-using PresCrypt_Backend.PresCrypt.Core.Models;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices
 {
@@ -15,21 +16,18 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoSer
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
-        private readonly IDoctorRepository _doctorRepository;
-        private readonly IPatientRepository _patientRepository;
+        private readonly ApplicationDbContext _context;
 
         public VideoCallService(
             HttpClient httpClient,
             IConfiguration configuration,
-            IDoctorRepository doctorRepository,
-            IPatientRepository patientRepository)
+            ApplicationDbContext context)
         {
             _httpClient = httpClient;
             _apiKey = configuration["Whereby:ApiKey"];
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _apiKey);
-            _doctorRepository = doctorRepository;
-            _patientRepository = patientRepository;
+            _context = context;
         }
 
         public async Task<string> CreateRoomAsync(string roomName)
@@ -72,24 +70,32 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoSer
             return Task.FromResult($"https://prescrypt-telehealth.whereby.com/{roomId}");
         }
 
-        public async Task<string> GetDoctorNameAsync(string doctorId)
+        public async Task<DoctorPatientVideoCallDto> GetDoctorNameAsync(string doctorId)
         {
-            var doctor = await _doctorRepository.GetByIdAsync(doctorId);
-            if (doctor == null)
-            {
+            var doctorName = await _context.Doctor
+                .AsNoTracking()
+                .Where(d => d.DoctorId == doctorId)
+                .Select(d => new DoctorPatientVideoCallDto(d.FirstName, d.LastName))
+                .FirstOrDefaultAsync();
+
+            if (doctorName == null)
                 throw new KeyNotFoundException($"Doctor with ID {doctorId} not found");
-            }
-            return $"{doctor.FirstName} {doctor.LastName}";
+
+            return doctorName;
         }
 
-        public async Task<string> GetPatientNameAsync(string patientId)
+        public async Task<DoctorPatientVideoCallDto> GetPatientNameAsync(string patientId)
         {
-            var patient = await _patientRepository.GetByIdAsync(patientId);
-            if (patient == null)
-            {
+            var patientName = await _context.Patient
+                .AsNoTracking()
+                .Where(p => p.PatientId == patientId)
+                .Select(p => new DoctorPatientVideoCallDto(p.FirstName, p.LastName))
+                .FirstOrDefaultAsync();
+
+            if (patientName == null)
                 throw new KeyNotFoundException($"Patient with ID {patientId} not found");
-            }
-            return $"{patient.FirstName} {patient.LastName}";
+
+            return patientName;
         }
     }
 }
