@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 
@@ -6,6 +7,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Patient")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
