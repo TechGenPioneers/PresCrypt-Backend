@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using System.Diagnostics;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -8,11 +10,13 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
     {
         private readonly ApplicationDbContext _context;
         private readonly IAdminDashboardService _adminDashboardService;
+        private readonly IAdminEmailService _adminEmailService;
 
-        public AdminDoctorRequestService(ApplicationDbContext context, IAdminDashboardService adminDashboardService)
+        public AdminDoctorRequestService(ApplicationDbContext context, IAdminDashboardService adminDashboardService, IAdminEmailService adminEmailService)
         {
             _context = context;
             _adminDashboardService=adminDashboardService;
+            _adminEmailService=adminEmailService;
         }
 
         public async Task<List<AdminAllDoctorRequestDto>> GetAllDoctorRequest()
@@ -156,6 +160,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 return "Doctor request not found.";
             }
 
+            AdminDoctorRequestDto doctor = new AdminDoctorRequestDto
+            {
+                FirstName = doctorRequest.FirstName,
+                LastName = doctorRequest.LastName,
+                Email = doctorRequest.Email
+            };
+
+
             try
             {
                 // Fetch the request
@@ -181,6 +193,16 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 {
                     //call the notification service
                     await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                }
+                catch (Exception ex)
+                {
+                    return $"Unexpected error: {ex.Message} ";
+                }
+
+                try
+                {
+
+                    await _adminEmailService.ApproveEmail(doctor);
                 }
                 catch (Exception ex)
                 {
