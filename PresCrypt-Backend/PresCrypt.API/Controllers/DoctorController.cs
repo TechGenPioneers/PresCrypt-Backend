@@ -100,5 +100,41 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        [HttpPost("request-access")]
+        public async Task<IActionResult> RequestAccessToPatient([FromBody] DoctorAccessRequestDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.DoctorId) || string.IsNullOrEmpty(dto.PatientId))
+            {
+                return BadRequest(new { message = "DoctorId and PatientId are required." });
+            }
+
+            // 🧠 Insert into RequestAccessToPatientRecords
+            var requestRecord = new DoctorPatientAccessRequest
+            {
+                DoctorId = dto.DoctorId,
+                PatientId = dto.PatientId,
+                RequestDateTime = DateTime.UtcNow,
+                Status = "Pending"
+            };
+            _context.DoctorPatientAccessRequests.Add(requestRecord);
+
+            // 📩 Insert into PatientNotifications
+            var notification = new PatientNotifications
+            {
+                DoctorId = dto.DoctorId,
+                PatientId = dto.PatientId,
+                Title = dto.Title ?? "Access Request to Health Records",
+                Message = dto.Message ?? "A doctor is requesting access to your medical records.",
+                Type = "AccessRequest",
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            };
+            _context.PatientNotifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Request sent to patient successfully." });
+        }
+
     }
 }
