@@ -101,12 +101,13 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
 builder.Services.AddControllers();
-var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Set up Entity Framework DbContext with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.CommandTimeout(120) // ⏱ Timeout in seconds (e.g., 2 minutes)
+    ));
 
 // Configure CORS to allow frontend access
 builder.Services.AddCors(options =>

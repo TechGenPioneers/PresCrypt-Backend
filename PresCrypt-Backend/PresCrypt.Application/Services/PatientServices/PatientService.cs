@@ -85,6 +85,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             _context.PatientContactUs.Add(entity);
             await _context.SaveChangesAsync();
         }
+        public async Task<string?> GetPatientIdByEmailAsync(string email)
+        {
+            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.Email == email);
+            return patient?.PatientId;
+        }
 
     }
 }
