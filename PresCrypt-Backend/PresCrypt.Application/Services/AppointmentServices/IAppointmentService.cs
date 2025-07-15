@@ -22,9 +22,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<List<AppointmentRescheduleResultDto>> RescheduleAppointmentsAsync(List<string> appointmentIds);
         Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId);
         //Task<int> RescheduleAppointmentsAsync(AppointmentRescheduleDto dto);
-        Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate);
+        Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate, string? PatientId);
         Task CancelAppointmentAsync(string appointmentId, string patientId);
 
+        Task<IEnumerable<AppointmentViewDialogDto>> GetAppointmentsByPatientIdAndDateAsync(string patientId, DateTime date);
     }
+
 }
+
 
