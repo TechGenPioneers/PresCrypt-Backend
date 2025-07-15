@@ -17,7 +17,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             _context = context;
         }
 
-        public async Task<AdmindashboardDto> GetDashboardData()
+        public async Task<AdmindashboardDto> GetDashboardData(string userName)
         {
             var dashboardData = new AdmindashboardDto();
 
@@ -39,7 +39,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 .OrderBy(a => a.Day)
                 .ToArray();
 
+            var user = await _context.Admin.FirstOrDefaultAsync(d => d.Email == userName);
 
+            if(user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            dashboardData.AdminName = user.FirstName+" "+user.LastName;
             dashboardData.PatientVisit = await _context.Patient
                  .CountAsync(p => p.LastLogin.HasValue && p.LastLogin.Value.Date == DateTime.Today);
 

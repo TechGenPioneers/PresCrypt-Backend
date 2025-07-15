@@ -12,7 +12,6 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
-using PresCrypt_Backend.PresCrypt.Infrastructure.Repositories;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.PatientPDFServices;
@@ -24,6 +23,7 @@ using Microsoft.AspNetCore.SignalR;
 using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,7 +46,7 @@ builder.Services.AddLogging();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
-//builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
+builder.Services.AddScoped<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
@@ -61,8 +61,6 @@ builder.Services.AddScoped<DoctorReportService>();
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IChatServices, ChatServices>();
-builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
 
 // From SCRUM-29
