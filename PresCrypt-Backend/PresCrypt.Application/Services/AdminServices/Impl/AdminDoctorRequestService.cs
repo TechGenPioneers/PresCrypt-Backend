@@ -54,6 +54,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Email = d.Email,
                     Specialization = d.Specialization,
                     SLMCRegId = d.SLMCRegId,
+                    SLMCIdImage=d.SLMCIdImage,
                     NIC = d.NIC,
                     Charge=d.Charge,
                     EmailVerified = d.EmailVerified,
