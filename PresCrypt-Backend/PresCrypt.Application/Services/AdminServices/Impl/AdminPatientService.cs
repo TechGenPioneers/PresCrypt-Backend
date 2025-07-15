@@ -45,6 +45,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                             LastName = x.Patient.LastName,
                             DOB = x.Patient.DOB.ToString("yyyy-MM-dd"),
                             Gender = x.Patient.Gender,
+                            ProfileImage=x.Patient.ProfileImage,
                             LastAppointmentDoctorName = doctor != null ? doctor.FirstName + " " + doctor.LastName : null,
                             LastAppointmentDoctorID = doctor?.DoctorId,
                             LastAppointmentDate = x.LastAppointment?.Date.ToString("yyyy-MM-dd"),

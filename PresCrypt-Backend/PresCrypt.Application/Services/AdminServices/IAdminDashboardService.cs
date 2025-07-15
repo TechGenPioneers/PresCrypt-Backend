@@ -4,7 +4,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
 {
     public interface IAdminDashboardService
     {
-        public Task<AdmindashboardDto> GetDashboardData();
+        public Task<AdmindashboardDto> GetDashboardData(string userName);
 
         Task CreateAndSendNotification(AdminNotificationDto adminNotification);
         Task<List<AdminNotificationDto>> GetNotifications();
