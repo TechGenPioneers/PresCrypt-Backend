@@ -25,6 +25,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate, string? PatientId);
         Task CancelAppointmentAsync(string appointmentId, string patientId);
 
+        Task<IEnumerable<AppointmentViewDialogDto>> GetAppointmentsByPatientIdAndDateAsync(string patientId, DateTime date);
     }
+
 }
+
 

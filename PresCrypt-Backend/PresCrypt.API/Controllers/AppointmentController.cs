@@ -276,6 +276,23 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(appointments);
         }
 
+        [HttpGet("patient/{patientId}/date/{date}")]
+        public async Task<IActionResult> GetAppointmentsByPatientIdAndDate(string patientId, string date)
+        {
+            if (!DateTime.TryParse(date, out DateTime parsedDate))
+            {
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+            }
+
+            var appointments = await _appointmentService.GetAppointmentsByPatientIdAndDateAsync(patientId, parsedDate);
+
+            if (appointments == null || !appointments.Any())
+            {
+                return NotFound("No appointments found for the specified date.");
+            }
+
+            return Ok(appointments);
+        }
 
     }
 }

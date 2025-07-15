@@ -538,6 +538,26 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<AppointmentViewDialogDto>> GetAppointmentsByPatientIdAndDateAsync(string patientId, DateTime date)
+        {
+            return await _context.Appointments
+                .Where(a => a.PatientId == patientId && a.Date == DateOnly.FromDateTime(date))
+                .Include(a => a.Doctor)
+                .Include(a => a.Hospital)
+                .Select(a => new AppointmentViewDialogDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    DoctorName = a.Doctor.FirstName + " " +  a.Doctor.LastName,
+                    Specialization = a.Doctor.Specialization,
+                    HospitalName = a.Hospital.HospitalName,
+                    AppointmentTime = a.Time.ToString("HH:mm"),
+                    Status = a.Status,
+                    AppointmentDate = a.Date 
+                })
+                .ToListAsync();
+        }
+
+
 
 
     }
