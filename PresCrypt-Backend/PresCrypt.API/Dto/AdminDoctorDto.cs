@@ -12,6 +12,7 @@
         public string Email { get; set; }
         public string Specialization { get; set; }
         public string SlmcLicense { get; set; }
+        public byte[]? slmcIdImage { get; set; }
         public string NIC { get; set; }
         public string? Description { get; set; }
         public bool? EmailVerified { get; set; }
