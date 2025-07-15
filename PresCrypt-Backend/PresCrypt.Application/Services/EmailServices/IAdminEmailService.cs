@@ -6,5 +6,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices
     {
         Task<string> SendEmail(AdminEmailDto adminEmailDto);
         Task ApproveEmail(AdminDoctorRequestDto adminDoctorRequestDto);
+        Task ReplyMsg(AdminContactUsDto adminContactUsDto);
     }
 }
