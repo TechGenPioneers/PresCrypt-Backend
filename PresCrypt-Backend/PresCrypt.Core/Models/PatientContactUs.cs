@@ -37,4 +37,8 @@ public class PatientContactUs
     [Required]
     public string Description { get; set; }
 
+    public string ? ReplyMessage { get; set; }
+
+    public bool? IsRead { get; set; } = false;
+
 }
