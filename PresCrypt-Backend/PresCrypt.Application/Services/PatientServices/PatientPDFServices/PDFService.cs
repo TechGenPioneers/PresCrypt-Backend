@@ -207,7 +207,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
 
                 row.RelativeColumn().AlignMiddle().Column(col =>
                 {
-                    col.Item().Text("PRESCRYPT").SemiBold().FontSize(24).FontColor(Colors.White);
+                    col.Item().Text("PresCrypt").SemiBold().FontSize(24).FontColor(Colors.White);
                     col.Item().Text("Appointment List").Italic().FontSize(14).FontColor("#E0E0E0");
                 });
             });

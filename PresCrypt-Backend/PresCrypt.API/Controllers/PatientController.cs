@@ -69,6 +69,19 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(new { message = "Inquiry submitted successfully" });
         }
 
+        [HttpGet("id-by-email")]
+        public async Task<IActionResult> GetPatientIdByEmail([FromQuery] string email)
+        {
+            var patientId = await _patientService.GetPatientIdByEmailAsync(email);
+
+            if (string.IsNullOrEmpty(patientId))
+            {
+                return NotFound(new { message = "Patient not found for the provided email." });
+            }
+
+            return Ok(new { patientId });
+        }
+
 
     }
 }

@@ -508,13 +508,20 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 Message = message
             };
         }
-        public async Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate)
+        public async Task<List<PatientAppointmentListDto>> GetAppointmentsByDateRangeAsync(DateOnly startDate, DateOnly endDate, string? patientId)
         {
-            return await _context.Appointments
-                .Where(a => a.Date >= startDate && a.Date <= endDate)
-                .Include(a => a.Patient)//from Patient Table
-                .Include(a => a.Doctor)//from Doctor Table
-                .Include(a => a.Hospital)//from Hospital Table
+            var query = _context.Appointments
+                .Where(a => a.Date >= startDate && a.Date <= endDate);
+
+            if (!string.IsNullOrWhiteSpace(patientId))
+            {
+                query = query.Where(a => a.PatientId == patientId);
+            }
+
+            return await query
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .Include(a => a.Hospital)
                 .Select(a => new PatientAppointmentListDto
                 {
                     AppointmentId = a.AppointmentId,
@@ -530,6 +537,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 })
                 .ToListAsync();
         }
+
+
 
     }
 }
