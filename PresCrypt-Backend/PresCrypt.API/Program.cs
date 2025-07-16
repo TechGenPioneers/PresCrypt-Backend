@@ -12,7 +12,6 @@ using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.PatientEmailServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices;
-using PresCrypt_Backend.PresCrypt.Infrastructure.Repositories;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.PatientPDFServices;
@@ -24,6 +23,7 @@ using Microsoft.AspNetCore.SignalR;
 using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,7 +46,7 @@ builder.Services.AddLogging();
 builder.Services.AddScoped<IDoctorService, DoctorServices>();
 builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 builder.Services.AddScoped<IAdminDoctorRequestService, AdminDoctorRequestService>();
-//builder.Services.AddTransient<IAdminEmailService, AdminEmailService>();
+builder.Services.AddScoped<IAdminEmailService, AdminEmailService>();
 builder.Services.AddScoped<AdminDoctorUtil>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
@@ -55,14 +55,13 @@ builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
+builder.Services.AddScoped<IAdminContactUsService, AdminContactUsService>();
 builder.Services.AddScoped<DoctorReportService>();
 
 // From dev
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IChatServices, ChatServices>();
-builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
 
 // From SCRUM-29
@@ -101,12 +100,13 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddScoped<PatientController>();
 builder.Services.AddScoped<DoctorController>();
 builder.Services.AddControllers();
-var connction = builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Set up Entity Framework DbContext with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.CommandTimeout(120) // ⏱ Timeout in seconds (e.g., 2 minutes)
+    ));
 
 // Configure CORS to allow frontend access
 builder.Services.AddCors(options =>

@@ -150,6 +150,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     {
                         allResult = await _adminDoctorRequestService.ApprovRequest(newDoctorDto.Doctor.RequestID);
 
+
+                        // change user role ( doctorPending --> doctor )
+
+                        var user = await _context.User.FirstAsync(u => u.UserName == newDoctorDto.Doctor.Email);
+                        Debug.WriteLine(user.Role);
+                        user.Role = "Doctor";
+                        user.EmailVerified=true;
+                        await _context.SaveChangesAsync();
+
                     }
                     else
                     {
@@ -171,6 +180,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                             Title = "New Doctor Registered",
                             Type = "Alert"
                         };
+
+                        
 
                         try
                         {
@@ -216,6 +227,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Email = d.Email,
                     Specialization = d.Specialization,
                     SlmcLicense = d.SLMCRegId,
+                    slmcIdImage = d.SLMCIdImage,
                     NIC = d.NIC,
                     Charge=d.Charge,
                     Description = d.Description,

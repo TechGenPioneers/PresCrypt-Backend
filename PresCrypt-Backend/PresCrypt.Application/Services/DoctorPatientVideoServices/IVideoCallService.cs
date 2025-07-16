@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoServices
 {
@@ -7,7 +8,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientVideoSer
         Task<string> CreateRoomAsync(string roomName);
         Task<string> GetRoomAsync(string roomId);
         Task<string> GenerateAccessUrlAsync(string roomId, string userRole);
-        Task<string> GetDoctorNameAsync(string doctorId);
-        Task<string> GetPatientNameAsync(string patientId);
+        Task<DoctorPatientVideoCallDto> GetDoctorNameAsync(string doctorId);
+        Task<DoctorPatientVideoCallDto> GetPatientNameAsync(string patientId);
     }
 }

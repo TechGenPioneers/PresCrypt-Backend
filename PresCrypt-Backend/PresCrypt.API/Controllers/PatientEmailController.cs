@@ -42,6 +42,19 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok("Reschedule confirmation email sent successfully.");
         }
 
+        [HttpPost("send-otp")]
+        public IActionResult SendOtp([FromBody] PatientOtpEmailDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Otp))
+            {
+                return BadRequest("Email and OTP are required.");
+            }
+
+            _patientEmailService.SendOtpEmail(request);
+
+            return Ok("OTP sent successfully.");
+        }
+
 
 
     }

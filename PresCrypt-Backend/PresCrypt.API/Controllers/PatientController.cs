@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -66,8 +67,31 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(patientDetails);
         }
 
+        [HttpPost("ContactUs")]
+        public async Task<IActionResult> ContactUs([FromBody] PatientContactUsDto dto)
 
-        
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _patientService.AddInquiryAsync(dto);
+            return Ok(new { message = "Inquiry submitted successfully" });
+        }
+
+        [HttpGet("id-by-email")]
+        public async Task<IActionResult> GetPatientIdByEmail([FromQuery] string email)
+        {
+            var patientId = await _patientService.GetPatientIdByEmailAsync(email);
+
+            if (string.IsNullOrEmpty(patientId))
+            {
+                return NotFound(new { message = "Patient not found for the provided email." });
+            }
+
+            return Ok(new { patientId });
+        }
+
+
     }
 }
 

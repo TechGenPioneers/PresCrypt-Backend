@@ -25,6 +25,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Payment> Payments { get; set; }
     public DbSet<DoctorPatientAccessRequest> DoctorPatientAccessRequests { get; set; }
 
+    public DbSet<PatientContactUs> PatientContactUs { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -21,18 +21,33 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         //get all dashboard data (patient vists , today appointments , doctor count and patient count)
-        [HttpGet ("GetAllData")]
-        public async Task<IActionResult> GetDashboardData()
+        [HttpGet("GetAllData")]
+        public async Task<IActionResult> GetDashboardData([FromQuery] string userName)
         {
-            // Simulate fetching data from a service
-            var dashboardData = await _adminDashboardService.GetDashboardData();
-            if (dashboardData == null)
+            if (string.IsNullOrWhiteSpace(userName))
             {
-                return NotFound("Dashboard data not found.");
+                return BadRequest("Username is required.");
             }
-            return Ok(dashboardData);
+
+            try
+            {
+                var dashboardData = await _adminDashboardService.GetDashboardData(userName);
+
+                if (dashboardData == null)
+                {
+                    return NotFound("Dashboard data not found.");
+                }
+
+                return Ok(dashboardData);
+            }
+            catch (Exception ex)
+            {
+                // Optional: log the exception here
+                return StatusCode(500, $"An error occurred while fetching dashboard data: {ex.Message}");
+            }
         }
-        
+
+
         //get all notifications
         [HttpGet("GetAllNotifications")]
         public async Task<IActionResult> GetAllNotifications()

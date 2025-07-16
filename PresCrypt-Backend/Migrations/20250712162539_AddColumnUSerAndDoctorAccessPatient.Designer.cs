@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace PresCrypt_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250712035335_AddDoctorPatientAccessTable")]
-    partial class AddDoctorPatientAccessTable
+    [Migration("20250712162539_AddColumnUSerAndDoctorAccessPatient")]
+    partial class AddColumnUSerAndDoctorAccessPatient
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
