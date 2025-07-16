@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Doctor")]
     [EnableCors("AllowReactApp")]
     public class DoctorController : ControllerBase
     {
@@ -95,6 +97,63 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         new[] { nameof(Name), nameof(Specialization), nameof(HospitalName) }
                     );
                 }
+            }
+        }
+
+        [HttpGet("get-doctor-id")]
+        public async Task<IActionResult> GetDoctorIdByUserName()
+        {
+            string? userName = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userName))
+                return BadRequest("User not authenticated");
+
+            var doctor = await _context.Doctor
+                .Where(d => d.Email == userName)
+                .Select(d => new { d.DoctorId })
+                .FirstOrDefaultAsync();
+
+            if (doctor == null)
+                return NotFound("Doctor not found");
+
+            return Ok(new { doctorId = doctor.DoctorId });
+        }
+
+        [HttpPost("request-patient-access")]
+        public async Task<IActionResult> RequestPatientAccess([FromBody] DoctorAccessRequestDto dto)
+        {
+            try
+            {
+                var accessRequest = new DoctorPatientAccessRequest
+                {
+                    DoctorId = dto.DoctorId,
+                    PatientId = dto.PatientId,
+                    RequestDateTime = DateTime.UtcNow,
+                    Status = "Pending"
+                };
+
+                _context.DoctorPatientAccessRequests.Add(accessRequest);
+
+                var notification = new PatientNotifications
+                {
+                    PatientId = dto.PatientId,
+                    DoctorId = dto.DoctorId,
+                    Title = dto.Title,
+                    Message = dto.Message,
+                    Type = "AccessRequest",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.PatientNotifications.Add(notification);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Access request sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 

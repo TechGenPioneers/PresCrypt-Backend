@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.Core.Models; // Use your correct namespace heere
 using PresCrypt_Backend.PresCrypt.API.Hubs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Patient,Doctor")]
     public class PatientNotificationController : ControllerBase
     {
         private readonly IHubContext<PatientNotificationHub> _hub;

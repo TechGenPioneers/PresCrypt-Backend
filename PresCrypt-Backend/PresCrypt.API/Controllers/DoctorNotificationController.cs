@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using PresCrypt_Backend.PresCrypt.API.Dto;
@@ -9,6 +10,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Doctor")]
     public class DoctorNotificationsController : ControllerBase
     {
         private readonly IDoctorNotificationService _notificationService;
