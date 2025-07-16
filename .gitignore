@@ -146,3 +146,9 @@ PresCryptChatbot-Backend/__pycache__/
 # Secrets
 PresCryptChatbot-Backend/.env
 
+# Ignore sensitive app settings
+appsettings.json
+appsettings.*.json
+
+
+PresCrypt-Backend/PresCrypt.API/appsettings.json
