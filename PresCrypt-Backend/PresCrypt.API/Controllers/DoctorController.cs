@@ -12,7 +12,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Doctor")]
+    //[Authorize(Roles = "Doctor")]
     [EnableCors("AllowReactApp")]
     public class DoctorController : ControllerBase
     {
@@ -100,40 +100,61 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
-        [HttpPost("request-access")]
-        public async Task<IActionResult> RequestAccessToPatient([FromBody] DoctorAccessRequestDto dto)
+        [HttpGet("get-doctor-id")]
+        public async Task<IActionResult> GetDoctorIdByUserName()
         {
-            if (string.IsNullOrEmpty(dto.DoctorId) || string.IsNullOrEmpty(dto.PatientId))
+            string? userName = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userName))
+                return BadRequest("User not authenticated");
+
+            var doctor = await _context.Doctor
+                .Where(d => d.Email == userName)
+                .Select(d => new { d.DoctorId })
+                .FirstOrDefaultAsync();
+
+            if (doctor == null)
+                return NotFound("Doctor not found");
+
+            return Ok(new { doctorId = doctor.DoctorId });
+        }
+
+        [HttpPost("request-patient-access")]
+        public async Task<IActionResult> RequestPatientAccess([FromBody] DoctorAccessRequestDto dto)
+        {
+            try
             {
-                return BadRequest(new { message = "DoctorId and PatientId are required." });
+                var accessRequest = new DoctorPatientAccessRequest
+                {
+                    DoctorId = dto.DoctorId,
+                    PatientId = dto.PatientId,
+                    RequestDateTime = DateTime.UtcNow,
+                    Status = "Pending"
+                };
+
+                _context.DoctorPatientAccessRequests.Add(accessRequest);
+
+                var notification = new PatientNotifications
+                {
+                    PatientId = dto.PatientId,
+                    DoctorId = dto.DoctorId,
+                    Title = dto.Title,
+                    Message = dto.Message,
+                    Type = "AccessRequest",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.PatientNotifications.Add(notification);
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Access request sent successfully" });
             }
-
-            // 🧠 Insert into RequestAccessToPatientRecords
-            var requestRecord = new DoctorPatientAccessRequest
+            catch (Exception ex)
             {
-                DoctorId = dto.DoctorId,
-                PatientId = dto.PatientId,
-                RequestDateTime = DateTime.UtcNow,
-                Status = "Pending"
-            };
-            _context.DoctorPatientAccessRequests.Add(requestRecord);
-
-            // 📩 Insert into PatientNotifications
-            var notification = new PatientNotifications
-            {
-                DoctorId = dto.DoctorId,
-                PatientId = dto.PatientId,
-                Title = dto.Title ?? "Access Request to Health Records",
-                Message = dto.Message ?? "A doctor is requesting access to your medical records.",
-                Type = "AccessRequest",
-                CreatedAt = DateTime.UtcNow,
-                IsRead = false
-            };
-            _context.PatientNotifications.Add(notification);
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { success = true, message = "Request sent to patient successfully." });
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
     }

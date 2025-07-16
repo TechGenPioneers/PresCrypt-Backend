@@ -4,7 +4,8 @@
     {
         public string DoctorId { get; set; }
         public string PatientId { get; set; }
-        public string Title { get; set; }  // for notification
+        public string Title { get; set; }  // For notification
         public string Message { get; set; }
     }
+
 }

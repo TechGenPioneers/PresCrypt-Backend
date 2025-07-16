@@ -9,7 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Patient")]
+    [Authorize(Roles = "Patient,Doctor")]
     public class PatientNotificationController : ControllerBase
     {
         private readonly IHubContext<PatientNotificationHub> _hub;
