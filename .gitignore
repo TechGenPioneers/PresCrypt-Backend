@@ -151,8 +151,5 @@ appsettings.json
 appsettings.*.json
 
 
-<<<<<<< HEAD
 PresCrypt-Backend/PresCrypt.API/appsettings.json
-=======
-PresCrypt-Backend/PresCrypt.API/appsettings.json
->>>>>>> 9bf660f8c6e0addf46921140eb4d7af0274b0471
+
