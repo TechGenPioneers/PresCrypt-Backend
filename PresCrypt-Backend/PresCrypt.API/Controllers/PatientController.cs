@@ -7,23 +7,25 @@ using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Patient")]
+    //[Authorize(Roles = "Patient")]
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _patientService;
         private readonly ApplicationDbContext _context;
-        private readonly IHubContext<DoctorNotificationHub> _doctorHub;
 
-        public PatientController(IPatientService patientService)
+
+        public PatientController(IPatientService patientService, ApplicationDbContext context)
         {
             _patientService = patientService;
-            _context = _context;
-            _doctorHub = _doctorHub;
+            _context = context;
+
         }
 
         // GET: Retrieve appointments for a specific patient
@@ -91,7 +93,5 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(new { patientId });
         }
 
-
     }
 }
-

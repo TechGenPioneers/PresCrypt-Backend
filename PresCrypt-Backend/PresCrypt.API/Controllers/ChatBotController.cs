@@ -8,7 +8,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Patient")]
+    //[Authorize(Roles = "Patient")]
     public class ChatController : ControllerBase
     {
         private readonly HttpClient _httpClient;

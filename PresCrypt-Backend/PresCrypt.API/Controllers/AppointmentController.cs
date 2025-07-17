@@ -14,7 +14,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Patient,Doctor")]
+    //[Authorize(Roles = "Patient,Doctor")]
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;

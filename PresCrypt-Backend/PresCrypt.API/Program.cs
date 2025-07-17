@@ -77,7 +77,11 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 
 
 // Configure JWT Authentication
-builder.Services.AddAuthentication("Bearer")
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer("Bearer", options =>
     {
         options.RequireHttpsMetadata = false; // Set to true in production

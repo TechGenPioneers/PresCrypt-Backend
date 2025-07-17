@@ -11,7 +11,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Doctor,Patient")]
+    //[Authorize(Roles = "Doctor,Patient")]
     public class DoctorPatientVideoCallController : ControllerBase
     {
         private readonly IVideoCallService _videoCallService;

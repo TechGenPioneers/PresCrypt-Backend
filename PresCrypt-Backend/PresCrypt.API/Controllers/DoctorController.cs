@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -18,11 +20,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IDoctorService _doctorServices;
+        private readonly IHubContext<DoctorNotificationHub> _hubContext;
 
-        public DoctorController(ApplicationDbContext context, IDoctorService doctorServices)
+        public DoctorController(ApplicationDbContext context, IDoctorService doctorServices, IHubContext<DoctorNotificationHub> hubContext)
         {
             _context = context;
             _doctorServices = doctorServices;
+            _hubContext = hubContext;
         }
 
         [HttpGet("search")]
@@ -119,43 +123,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(new { doctorId = doctor.DoctorId });
         }
 
-        [HttpPost("request-patient-access")]
-        public async Task<IActionResult> RequestPatientAccess([FromBody] DoctorAccessRequestDto dto)
-        {
-            try
-            {
-                var accessRequest = new DoctorPatientAccessRequest
-                {
-                    DoctorId = dto.DoctorId,
-                    PatientId = dto.PatientId,
-                    RequestDateTime = DateTime.UtcNow,
-                    Status = "Pending"
-                };
 
-                _context.DoctorPatientAccessRequests.Add(accessRequest);
-
-                var notification = new PatientNotifications
-                {
-                    PatientId = dto.PatientId,
-                    DoctorId = dto.DoctorId,
-                    Title = dto.Title,
-                    Message = dto.Message,
-                    Type = "AccessRequest",
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.PatientNotifications.Add(notification);
-
-                await _context.SaveChangesAsync();
-
-                return Ok(new { success = true, message = "Access request sent successfully" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = ex.Message });
-            }
-        }
 
     }
 }

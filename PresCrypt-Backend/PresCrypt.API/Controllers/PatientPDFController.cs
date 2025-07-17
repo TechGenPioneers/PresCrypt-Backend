@@ -8,7 +8,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Patient")]
+    //[Authorize(Roles = "Patient")]
     public class PatientPDFController : ControllerBase
     {
         private readonly IPDFService _pdfService;

@@ -7,7 +7,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Patient")]
+    //[Authorize(Roles = "Patient")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;

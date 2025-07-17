@@ -10,7 +10,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class AdminDoctorRequestController : ControllerBase
     {
         private readonly IAdminDoctorRequestService _adminDoctorRequestService;

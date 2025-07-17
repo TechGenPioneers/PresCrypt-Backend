@@ -10,7 +10,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Doctor")]
+    //[Authorize(Roles = "Doctor")]
     public class DoctorNotificationsController : ControllerBase
     {
         private readonly IDoctorNotificationService _notificationService;
