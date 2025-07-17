@@ -36,14 +36,14 @@ public class DoctorDashboardService : IDoctorDashboardService
         var bookedPatientsCount = await _context.Appointments
             .Where(a => a.DoctorId == doctorId &&
                        (a.Date > today || (a.Date == today && a.Time > now)) &&
-                       a.Status == "Upcoming" || a.Status == "Completed")
+                       a.Status == "Pending" || a.Status == "Completed")
             .Select(a => a.PatientId)
             .Distinct()
             .CountAsync();
 
         return new DoctorDashboardDto
         {
-            UpcomingAppointments = appointmentCounts.FirstOrDefault(x => x.Status == "Upcoming")?.Count ?? 0,
+            UpcomingAppointments = appointmentCounts.FirstOrDefault(x => x.Status == "Pending")?.Count ?? 0,
             CancelledAppointments = appointmentCounts.FirstOrDefault(x => x.Status == "Cancelled")?.Count ?? 0,
             BookedPatients = bookedPatientsCount
         };

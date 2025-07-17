@@ -58,13 +58,13 @@ builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<IAdminContactUsService, AdminContactUsService>();
 builder.Services.AddScoped<DoctorReportService>();
 
-// From dev
+
 builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IChatServices, ChatServices>();
 builder.Services.AddHttpClient<IVideoCallService, VideoCallService>();
 
-// From SCRUM-29
+
 builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
@@ -118,34 +118,29 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000") // Update this if frontend URL changes
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            policy.WithOrigins(
+                "http://localhost:3000"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
         });
 });
+
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
 // Add SignalR with detailed errors
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();  // ✅ Allow credentials if needed
-        });
-});
+
 
 var app = builder.Build();
 
 
 // Apply CORS middleware
-app.UseCors("AllowLocalhost3000");
+app.UseCors("AllowFrontend");
 
 
 // Enable Swagger in Development environment
@@ -157,20 +152,20 @@ if (app.Environment.IsDevelopment())
 
 // Middleware pipeline setup
 app.UseHttpsRedirection();
-app.UseRouting();                
-app.UseCors("AllowReactApp");
+app.UseRouting();
+// Apply CORS middleware
 app.UseCors("AllowFrontend");
-app.UseHttpsRedirection();
+app.UseAuthentication(); // Authentication should come before Routing
+app.UseAuthorization(); // Authorization after authentication
+
 app.MapHub<DoctorNotificationHub>("/doctorNotificationHub");
 app.MapHub<PatientNotificationHub>("/patientNotificationHub");
 app.MapHub<AdminNotificationHub>("/adminNotificationHub");
 app.MapHub<ChatHub>("/chatHub");
-app.MapHub<VideoCallHub>("/videocallhub");
+app.MapHub<VideoCallHub>("/videoCallHub").RequireCors("AllowFrontend");
 
-
-
-app.UseAuthentication(); // Authentication should come before Routing
-app.UseAuthorization(); // Authorization after authentication
-app.UseRouting(); // Routing middleware after auth
+//app.UseRouting(); // Routing middleware after auth
 app.MapControllers(); // Map Controllers to Routes
+
+
 app.Run();
