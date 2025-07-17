@@ -20,9 +20,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         [HttpGet("patient-details/{doctorId}")]
-        public async Task<IActionResult> GetPatientDetails(string doctorId, string type = "past")
+        public async Task<IActionResult> GetPatientDetails(string doctorId, string type = "past", string? hospitalName = null)
         {
-            var patients = await _doctorPatientService.GetPatientDetailsAsync(doctorId, type);
+            var patients = await _doctorPatientService.GetPatientDetailsAsync(doctorId, type, hospitalName);
 
             if (patients == null || !patients.Any())
             {
@@ -31,6 +31,5 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(patients);
         }
-
     }
 }

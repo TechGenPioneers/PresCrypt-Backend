@@ -295,6 +295,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(appointments);
         }
+        [HttpPost("{appointmentId}/reschedule-confirm")]
+        public async Task<IActionResult> ConfirmAppointment(string appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
+
+            if (appointment == null)
+                return NotFound("Appointment not found.");
+
+            if (appointment.Status != "Pending Confirmation")
+                return BadRequest("Appointment is not in a confirmable state.");
+
+            appointment.Status = "Pending";
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok("Appointment confirmed successfully.");
+        }
 
     }
 }
