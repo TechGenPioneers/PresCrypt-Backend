@@ -276,17 +276,48 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .ToListAsync();
         }
 
-        public async Task<bool> DeleteAppointmentAsync(string appointmentId)
+        public async Task<CancelAppointmentResultDto> PatientCancelAppointmentAsync(string appointmentId)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
 
             if (appointment == null)
-                return false;
+                return new CancelAppointmentResultDto { Success = false };
 
-            _context.Appointments.Remove(appointment);
+            appointment.Status = "Cancelled";
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            string? paymentMethod = null;
+
+            if (!string.IsNullOrEmpty(appointment.PaymentId))
+            {
+                var payment = await _context.Payments.FindAsync(appointment.PaymentId);
+                if (payment != null)
+                {
+                    paymentMethod = payment.PaymentMethod;
+
+                    if (payment.PaymentMethod == "Card" || payment.PaymentMethod == "Location")
+                    {
+                        payment.IsRefunded = true;
+                        _context.Payments.Update(payment);
+                    }
+                }
+            }
+
+            _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync();
-            return true;
+
+            return new CancelAppointmentResultDto
+            {
+                Success = true,
+                PaymentMethod = paymentMethod,
+                AppointmentDate = appointment.Date,
+                AppointmentTime = appointment.Time
+            };
         }
+
+
+
+
 
         public async Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId)
         {

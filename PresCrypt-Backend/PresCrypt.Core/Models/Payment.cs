@@ -14,6 +14,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public string PaymentStatus { get; set; }
 
+        public bool ? IsRefunded { get; set; } = false;
+
 
     }
 }

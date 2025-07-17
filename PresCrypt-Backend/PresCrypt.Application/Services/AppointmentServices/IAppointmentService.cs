@@ -14,7 +14,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task<IEnumerable<AppointmentDisplayDto>> GetRecentAppointmentsByDoctorAsync(string doctorId);  
 
         Task<List<PatientAppointmentListDto>> GetAppointmentsByPatientIdAsync(string patientId);
-        Task<bool> DeleteAppointmentAsync(string appointmentId);
+        Task<CancelAppointmentResultDto> PatientCancelAppointmentAsync(string appointmentId);
+
         Task<Dictionary<DateTime, int>> GetAppointmentCountsAsync(string doctorId, List<DateTime> dates);
 
         //for reschedule

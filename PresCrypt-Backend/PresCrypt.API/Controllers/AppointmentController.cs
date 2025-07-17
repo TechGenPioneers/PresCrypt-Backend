@@ -142,16 +142,25 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAppointment(string id)
+        [HttpPut("cancel/{appointmentId}")]
+        public async Task<IActionResult> PatientCancelAppointment(string appointmentId)
         {
-            var result = await _appointmentService.DeleteAppointmentAsync(id);
+            var result = await _appointmentService.PatientCancelAppointmentAsync(appointmentId);
 
-            if (!result)
-                return NotFound("Appointment not found");
+            if (!result.Success)
+                return NotFound(new { message = "Appointment not found" });
 
-            return NoContent();
+            return Ok(new
+            {
+                message = "Appointment cancelled successfully",
+                paymentMethod = result.PaymentMethod,
+                appointmentDate = result.AppointmentDate,
+                appointmentTime = result.AppointmentTime
+            });
         }
+
+
+
 
         [HttpPost("reschedule-appointments")]
         public async Task<IActionResult> RescheduleAppointments([FromBody] AppointmentIdsRequest request)

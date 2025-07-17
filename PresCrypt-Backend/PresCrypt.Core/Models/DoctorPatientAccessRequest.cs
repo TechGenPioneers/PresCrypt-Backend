@@ -19,6 +19,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string Status { get; set; } = "Pending"; // Approved, Rejected
         public DateTime AccessExpiry { get; set; }
 
+        public DateTime? GrantedAt { get; set; }
+
         public Doctor Doctor { get; set; }
         public Patient Patient { get; set; }
     }

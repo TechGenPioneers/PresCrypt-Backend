@@ -90,5 +90,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             var patient = await _context.Patient.FirstOrDefaultAsync(p => p.Email == email);
             return patient?.PatientId;
         }
+
+
+
     }
 }
