@@ -23,6 +23,26 @@ public class AccessRequestController : ControllerBase
     {
         try
         {
+            // STEP 1: Check for existing Pending or Active Approved Request
+            var existingRequest = await _context.DoctorPatientAccessRequests
+                .Where(r => r.DoctorId == dto.DoctorId && r.PatientId == dto.PatientId)
+                .OrderByDescending(r => r.RequestDateTime)
+                .FirstOrDefaultAsync();
+
+            // If pending request exists
+            if (existingRequest != null && existingRequest.Status == "Pending")
+            {
+                return BadRequest(new { success = false, message = "A pending request already exists." });
+            }
+
+            // If approved request exists and not expired (within 10 minutes)
+            if (existingRequest != null && existingRequest.Status == "Approved" &&
+                existingRequest.RequestDateTime.AddMinutes(10) > DateTime.UtcNow)
+            {
+                return BadRequest(new { success = false, message = "Access already granted and not expired." });
+            }
+
+            // STEP 2: Create new Access Request
             var accessRequest = new DoctorPatientAccessRequest
             {
                 DoctorId = dto.DoctorId,
@@ -30,9 +50,9 @@ public class AccessRequestController : ControllerBase
                 RequestDateTime = DateTime.UtcNow,
                 Status = "Pending"
             };
-
             _context.DoctorPatientAccessRequests.Add(accessRequest);
 
+            // STEP 3: Add Notification
             var notification = new PatientNotifications
             {
                 PatientId = dto.PatientId,
@@ -43,12 +63,11 @@ public class AccessRequestController : ControllerBase
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
-
             _context.PatientNotifications.Add(notification);
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, message = "Access request sent successfully" });
+            return Ok(new { success = true, message = "Access request sent successfully." });
         }
         catch (Exception ex)
         {
