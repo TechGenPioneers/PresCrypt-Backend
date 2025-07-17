@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Linq;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -17,6 +18,44 @@ public class AccessRequestController : ControllerBase
         _context = context;
         _logger = logger;
     }
+    [HttpPost("request-patient-access")]
+    public async Task<IActionResult> RequestPatientAccess([FromBody] DoctorAccessRequestDto dto)
+    {
+        try
+        {
+            var accessRequest = new DoctorPatientAccessRequest
+            {
+                DoctorId = dto.DoctorId,
+                PatientId = dto.PatientId,
+                RequestDateTime = DateTime.UtcNow,
+                Status = "Pending"
+            };
+
+            _context.DoctorPatientAccessRequests.Add(accessRequest);
+
+            var notification = new PatientNotifications
+            {
+                PatientId = dto.PatientId,
+                DoctorId = dto.DoctorId,
+                Title = dto.Title,
+                Message = dto.Message,
+                Type = "Request",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.PatientNotifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Access request sent successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
 
     [HttpPost("respond-access-request")]
     public async Task<IActionResult> RespondToAccessRequest([FromBody] AccessRequestResponseDto dto)
@@ -77,6 +116,22 @@ public class AccessRequestController : ControllerBase
         {
             return StatusCode(500, "Error fetching access status: " + ex.Message);
         }
+    }
+
+    [HttpPost("approve/{requestId}")]
+    public async Task<IActionResult> ApproveAccess(int requestId)
+    {
+        var request = await _context.DoctorPatientAccessRequests.FindAsync(requestId);
+
+        if (request == null)
+            return NotFound("Request not found");
+
+        request.Status = "Approved";
+        request.GrantedAt = DateTime.Now;
+        request.AccessExpiry = DateTime.Now.AddHours(1);
+
+        await _context.SaveChangesAsync();
+        return Ok("Access granted for 1 hour");
     }
 
 }
