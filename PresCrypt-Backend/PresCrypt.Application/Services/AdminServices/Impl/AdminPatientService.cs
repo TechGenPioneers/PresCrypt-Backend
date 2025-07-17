@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 {
@@ -14,48 +15,24 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         {
             try
             {
-                var data = await _context.Patient
-                    .Select(patient => new
-                    {
-                        Patient = patient,
-                        LastAppointment = _context.Appointments
-                            .Where(a => a.PatientId == patient.PatientId)
-                            .OrderByDescending(a => a.Date)
-                            .Select(a => new
-                            {
-                                a.DoctorId,
-                                a.Date,
-                                a.Status
-                            })
-                            .FirstOrDefault()
-                    })
-                    .ToListAsync(); // materialize here to avoid EF Core limitations
+                var patients = await _context.Patient
+                     .Select(p => new AdminAllPatientDto
+                         {
+                           PatientId = p.PatientId,
+                           FirstName = p.FirstName,
+                           LastName = p.LastName,
+                          DOB = p.DOB.ToString("yyyy-MM-dd"),
+                           Gender = p.Gender,
+                               ProfileImage = p.ProfileImage,
+                                 Status = p.Status,
+                           LastLogin = p.LastLogin.HasValue
+                            ? p.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                              : null
+                        })
+                     .ToListAsync();
 
-                var result = data
-                    .Select(x =>
-                    {
-                        var doctor = x.LastAppointment != null
-                            ? _context.Doctor.FirstOrDefault(d => d.DoctorId == x.LastAppointment.DoctorId)
-                            : null;
 
-                        return new AdminAllPatientDto
-                        {
-                            PatientId = x.Patient.PatientId,
-                            FirstName = x.Patient.FirstName,
-                            LastName = x.Patient.LastName,
-                            DOB = x.Patient.DOB.ToString("yyyy-MM-dd"),
-                            Gender = x.Patient.Gender,
-                            ProfileImage=x.Patient.ProfileImage,
-                            LastAppointmentDoctorName = doctor != null ? doctor.FirstName + " " + doctor.LastName : null,
-                            LastAppointmentDoctorID = doctor?.DoctorId,
-                            LastAppointmentDate = x.LastAppointment?.Date.ToString("yyyy-MM-dd"),
-                            Status = x.LastAppointment?.Status,
-                            LastLogin = x.Patient.LastLogin.HasValue ? x.Patient.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss") : null
-                        };
-                    })
-                    .ToList();
-
-                return result;
+                return patients;
             }
             catch (Exception)
             {
