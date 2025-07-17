@@ -17,59 +17,72 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
             _context = context;
         }
 
-        public async Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(string doctorId, string type = "past")
+        public async Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(
+    string doctorId,
+    string type = "past",
+    string? hospitalName = null)
         {
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
             var currentTime = TimeOnly.FromDateTime(DateTime.Now);
 
-            // Build base query to filter by doctorId
+            // Base query filtered by doctor and type
             var query = _context.Appointments
-                .Include(a => a.Patient)
-                .Include(a => a.Doctor)
-                .Include(a => a.Hospital)
-                .Where(a => a.DoctorId == doctorId);
+                .Where(a => a.DoctorId == doctorId)
+                .Where(a =>
+                    type == "past"
+                        ? a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime)
+                        : a.Date > currentDate || (a.Date == currentDate && a.Time > currentTime)
+                );
 
-            // Filter by appointment type (past or future)
-            if (type == "past")
+            // Filter by Hospital Name if provided
+            if (!string.IsNullOrEmpty(hospitalName))
             {
-                // Filter past appointments (appointments before today or today but before current time)
-                query = query.Where(a => a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime));
-            }
-            else if (type == "future")
-            {
-                // Get all patients having only future appointments
-                var patientsWithPastAppointments = await _context.Appointments
-                    .Where(a => a.DoctorId == doctorId && (a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime)))
-                    .Select(a => a.PatientId)
-                    .Distinct()
-                    .ToListAsync();
-
-                query = query
-                    .Where(a => !patientsWithPastAppointments.Contains(a.PatientId))  // Patients with no past appointments
-                    .Where(a => a.Date > currentDate || (a.Date == currentDate && a.Time > currentTime));  // Future appointments
+                query = query.Where(a => a.Hospital.HospitalName == hospitalName);
             }
 
-            //  Group by PatientId to get the latest appointment (last visit)
-            var latestAppointments = await query
+            // Project needed fields before grouping
+            var projectedQuery = query
+                .Select(a => new
+                {
+                    a.AppointmentId,
+                    a.Date,
+                    a.Time,
+                    a.Status,
+                    a.PatientId,
+                    a.HospitalId,
+                    PatientFirstName = a.Patient.FirstName,
+                    PatientLastName = a.Patient.LastName,
+                    a.Patient.Gender,
+                    a.Patient.DOB,
+                    a.Patient.ProfileImage,
+                    HospitalName = a.Hospital.HospitalName
+                });
+
+            // Group by patient and get latest appointment
+            var latestAppointments = await projectedQuery
                 .GroupBy(a => a.PatientId)
-                .Select(g => g.OrderByDescending(a => a.Date).ThenByDescending(a => a.Time).FirstOrDefault())
+                .Select(g => g
+                    .OrderByDescending(a => a.Date)
+                    .ThenByDescending(a => a.Time)
+                    .FirstOrDefault())
                 .ToListAsync();
 
-            // Map to DTO (DoctorPatientDto)
+            // Map to DTO
             return latestAppointments.Select(a => new DoctorPatientDto
             {
                 AppointmentId = a.AppointmentId,
                 Date = a.Date.ToDateTime(TimeOnly.MinValue),
                 Time = a.Time,
                 Status = a.Status,
-                PatientId = a.Patient.PatientId,
+                PatientId = a.PatientId,
                 HospitalId = a.HospitalId,
-                HospitalName = a.Hospital.HospitalName,
-                PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
-                Gender = a.Patient.Gender,
-                DOB = a.Patient.DOB,
-                ProfileImage = a.Patient.ProfileImage
-            }).ToList();
+                HospitalName = a.HospitalName,
+                PatientName = $"{a.PatientFirstName} {a.PatientLastName}",
+                Gender = a.Gender,
+                DOB = a.DOB,
+                ProfileImage = a.ProfileImage
+            });
         }
+
     }
 }

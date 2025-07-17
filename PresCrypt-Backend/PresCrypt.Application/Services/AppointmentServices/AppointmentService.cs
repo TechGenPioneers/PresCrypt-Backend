@@ -316,7 +316,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Include(a => a.Doctor)
                 .Include(a => a.Hospital)
                 .Where(a => appointmentIds.Contains(a.AppointmentId) &&
-                           a.Status != "Confirmed" &&
+                           a.Status != "Cancelled" &&
                            a.Status != "Rescheduled" &&
                            a.Status != "Completed")
                 .ToListAsync();
@@ -473,7 +473,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
                     for (var time = availability.AvailableStartTime;
                         time < availability.AvailableEndTime;
-                        time = time.AddMinutes(30))
+                        time = time.AddMinutes(15))
                     {
                         bool isBooked = await _context.Appointments.AnyAsync(a =>
                             a.DoctorId == doctorId &&
