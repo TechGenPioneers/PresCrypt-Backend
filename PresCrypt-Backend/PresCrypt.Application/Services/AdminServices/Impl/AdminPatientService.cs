@@ -80,6 +80,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         Gender = d.Gender,
                         Email = d.Email,
                         NIC = d.NIC,
+                        PhoneNumber=d.ContactNo,
                         ProfileImage = d.ProfileImage,
                         CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                         UpdatedAt = d.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
