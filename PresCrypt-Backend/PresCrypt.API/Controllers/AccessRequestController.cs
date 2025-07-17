@@ -76,32 +76,40 @@ public class AccessRequestController : ControllerBase
     }
 
 
-    [HttpPost("respond-access-request")]
+    [HttpPost("respond-to-access-request")]
     public async Task<IActionResult> RespondToAccessRequest([FromBody] AccessRequestResponseDto dto)
     {
-        if (dto == null || string.IsNullOrEmpty(dto.PatientId) || string.IsNullOrEmpty(dto.DoctorId))
-            return BadRequest("Invalid request data");
-
-        _logger.LogInformation("RespondToAccessRequest called with DoctorId: {DoctorId}, PatientId: {PatientId}, Accepted: {Accepted}",
-            dto.DoctorId, dto.PatientId, dto.Accepted);
-
-        var request = await _context.DoctorPatientAccessRequests
-            .Where(r => r.DoctorId == dto.DoctorId && r.PatientId == dto.PatientId && r.Status == "Pending")
-            .OrderByDescending(r => r.RequestDateTime)
-            .FirstOrDefaultAsync();
-
-        if (request == null)
+        try
         {
-            _logger.LogWarning("No pending access request found for DoctorId: {DoctorId}, PatientId: {PatientId}", dto.DoctorId, dto.PatientId);
-            return NotFound("Request not found");
+            var request = await _context.DoctorPatientAccessRequests
+                .Where(r => r.PatientId == dto.PatientId && r.DoctorId == dto.DoctorId && r.Status == "Pending")
+                .OrderByDescending(r => r.RequestDateTime)
+                .FirstOrDefaultAsync();
+
+            if (request == null)
+            {
+                return NotFound(new { success = false, message = "Access request not found or already handled." });
+            }
+
+            if (dto.Accepted)
+            {
+                request.Status = "Approved";
+                request.GrantedAt = DateTime.UtcNow;
+                request.AccessExpiry = DateTime.UtcNow.AddHours(1);
+            }
+            else
+            {
+                request.Status = "Denied";
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Response recorded." });
         }
-
-        request.Status = dto.Accepted ? "Approved" : "Denied";
-        request.AccessExpiry = dto.Accepted ? DateTime.UtcNow.AddHours(1) : DateTime.MinValue;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Response recorded." });
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
     }
 
     [HttpGet("status")]
@@ -136,6 +144,46 @@ public class AccessRequestController : ControllerBase
             return StatusCode(500, "Error fetching access status: " + ex.Message);
         }
     }
+    [HttpGet("check-access-status")]
+    public async Task<IActionResult> CheckAccessStatus(string doctorId, string patientId)
+    {
+        try
+        {
+            var latestRequest = await _context.DoctorPatientAccessRequests
+                .Where(r => r.DoctorId == doctorId && r.PatientId == patientId)
+                .OrderByDescending(r => r.RequestDateTime)
+                .FirstOrDefaultAsync();
+
+            if (latestRequest == null)
+            {
+                return Ok(new { success = true, status = "NoRequest" });
+            }
+
+            // If it's approved, check if expired
+            if (latestRequest.Status == "Approved")
+            {
+                var expiryTime = latestRequest.RequestDateTime.AddMinutes(10);
+
+                if (DateTime.UtcNow > expiryTime)
+                {
+                    // Optional: Update the status to expired in DB
+                    latestRequest.Status = "Expired";
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new { success = true, status = "Expired" });
+                }
+
+                return Ok(new { success = true, status = "Approved" });
+            }
+
+            return Ok(new { success = true, status = latestRequest.Status }); // Pending / Denied
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
 
     [HttpPost("approve/{requestId}")]
     public async Task<IActionResult> ApproveAccess(int requestId)
