@@ -8,11 +8,13 @@ using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    //[Authorize(Roles = "Patient,Doctor")]
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
@@ -266,10 +268,33 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         [HttpGet("Appointments/GetByDateRange")]
-        public async Task<IActionResult> GetAppointmentsByDateRange([FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate)
+        public async Task<IActionResult> GetAppointmentsByDateRange(
+            [FromQuery] DateOnly startDate,
+            [FromQuery] DateOnly endDate,
+            [FromQuery] string? patientId
+        )
         {
-            var appointments = await _appointmentService.GetAppointmentsByDateRangeAsync(startDate, endDate);
+            var appointments = await _appointmentService.GetAppointmentsByDateRangeAsync(startDate, endDate, patientId);
             return Ok(appointments);
         }
+
+        [HttpGet("patient/{patientId}/date/{date}")]
+        public async Task<IActionResult> GetAppointmentsByPatientIdAndDate(string patientId, string date)
+        {
+            if (!DateTime.TryParse(date, out DateTime parsedDate))
+            {
+                return BadRequest("Invalid date format. Use YYYY-MM-DD.");
+            }
+
+            var appointments = await _appointmentService.GetAppointmentsByPatientIdAndDateAsync(patientId, parsedDate);
+
+            if (appointments == null || !appointments.Any())
+            {
+                return NotFound("No appointments found for the specified date.");
+            }
+
+            return Ok(appointments);
+        }
+
     }
 }

@@ -47,7 +47,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         [Required]
         public string ContactNo { get; set; }
 
-      
+        public string? OpenMrsId { get; set; }
+
         public ICollection<Appointment> Appointments { get; set; }
         public ICollection<PatientNotifications> Notifications { get; set; }
     }

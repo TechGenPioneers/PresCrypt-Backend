@@ -4,17 +4,28 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.PatientServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using Microsoft.EntityFrameworkCore;
+
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Patient")]
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _patientService;
+        private readonly ApplicationDbContext _context;
 
-        public PatientController(IPatientService patientService)
+
+        public PatientController(IPatientService patientService, ApplicationDbContext context)
         {
             _patientService = patientService;
+            _context = context;
+
         }
 
         // GET: Retrieve appointments for a specific patient
@@ -69,7 +80,18 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(new { message = "Inquiry submitted successfully" });
         }
 
+        [HttpGet("id-by-email")]
+        public async Task<IActionResult> GetPatientIdByEmail([FromQuery] string email)
+        {
+            var patientId = await _patientService.GetPatientIdByEmailAsync(email);
+
+            if (string.IsNullOrEmpty(patientId))
+            {
+                return NotFound(new { message = "Patient not found for the provided email." });
+            }
+
+            return Ok(new { patientId });
+        }
 
     }
 }
-
