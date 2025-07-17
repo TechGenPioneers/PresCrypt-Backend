@@ -79,6 +79,10 @@ public class AccessRequestController : ControllerBase
     [HttpPost("respond-to-access-request")]
     public async Task<IActionResult> RespondToAccessRequest([FromBody] AccessRequestResponseDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         try
         {
             var request = await _context.DoctorPatientAccessRequests
