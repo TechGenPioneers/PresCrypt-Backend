@@ -9,7 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class AdminDashboardController : ControllerBase
     {
         private readonly IAdminDashboardService _adminDashboardService;

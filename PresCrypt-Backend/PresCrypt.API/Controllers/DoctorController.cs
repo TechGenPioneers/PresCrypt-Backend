@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -18,11 +20,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IDoctorService _doctorServices;
+        private readonly IHubContext<DoctorNotificationHub> _hubContext;
 
-        public DoctorController(ApplicationDbContext context, IDoctorService doctorServices)
+        public DoctorController(ApplicationDbContext context, IDoctorService doctorServices,IHubContext<DoctorNotificationHub> hubContext)
         {
             _context = context;
             _doctorServices = doctorServices;
+            _hubContext = hubContext;
         }
 
         [HttpGet("search")]
@@ -140,7 +144,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     DoctorId = dto.DoctorId,
                     Title = dto.Title,
                     Message = dto.Message,
-                    Type = "AccessRequest",
+                    Type = "Request",
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -156,6 +160,127 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+        //[HttpPost("respond-access-request")]
+        //public async Task<IActionResult> RespondToAccessRequest([FromBody] AccessRequestResponseDto dto)
+        //{
+        //    if (dto == null || string.IsNullOrEmpty(dto.PatientId) || string.IsNullOrEmpty(dto.DoctorId))
+        //        return BadRequest("Invalid request data");
+
+        //    var request = await _context.DoctorPatientAccessRequests
+        //        .FirstOrDefaultAsync(r => r.DoctorId == dto.DoctorId && r.PatientId == dto.PatientId);
+
+        //    if (request == null)
+        //        return NotFound("Request not found");
+
+        //    if (dto.Accepted)
+        //    {
+        //        request.Status = "Approved";
+        //        request.AccessExpiry = DateTime.UtcNow.AddHours(1);
+
+        //        // Insert into DoctorNotifications
+        //        var notification = new DoctorNotification
+        //        {
+        //            DoctorId = dto.DoctorId,
+        //            Title = "Access Granted",
+        //            Message = $"Patient {dto.PatientId} has granted you access to medical history.",
+        //            IsRead = false,
+        //            Type = "Grant",
+        //            CreatedAt = DateTime.UtcNow
+        //        };
+
+        //        _context.DoctorNotifications.Add(notification);
+
+        //        // Send real-time notification to doctor via SignalR
+        //        await _hubContext.Clients.Group(dto.DoctorId)
+        //            .SendAsync("ReceiveNotification", new
+        //            {
+        //                Title = notification.Title,
+        //                Message = notification.Message,
+        //                DoctorId = dto.DoctorId,
+        //                Type = notification.Type,
+        //                CreatedAt = notification.CreatedAt
+        //            });
+        //    }
+        //    else
+        //    {
+        //        request.Status = "Denied";
+        //        //request.AccessExpiry = null;
+        //    }
+
+        //    await _context.SaveChangesAsync();
+        //    return Ok(new { success = true, message = "Response recorded." });
+        //}
+
+        [HttpGet("validate-access")]
+        public async Task<IActionResult> ValidateAccess([FromQuery] string doctorId, [FromQuery] string patientId)
+        {
+            var request = await _context.DoctorPatientAccessRequests
+                .FirstOrDefaultAsync(r =>
+                    r.DoctorId == doctorId &&
+                    r.PatientId == patientId &&
+                    r.Status == "Approved");
+
+            if (request == null)
+            {
+                return Unauthorized(new { message = "Access not granted" });
+            }
+
+            if (request.AccessExpiry < DateTime.UtcNow)
+            {
+                return Unauthorized(new { message = "Access has expired" });
+            }
+
+            return Ok(new { message = "Access valid" });
+        }
+        //[HttpGet("access-status")]
+        //public async Task<IActionResult> GetAccessStatus([FromQuery] string doctorId, [FromQuery] string patientId)
+        //{
+        //    var request = await _context.DoctorPatientAccessRequests
+        //        .Where(r => r.DoctorId == doctorId && r.PatientId == patientId)
+        //        .OrderByDescending(r => r.RequestDateTime)
+        //        .FirstOrDefaultAsync();
+
+        //    if (request == null)
+        //        return NotFound(new { status = "None" });
+
+        //    if (request.Status == "Denied")
+        //        return Ok(new { status = "Denied" });
+
+        //    if (request.Status == "Approved" && request.AccessExpiry > DateTime.UtcNow)
+        //        return Ok(new { status = "Approved", expiresAt = request.AccessExpiry });
+
+        //    if (request.Status == "Approved" && request.AccessExpiry <= DateTime.UtcNow)
+        //        return Ok(new { status = "Expired" });
+
+        //    return Ok(new { status = request.Status });
+        //}
+        [HttpGet("access-status")]
+        public async Task<IActionResult> GetAccessStatus([FromQuery] string doctorId, [FromQuery] string patientId)
+        {
+            var request = await _context.DoctorPatientAccessRequests
+                .Where(r => r.DoctorId == doctorId && r.PatientId == patientId)
+                .OrderByDescending(r => r.RequestDateTime)
+                .FirstOrDefaultAsync();
+
+            if (request == null)
+                return Ok(new { status = "NotRequested" });
+
+            // Check if access is expired
+            if (!(request.Status == "Approved" && request.AccessExpiry != default && request.AccessExpiry < DateTime.UtcNow))
+            {
+                return Ok(new
+                {
+                    status = request.Status,
+                    grantedAt = request.GrantedAt,
+                    accessExpiry = request.AccessExpiry
+                });
+            }
+
+            return Ok(new { status = "Expired" });
+        }
+
+
 
     }
 }
