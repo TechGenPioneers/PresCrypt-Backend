@@ -1,14 +1,11 @@
 ﻿using Mapster;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.ComponentModel.DataAnnotations;
-using PresCrypt_Backend.PresCrypt.API.Hubs;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -20,13 +17,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IDoctorService _doctorServices;
-        private readonly IHubContext<DoctorNotificationHub> _hubContext;
 
-        public DoctorController(ApplicationDbContext context, IDoctorService doctorServices, IHubContext<DoctorNotificationHub> hubContext)
+        public DoctorController(ApplicationDbContext context, IDoctorService doctorServices)
         {
             _context = context;
             _doctorServices = doctorServices;
-            _hubContext = hubContext;
         }
 
         [HttpGet("search")]
@@ -82,7 +77,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(results);
         }
 
-        // ✅ SearchDoctorRequest can be defined inside the same controller file
+        // SearchDoctorRequest can be defined inside the same controller file
         public class SearchDoctorRequest : IValidatableObject
         {
             public string? Specialization { get; set; }
@@ -104,26 +99,17 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
-        [HttpGet("get-doctor-id")]
-        public async Task<IActionResult> GetDoctorIdByUserName()
+        [HttpGet("GetDoctorId")]
+        public IActionResult GetDoctorId(string username)
         {
-            string? userName = User.Identity?.Name;
-
-            if (string.IsNullOrEmpty(userName))
-                return BadRequest("User not authenticated");
-
-            var doctor = await _context.Doctor
-                .Where(d => d.Email == userName)
-                .Select(d => new { d.DoctorId })
-                .FirstOrDefaultAsync();
+            var doctor = _context.Doctor
+                .FirstOrDefault(d => d.User.UserName == username);
 
             if (doctor == null)
-                return NotFound("Doctor not found");
+                return NotFound(new { message = "Doctor not found" });
 
             return Ok(new { doctorId = doctor.DoctorId });
         }
-
-
 
     }
 }
