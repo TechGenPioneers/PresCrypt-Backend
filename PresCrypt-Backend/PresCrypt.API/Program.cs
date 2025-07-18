@@ -24,6 +24,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.OpenMrsServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,6 +70,8 @@ builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+builder.Services.AddHttpClient<IOpenMrsObsService, OpenMrsObsService>();
 
 // Common services
 builder.Services.AddHttpClient();
