@@ -22,7 +22,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
       .Select(contact => new AdminContactUsDto
       {
           InquiryId = contact.InquiryId,
-          PatientId = contact.PatientId,
+          PatientId = contact.UserId,
           FirstName = contact.FirstName,
           LastName = contact.LastName,
           Email = contact.Email,
@@ -55,12 +55,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 var message = await _context.PatientContactUs
                     .Join(
                         _context.Patient,
-                        contact => contact.PatientId,
+                        contact => contact.UserId,
                         patient => patient.PatientId,
                         (contact, patient) => new AdminContactUsDto
                         {
                             InquiryId = contact.InquiryId,
-                            PatientId = contact.PatientId,
+                            PatientId = contact.UserId,
                             FirstName = contact.FirstName,
                             LastName = contact.LastName,
                             Email = contact.Email,
