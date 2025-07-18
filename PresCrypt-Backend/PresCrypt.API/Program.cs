@@ -72,6 +72,7 @@ builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddHttpClient<IOpenMrsObsService, OpenMrsObsService>();
+builder.Services.AddHttpClient<OpenMrsAttachmentService>();
 
 // Common services
 builder.Services.AddHttpClient();
