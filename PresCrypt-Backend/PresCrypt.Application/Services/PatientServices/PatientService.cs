@@ -73,7 +73,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             var entity = new PatientContactUs
             {
                 InquiryId = newId,
-                PatientId = dto.PatientId,
+                UserId = dto.UserId,     
+                Role = dto.Role,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
@@ -90,5 +91,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             var patient = await _context.Patient.FirstOrDefaultAsync(p => p.Email == email);
             return patient?.PatientId;
         }
+
+
+
     }
 }

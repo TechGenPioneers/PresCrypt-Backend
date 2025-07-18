@@ -21,6 +21,8 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public DateTime GrantedAt { get; set; }
 
 
+        public DateTime? GrantedAt { get; set; }
+
         public Doctor Doctor { get; set; }
         public Patient Patient { get; set; }
     }
