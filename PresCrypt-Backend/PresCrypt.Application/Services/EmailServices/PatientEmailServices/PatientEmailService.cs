@@ -266,5 +266,57 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
 
             _logger.LogInformation("OTP email sent to {Email}", request.Email);
         }
+
+        public async Task SendCancellationMessageEmailAsync(string email, string paymentMethod, DateOnly appointmentDate, TimeOnly appointmentTime)
+        {
+            var appointmentDateTime = appointmentDate.ToDateTime(appointmentTime);
+            var now = DateTime.UtcNow;
+            var diffHours = (appointmentDateTime - now).TotalHours;
+
+            string warningMessage;
+
+            if (paymentMethod == "Location")
+            {
+                warningMessage = "Since your payment method was \"Pay At Location\" and cancelling more appointments in near days may result in permanent account inactivation.";
+            }
+            else if (paymentMethod == "Card")
+            {
+                warningMessage = diffHours <= 48
+                    ? "Since your appointment is Card payment and you are cancelling this appointment within 48 hours prior to the appointment, only 80% will be refunded to your paid account."
+                    : "Since your appointment is Card payment and you are cancelling this appointment beyond 48 hours prior to the appointment, the full payment will be credited to your account.";
+            }
+            else
+            {
+                warningMessage = "Cancellation processed.";
+            }
+
+            var title = "Appointment Cancellation Confirmation";
+            var dateTimeStr = $"{appointmentDate:yyyy-MM-dd} at {appointmentTime:hh\\:mm}";
+
+            var body = $@"
+            <div style='font-family: Arial, sans-serif;'>
+                <h2>Appointment Cancellation Confirmation</h2>
+                <p>Your appointment scheduled on <strong>{dateTimeStr}</strong> has been successfully cancelled.</p>
+                <p><strong>Payment Method:</strong> {paymentMethod}</p>
+                <p style='color:#d84315;'><strong>{warningMessage}</strong></p>
+                <p>Thank you,<br/>The PresCrypt Team</p>
+            </div>";
+
+            var message = new MimeMessage();
+            message.From.Add(MailboxAddress.Parse(_configuration["EmailUserName"]));
+            message.To.Add(MailboxAddress.Parse(email));
+            message.Subject = title;
+
+            var builder = new BodyBuilder { HtmlBody = body };
+            message.Body = builder.ToMessageBody();
+
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(_configuration["EmailHost"], 587, SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(_configuration["EmailUserName"], _configuration["EmailPassword"]);
+            await smtp.SendAsync(message);
+            await smtp.DisconnectAsync(true);
+
+            _logger.LogInformation("Cancellation email sent to {Email}", email);
+        }
     }
 }

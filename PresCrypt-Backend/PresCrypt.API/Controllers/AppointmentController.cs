@@ -150,16 +150,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             if (!result.Success)
                 return NotFound(new { message = "Appointment not found" });
 
+            await _patientEmailService.SendCancellationMessageEmailAsync(
+                result.Email,
+                result.PaymentMethod,
+                result.AppointmentDate.Value,
+                result.AppointmentTime.Value
+            );
+
             return Ok(new
             {
                 message = "Appointment cancelled successfully",
                 paymentMethod = result.PaymentMethod,
                 appointmentDate = result.AppointmentDate,
-                appointmentTime = result.AppointmentTime
+                appointmentTime = result.AppointmentTime,
+                email = result.Email,
+                paymentAmount = result.PaymentAmount,
+                payHereObjectId = result.PayHereObjectId
             });
         }
-
-
 
 
         [HttpPost("reschedule-appointments")]

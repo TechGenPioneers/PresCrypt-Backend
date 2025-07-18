@@ -11,5 +11,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
         Task SendRescheduleConfirmationEmailAsync(AppointmentRescheduleEmailDto request);
 
         void SendOtpEmail(PatientOtpEmailDto request);
+
+        Task SendCancellationMessageEmailAsync(string email, string paymentMethod, DateOnly appointmentDate, TimeOnly appointmentTime);
     }
 }
+

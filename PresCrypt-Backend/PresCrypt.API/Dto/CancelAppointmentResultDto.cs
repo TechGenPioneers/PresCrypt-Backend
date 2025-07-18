@@ -6,5 +6,11 @@
         public string? PaymentMethod { get; set; }
         public DateOnly? AppointmentDate { get; set; }
         public TimeOnly? AppointmentTime { get; set; }
+        public string? Email { get; set; }
+
+        public double PaymentAmount { get; set; }
+
+        public string? PayHereObjectId { get; set; }
+
     }
 }
