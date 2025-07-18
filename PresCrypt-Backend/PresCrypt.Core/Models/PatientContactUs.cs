@@ -7,13 +7,13 @@ public class PatientContactUs
     [Key]
     [Required]
     [MaxLength(10)]
-    public string InquiryId { get; set; } 
+    public string InquiryId { get; set; }
 
     [Required]
-    public string PatientId { get; set; }  
+    public string UserId { get; set; }
 
-    [ForeignKey("PatientId")]
-    public Patient Patient { get; set; }  
+    [Required]
+    public string Role { get; set; }
 
     [Required]
     [MaxLength(50)]

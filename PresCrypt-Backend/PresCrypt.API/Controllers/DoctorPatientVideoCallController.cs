@@ -5,11 +5,13 @@ using PresCrypt_Backend.PresCrypt.API.Dto;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    //[Authorize(Roles = "Doctor,Patient")]
     public class DoctorPatientVideoCallController : ControllerBase
     {
         private readonly IVideoCallService _videoCallService;

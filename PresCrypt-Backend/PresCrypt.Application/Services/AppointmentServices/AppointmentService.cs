@@ -40,10 +40,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null)
         {
-            // Get current date at server's timezone
+           
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-            // Start building the query
             var query = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
@@ -62,15 +61,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Select(a => new AppointmentDisplayDto
                 {
                     AppointmentId = a.AppointmentId,
-                    Date = a.Date,  // Ensure consistent date format
-                    Time = a.Time, // Format time consistently
+                    Date = a.Date,  
+                    Time = a.Time, 
                     Status = a.Status,
                     PatientId = a.Patient.PatientId,
                     HospitalId = a.HospitalId,
                     HospitalName = a.Hospital.HospitalName,
                     PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
                     Gender = a.Patient.Gender,
-                    DOB = a.Patient.DOB, // Format DOB consistently
+                    DOB = a.Patient.DOB, 
                     ProfileImage = a.Patient.ProfileImage
                 })
                 .ToListAsync();
@@ -276,17 +275,64 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .ToListAsync();
         }
 
-        public async Task<bool> DeleteAppointmentAsync(string appointmentId)
+        public async Task<CancelAppointmentResultDto> PatientCancelAppointmentAsync(string appointmentId)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
 
             if (appointment == null)
-                return false;
+                return new CancelAppointmentResultDto { Success = false };
 
-            _context.Appointments.Remove(appointment);
+            appointment.Status = "Cancelled";
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            string? paymentMethod = null;
+            double paymentAmount = 0;
+            string? payHereObjectId = null;
+
+            if (!string.IsNullOrEmpty(appointment.PaymentId))
+            {
+                var payment = await _context.Payments.FindAsync(appointment.PaymentId);
+                if (payment != null)
+                {
+                    paymentMethod = payment.PaymentMethod;
+                    paymentAmount = payment.PaymentAmount;
+                    payHereObjectId = payment.PayHereObjectId;
+
+                    if (payment.PaymentMethod == "Card" || payment.PaymentMethod == "Location")
+                    {
+                        payment.IsRefunded = true;
+                        _context.Payments.Update(payment);
+                    }
+                }
+            }
+
+            string? email = null;
+            if (!string.IsNullOrEmpty(appointment.PatientId))
+            {
+                var patient = await _context.Patient.FindAsync(appointment.PatientId);
+                if (patient != null)
+                {
+                    email = patient.Email;
+                }
+            }
+
+            _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync();
-            return true;
+
+            return new CancelAppointmentResultDto
+            {
+                Success = true,
+                PaymentMethod = paymentMethod,
+                AppointmentDate = appointment.Date,
+                AppointmentTime = appointment.Time,
+                Email = email,
+                PaymentAmount = paymentAmount,
+                PayHereObjectId = payHereObjectId
+            };
         }
+
+
+
 
         public async Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId)
         {
@@ -316,7 +362,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Include(a => a.Doctor)
                 .Include(a => a.Hospital)
                 .Where(a => appointmentIds.Contains(a.AppointmentId) &&
-                           a.Status != "Confirmed" &&
+                           a.Status != "Cancelled" &&
                            a.Status != "Rescheduled" &&
                            a.Status != "Completed")
                 .ToListAsync();
@@ -473,7 +519,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
                     for (var time = availability.AvailableStartTime;
                         time < availability.AvailableEndTime;
-                        time = time.AddMinutes(30))
+                        time = time.AddMinutes(15))
                     {
                         bool isBooked = await _context.Appointments.AnyAsync(a =>
                             a.DoctorId == doctorId &&

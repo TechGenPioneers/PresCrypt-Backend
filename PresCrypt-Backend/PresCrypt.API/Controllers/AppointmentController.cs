@@ -8,11 +8,13 @@ using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using System;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    //[Authorize(Roles = "Patient,Doctor")]
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
@@ -142,16 +144,33 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAppointment(string id)
+        [HttpPut("cancel/{appointmentId}")]
+        public async Task<IActionResult> PatientCancelAppointment(string appointmentId)
         {
-            var result = await _appointmentService.DeleteAppointmentAsync(id);
+            var result = await _appointmentService.PatientCancelAppointmentAsync(appointmentId);
 
-            if (!result)
-                return NotFound("Appointment not found");
+            if (!result.Success)
+                return NotFound(new { message = "Appointment not found" });
 
-            return NoContent();
+            await _patientEmailService.SendCancellationMessageEmailAsync(
+                result.Email,
+                result.PaymentMethod,
+                result.AppointmentDate.Value,
+                result.AppointmentTime.Value
+            );
+
+            return Ok(new
+            {
+                message = "Appointment cancelled successfully",
+                paymentMethod = result.PaymentMethod,
+                appointmentDate = result.AppointmentDate,
+                appointmentTime = result.AppointmentTime,
+                email = result.Email,
+                paymentAmount = result.PaymentAmount,
+                payHereObjectId = result.PayHereObjectId
+            });
         }
+
 
         [HttpPost("reschedule-appointments")]
         public async Task<IActionResult> RescheduleAppointments([FromBody] AppointmentIdsRequest request)
@@ -292,6 +311,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
 
             return Ok(appointments);
+        }
+        [HttpPost("{appointmentId}/reschedule-confirm")]
+        public async Task<IActionResult> ConfirmAppointment(string appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
+
+            if (appointment == null)
+                return NotFound("Appointment not found.");
+
+            if (appointment.Status != "Pending Confirmation")
+                return BadRequest("Appointment is not in a confirmable state.");
+
+            appointment.Status = "Pending";
+            appointment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok("Appointment confirmed successfully.");
         }
 
     }

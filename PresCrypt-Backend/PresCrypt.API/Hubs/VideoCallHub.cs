@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
 
 namespace PresCrypt_Backend.PresCrypt.API.Hubs
@@ -7,41 +8,54 @@ namespace PresCrypt_Backend.PresCrypt.API.Hubs
     {
         public async Task JoinGroup(string userId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            try
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public async Task LeaveGroup(string userId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+            Console.WriteLine($"Connection {Context.ConnectionId} left group {userId}");
         }
 
-        // Doctor notifies patient about incoming call
-        public async Task NotifyPatient(string patientId, string doctorId, string roomUrl, string doctorName)
+        public async Task AcceptCall(string doctorId, string patientId, string roomUrl)
         {
-            await Clients.User(patientId).SendAsync("IncomingCall", new
+            // Use Groups instead of Clients.User unless you have auth setup
+            await Clients.Group(doctorId).SendAsync("CallAccepted", new
             {
-                doctorId,
-                doctorName, // Pass doctor's name
-                roomUrl
+                roomUrl,
+                patientId
             });
         }
 
-        // Patient notifies doctor call accepted
-        public async Task NotifyDoctorCallAccepted(string doctorId, string patientId)
+        public async Task RejectCall(string doctorId, string patientId)
         {
-            await Clients.User(doctorId).SendAsync("CallAccepted", new 
+            await Clients.Group(doctorId).SendAsync("CallRejected", new
             {
-                patientId = patientId
+                patientId
             });
         }
 
-        //NEW: Patient notifies doctor call rejected
-        public async Task NotifyDoctorCallRejected(string doctorId, string patientId)
+        public override async Task OnConnectedAsync()
         {
-            await Clients.User(doctorId).SendAsync("CallRejected", new
-            {
-                patientId = patientId
-            });
+            var userId = Context.GetHttpContext().Request.Query["userId"];
+            Console.WriteLine($"User {userId} connected to VideoCallHub with connection ID {Context.ConnectionId}");
+            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var userId = Context.GetHttpContext().Request.Query["userId"];
+            Console.WriteLine($"User {userId} disconnected from VideoCallHub with connection ID {Context.ConnectionId}");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }

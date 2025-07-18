@@ -843,7 +843,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Login error: {ex.Message}", ex);
-                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+
+                return StatusCode(500, new
+                {
+                    message = "An unexpected error occurred. Please try again later.",
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
         }
 
@@ -1058,13 +1064,16 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [Route("logout")]
         public IActionResult Logout()
         {
-            // If using cookie authentication
+            // If using cookie authentication  
             Response.Cookies.Delete("authToken", new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict
             });
+
+            // Add a response header to notify the client to clear local storage  
+            Response.Headers.Add("Clear-Local-Storage", "true");
 
             return Ok(new { message = "Logged out successfully" });
         }

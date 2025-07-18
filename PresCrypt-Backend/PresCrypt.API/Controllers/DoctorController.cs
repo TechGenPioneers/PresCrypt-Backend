@@ -11,6 +11,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Doctor")]
     [EnableCors("AllowReactApp")]
     public class DoctorController : ControllerBase
     {
@@ -76,7 +77,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(results);
         }
 
-        // ✅ SearchDoctorRequest can be defined inside the same controller file
+        // SearchDoctorRequest can be defined inside the same controller file
         public class SearchDoctorRequest : IValidatableObject
         {
             public string? Specialization { get; set; }
@@ -96,6 +97,18 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     );
                 }
             }
+        }
+
+        [HttpGet("GetDoctorId")]
+        public IActionResult GetDoctorId(string username)
+        {
+            var doctor = _context.Doctor
+                .FirstOrDefault(d => d.User.UserName == username);
+
+            if (doctor == null)
+                return NotFound(new { message = "Doctor not found" });
+
+            return Ok(new { doctorId = doctor.DoctorId });
         }
 
     }
