@@ -55,6 +55,21 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok("OTP sent successfully.");
         }
 
+        [HttpPost("send-cancellation-email")]
+        public async Task<IActionResult> SendCancellationEmail([FromBody] AppointmentCancellationEmailDto dto)
+        {
+            try
+            {
+                await _patientEmailService.SendCancellationMessageEmailAsync(dto.Email, dto.PaymentMethod, dto.AppointmentDate, dto.AppointmentTime);
+                return Ok(new { message = "Cancellation email sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                // You can log the exception here if you want
+                return StatusCode(500, new { message = "Failed to send email", error = ex.Message });
+            }
+        }
+
 
 
     }
