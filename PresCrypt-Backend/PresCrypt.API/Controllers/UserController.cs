@@ -47,7 +47,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         [HttpPost]
         [Route("PatientRegistration")]
-        public IActionResult Registration([FromBody] PatientRegDTO patientRegDTO)
+        public async Task<IActionResult> Registration([FromBody] PatientRegDTO patientRegDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -111,15 +111,55 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
-
                     };
 
                     _applicationDbContext.Patient.Add(newPatient);
                     _applicationDbContext.SaveChanges();
 
+                    // ✅ Send welcome email  
+                    string emailBody = $@"
+<div style='font-family: Arial, sans-serif; padding: 30px; background-color: #ffffff; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px;'>
+    <h2 style='color: #008080;'>Welcome to PresCrypt 👋</h2>
+    
+    <p style='font-size: 16px;'>Hi <strong>{newPatient.FirstName}</strong>,</p>
+
+    <p style='font-size: 15px;'>Thank you for registering with <strong style='color: #008080;'>PresCrypt</strong>, your trusted digital healthcare platform.</p>
+
+    <p style='font-size: 15px;'>Your unique Patient ID is:</p>
+    <p style='font-size: 18px; font-weight: bold; color: #008080; margin-left: 15px;'>{newPatient.PatientId}</p>
+
+    <p style='font-size: 15px;'>You can now log in to your account and securely manage your health records, book appointments, and more.</p>
+
+    <br/>
+    
+    <p style='font-size: 14px;'>Need help? Contact our support team at  
+        <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none;'>support@prescrypt.com</a>.
+    </p>
+
+    <hr style='margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;' />
+
+    <p style='font-size: 12px; color: #999;'>This is an automated email from PresCrypt. Please do not reply to this message.</p>
+</div>";
+
+
+                    await _emailService.SendEmailAsync(
+                        newPatient.Email,
+                        "🎉 Welcome to PresCrypt – Registration Successful",
+                        emailBody
+                    );
                     transaction.Commit();
 
-                    return Ok(new { message = "Patient registered successfully", patientId = newPatientId });
+                    // ✅ Generate JWT token
+                    var token = _jwtService.GenerateToken(newPatientId, newPatient.Email, "Patient");
+
+                    // ✅ Send token, role, and username to frontend
+                    return Ok(new
+                    {
+                        token = token,
+                        role = "Patient",
+                        username = newPatient.Email,
+                        patientId = newPatientId
+                    });
                 }
                 catch (Exception ex)
                 {
