@@ -35,12 +35,11 @@ public class AccessRequestController : ControllerBase
                 return BadRequest(new { success = false, message = "A pending request already exists." });
             }
 
-            // If approved request exists and not expired (within 10 minutes)
-            if (existingRequest != null && existingRequest.Status == "Approved" &&
-                existingRequest.RequestDateTime.AddMinutes(10) > DateTime.UtcNow)
-            {
-                return BadRequest(new { success = false, message = "Access already granted and not expired." });
-            }
+            //if (existingRequest != null && existingRequest.Status == "Approved" &&
+            //    existingRequest.RequestDateTime.AddMinutes(10) > DateTime.UtcNow)
+            //{
+            //    return BadRequest(new { success = false, message = "Access already granted and not expired." });
+            //}
 
             // STEP 2: Create new Access Request
             var accessRequest = new DoctorPatientAccessRequest
@@ -99,7 +98,7 @@ public class AccessRequestController : ControllerBase
             {
                 request.Status = "Approved";
                 request.GrantedAt = DateTime.UtcNow;
-                request.AccessExpiry = DateTime.UtcNow.AddHours(1);
+                //request.AccessExpiry = DateTime.UtcNow.AddHours(1);
             }
             else
             {
