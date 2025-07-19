@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PresCrypt_Backend.PresCrypt.Core.Models;
-using System.ComponentModel.DataAnnotations;
+using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.API.DTOs;
+using PresCrypt_Backend.PresCrypt.Core.Models; // Ensure this using statement points to your Models folder
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -18,126 +22,86 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _logger = logger;
         }
 
-        // GET: api/PatientProfile/{patientId}
-        [HttpGet("{patientId}")]
-        public async Task<IActionResult> GetPatientById(string patientId)
+        // PUT: api/PatientProfile/{patientId} (Update existing patient profile)
+        [HttpPut("{patientId}")]
+        public async Task<IActionResult> UpdatePatientProfile(string patientId, [FromBody] UpdatePatientProfileDto dto)
         {
             try
             {
-                // Validate input
                 if (string.IsNullOrWhiteSpace(patientId))
                 {
-                    return BadRequest("Patient ID cannot be null or empty");
+                    return BadRequest(new { Message = "Patient ID cannot be null or empty." });
                 }
 
-                _logger.LogInformation("Fetching patient with ID: {PatientId}", patientId);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-                var patient = await _dbContext.Patient
-                    .Include(p => p.User) // Include User details since Email is foreign key
-                    .Include(p => p.Appointments)
-                    .Include(p => p.Notifications)
-                    .AsNoTracking() // Better performance for read-only operations
-                    .FirstOrDefaultAsync(p => p.PatientId == patientId);
+                _logger.LogInformation("Updating patient profile for ID: {PatientId}", patientId);
 
-                if (patient == null)
+                var patientToUpdate = await _dbContext.Patient.FirstOrDefaultAsync(p => p.PatientId == patientId);
+
+                if (patientToUpdate == null)
                 {
                     _logger.LogWarning("Patient not found with ID: {PatientId}", patientId);
-                    return NotFound(new { Message = $"Patient with ID {patientId} not found" });
+                    return NotFound(new { Message = $"Patient with ID {patientId} not found." });
                 }
 
-                _logger.LogInformation("Successfully retrieved patient with ID: {PatientId}", patientId);
-                return Ok(patient);
+                // Check for potential conflicts with email and NIC on other patients
+                if (await _dbContext.Patient.AnyAsync(p => p.Email == dto.Email && p.PatientId != patientId))
+                {
+                    return Conflict(new { Message = "Another patient with this email address already exists." });
+                }
+
+                if (await _dbContext.Patient.AnyAsync(p => p.NIC == dto.Nic && p.PatientId != patientId))
+                {
+                    return Conflict(new { Message = "Another patient with this NIC already exists." });
+                }
+
+                // Split the full name into first and last name
+                var nameParts = dto.Name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                patientToUpdate.FirstName = nameParts.FirstOrDefault() ?? "";
+                patientToUpdate.LastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "";
+
+                // Update basic properties
+                patientToUpdate.DOB = dto.BirthDate;
+                patientToUpdate.Gender = dto.Gender?.FirstOrDefault().ToString().ToUpper(); // "Male" -> "M"
+                patientToUpdate.Email = dto.Email.ToLower().Trim();
+                patientToUpdate.NIC = dto.Nic.Trim();
+                patientToUpdate.Address = dto.Address.Trim();
+                patientToUpdate.ContactNo = dto.Phone.Trim();
+                patientToUpdate.UpdatedAt = DateTime.UtcNow;
+
+                // Convert and update profile image from base64 if provided
+                if (!string.IsNullOrEmpty(dto.ProfileImageBase64))
+                {
+                    try
+                    {
+                        patientToUpdate.ProfileImage = Convert.FromBase64String(dto.ProfileImageBase64);
+                    }
+                    catch (FormatException)
+                    {
+                        return BadRequest(new { Message = "Invalid base64 format for profile image." });
+                    }
+                }
+
+                // Save changes to the database
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated patient profile with ID: {PatientId}", patientToUpdate.PatientId);
+
+                // Return 204 No Content to indicate successful update
+                return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while fetching patient with ID: {PatientId}", patientId);
-                return StatusCode(500, new { Message = "An error occurred while processing your request" });
+                _logger.LogError(ex, "Error occurred while updating patient profile with ID: {PatientId}", patientId);
+                return StatusCode(500, new { Message = "An internal error occurred while processing your request." });
             }
         }
 
-        // GET: api/PatientProfile (Get all patients - optional)
-        [HttpGet]
-        public async Task<IActionResult> GetAllPatients([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            try
-            {
-                if (page < 1) page = 1;
-                if (pageSize < 1 || pageSize > 100) pageSize = 10;
-
-                var skip = (page - 1) * pageSize;
-
-                var patients = await _dbContext.Patient
-                    .Include(p => p.User)
-                    .Include(p => p.Appointments)
-                    .Include(p => p.Notifications)
-                    .AsNoTracking()
-                    .Skip(skip)
-                    .Take(pageSize)
-                    .ToListAsync();
-
-                var totalCount = await _dbContext.Patient.CountAsync();
-
-                var response = new
-                {
-                    Data = patients,
-                    TotalCount = totalCount,
-                    Page = page,
-                    PageSize = pageSize,
-                    TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
-                };
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while fetching all patients");
-                return StatusCode(500, new { Message = "An error occurred while processing your request" });
-            }
-        }
-
-        // GET: api/PatientProfile/by-email/{email}
-        [HttpGet("by-email/{email}")]
-        public async Task<IActionResult> GetPatientByEmail(string email)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(email))
-                {
-                    return BadRequest("Email cannot be null or empty");
-                }
-
-                // Validate email format
-                if (!new EmailAddressAttribute().IsValid(email))
-                {
-                    return BadRequest("Invalid email format");
-                }
-
-                _logger.LogInformation("Fetching patient with email: {Email}", email);
-
-                var patient = await _dbContext.Patient
-                    .Include(p => p.User)
-                    .Include(p => p.Appointments)
-                    .Include(p => p.Notifications)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.Email == email);
-
-                if (patient == null)
-                {
-                    _logger.LogWarning("Patient not found with email: {Email}", email);
-                    return NotFound(new { Message = $"Patient with email {email} not found" });
-                }
-
-                _logger.LogInformation("Successfully retrieved patient with email: {Email}", email);
-                return Ok(patient);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while fetching patient with email: {Email}", email);
-                return StatusCode(500, new { Message = "An error occurred while processing your request" });
-            }
-        }
-
-        // GET: api/PatientProfile/{patientId}/basic (Get basic patient info without related data)
+        // GET: api/PatientProfile/{patientId}/basic (Get basic patient info)
         [HttpGet("{patientId}/basic")]
         public async Task<IActionResult> GetPatientBasicInfo(string patientId)
         {
@@ -145,7 +109,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             {
                 if (string.IsNullOrWhiteSpace(patientId))
                 {
-                    return BadRequest("Patient ID cannot be null or empty");
+                    return BadRequest(new { Message = "Patient ID cannot be null or empty." });
                 }
 
                 _logger.LogInformation("Fetching basic patient info with ID: {PatientId}", patientId);
@@ -157,24 +121,22 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 if (patient == null)
                 {
                     _logger.LogWarning("Patient not found with ID: {PatientId}", patientId);
-                    return NotFound(new { Message = $"Patient with ID {patientId} not found" });
+                    return NotFound(new { Message = $"Patient with ID {patientId} not found." });
                 }
 
-                // Return only basic patient info without related collections
                 var basicInfo = new
                 {
                     patient.PatientId,
                     patient.FirstName,
                     patient.LastName,
+                    Name = $"{patient.FirstName} {patient.LastName}".Trim(),
                     patient.DOB,
                     patient.Gender,
                     patient.Email,
-                    patient.BloodGroup,
                     patient.NIC,
                     patient.Address,
                     patient.ContactNo,
-                    patient.Status,
-                    patient.ProfileImage, // Include profile image byte array
+                    ProfileImage = patient.ProfileImage != null ? Convert.ToBase64String(patient.ProfileImage) : null,
                     patient.CreatedAt,
                     patient.UpdatedAt,
                     patient.LastLogin
@@ -185,8 +147,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while fetching basic patient info with ID: {PatientId}", patientId);
-                return StatusCode(500, new { Message = "An error occurred while processing your request" });
+                _logger.LogError(ex, "Error occurred while fetching basic patient info for ID: {PatientId}", patientId);
+                return StatusCode(500, new { Message = "An internal error occurred while processing your request." });
             }
         }
     }
