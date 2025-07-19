@@ -117,35 +117,86 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     _applicationDbContext.SaveChanges();
 
                     // ✅ Send welcome email  
-                    string emailBody = $@"
-<div style='font-family: Arial, sans-serif; padding: 30px; background-color: #ffffff; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px;'>
-    <h2 style='color: #008080;'>Welcome to PresCrypt 👋</h2>
-    
-    <p style='font-size: 16px;'>Hi <strong>{newPatient.FirstName}</strong>,</p>
+                    string welcomeEmailBody = $@"
+                            <!DOCTYPE html>
+                            <html lang='en'>
+                            <head>
+                                <meta charset='UTF-8'>
+                                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                                <title>Welcome to PresCrypt</title>
+                            </head>
+                            <body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+                                <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+                                    <!-- Header -->
+                                    <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 40px 30px; text-align: center;'>
+                                        <h1 style='color: #ffffff; margin: 0; font-size: 28px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                                            Welcome to PresCrypt! 🎉
+                                        </h1>
+                                        <p style='color: #e6f7f7; margin: 10px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif;'>
+                                            Your Digital Healthcare Journey Begins
+                                        </p>
+                                    </div>
+        
+                                    <!-- Content -->
+                                    <div style='padding: 40px 30px;'>
+                                        <div style='text-align: center; margin-bottom: 30px;'>
+                                            <div style='width: 80px; height: 80px; background: linear-gradient(135deg, #008080, #00a3a3); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                                                👋
+                                            </div>
+                                        </div>
+            
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 20px; line-height: 1.6;'>
+                                            Hi <strong style='color: #008080;'>{newPatient.FirstName}</strong>,
+                                        </p>
+            
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #5a6c7d; margin-bottom: 25px; line-height: 1.7;'>
+                                            Welcome to <strong style='color: #008080;'>PresCrypt</strong> – your trusted digital healthcare platform. We're excited to have you join our community of users who prioritize secure and convenient healthcare management.
+                                        </p>
+            
 
-    <p style='font-size: 15px;'>Thank you for registering with <strong style='color: #008080;'>PresCrypt</strong>, your trusted digital healthcare platform.</p>
+            
+                                        <div style='background: #f8f9fa; border-left: 4px solid #008080; padding: 20px; margin: 25px 0; border-radius: 4px;'>
+                                            <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>
+                                                🚀 What's Next?
+                                            </h3>
+                                            <ul style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #5a6c7d; margin: 0; padding-left: 20px; line-height: 1.8;'>
+                                                <li>Log in to your secure account</li>
+                                                <li>Complete your health profile</li>
+                                                <li>Book your first appointment</li>
+                                                <li>Explore our digital health tools</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+        
+                                    <!-- Support Section -->
+                                    <div style='background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;'>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #6c757d; margin: 0 0 15px 0;'>
+                                            Need assistance? Our support team is here to help!
+                                        </p>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; margin: 0;'>
+                                            📧 <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none; font-weight: 600;'>prescrypt.health@gmail.com</a>
+                                            <span style='color: #dee2e6; margin: 0 10px;'>•</span>
+                                            📞 Support Hotline: +1 (555) 123-4567
+                                        </p>
+                                    </div>
+        
+                                    <!-- Footer -->
+                                    <div style='background: #2c3e50; padding: 25px 30px; text-align: center;'>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0; line-height: 1.6;'>
+                                            © 2025 PresCrypt. All rights reserved.<br>
+                                            This is an automated email. Please do not reply to this message.
+                                        </p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
 
-    <p style='font-size: 15px;'>Your unique Patient ID is:</p>
-    <p style='font-size: 18px; font-weight: bold; color: #008080; margin-left: 15px;'>{newPatient.PatientId}</p>
-
-    <p style='font-size: 15px;'>You can now log in to your account and securely manage your health records, book appointments, and more.</p>
-
-    <br/>
-    
-    <p style='font-size: 14px;'>Need help? Contact our support team at  
-        <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none;'>support@prescrypt.com</a>.
-    </p>
-
-    <hr style='margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;' />
-
-    <p style='font-size: 12px; color: #999;'>This is an automated email from PresCrypt. Please do not reply to this message.</p>
-</div>";
 
 
                     await _emailService.SendEmailAsync(
                         newPatient.Email,
                         "🎉 Welcome to PresCrypt – Registration Successful",
-                        emailBody
+                        welcomeEmailBody
                     );
                     transaction.Commit();
 
@@ -582,7 +633,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-      
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
@@ -603,13 +653,54 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
-                // ✅ NEW: Check if account is manually blocked
+                // ✅ FIXED: Auto-unlock logic - Check FIRST before manual block check
+                if (user.IsBlocked && user.LastFailedLoginTime.HasValue)
+                {
+                    // Check if 15 minutes have passed since last failed attempt
+                    if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
+                    {
+                        // Auto-unlock the account
+                        user.IsBlocked = false;
+                        user.FailedLoginAttempts = 0;
+                        user.LastFailedLoginTime = null;
+                        await _applicationDbContext.SaveChangesAsync();
+
+                        _logger.LogInformation($"🔓 Account auto-unlocked for {user.UserName} after 15 minutes");
+
+                        // Send auto-unlock notification email
+                        string unlockEmailBody = $@"
+                            <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                                <p>Dear user,</p>
+                                <p><strong>Good News!</strong> We have observed that you have logged in successfully again once after your account has been now unlocked.</p>
+                    
+                                <p>For your security, please ensure you're using the correct password.</p>
+                                <br/>
+                                <p>Best regards,<br/>PresCrypt Security Team</p>
+                            </div>";
+                        await _emailService.SendEmailAsync(user.UserName, "✅ Account Unlocked - PresCrypt", unlockEmailBody);
+                    }
+                    else
+                    {
+                        // Still within 15-minute lockout period
+                        var remainingTime = user.LastFailedLoginTime.Value.AddMinutes(15) - DateTime.UtcNow;
+                        int remainingMinutes = (int)Math.Ceiling(remainingTime.TotalMinutes);
+
+                        return BadRequest(new
+                        {
+                            success = false,
+                            message = $"🚫 Account is temporarily locked. Please try again in {remainingMinutes} minute(s).",
+                            remainingMinutes = remainingMinutes
+                        });
+                    }
+                }
+
+                // ✅ Check if account is still manually blocked (this should rarely happen now)
                 if (user.IsBlocked)
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "🚫 Your account is blocked due to multiple failed attempts. Please contact admin to unlock it."
+                        message = "🚫 Your account is blocked. Please contact admin to unlock it."
                     });
                 }
 
@@ -626,22 +717,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Please verify your email before logging in." });
                 }
 
-                // ✅ Auto-reset if 15 min passed, but only if not blocked
-                if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue)
-                {
-                    if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
-                    {
-                        user.FailedLoginAttempts = 0;
-                        user.LastFailedLoginTime = null;
-                        // ⚠️ Do NOT reset IsBlocked here — this must be done manually by admin
-                        await _applicationDbContext.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        return BadRequest(new { message = "Account temporarily locked due to multiple failed login attempts. Try again later." });
-                    }
-                }
-
                 var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
 
                 if (result != PasswordVerificationResult.Success)
@@ -649,29 +724,73 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     user.FailedLoginAttempts += 1;
                     user.LastFailedLoginTime = DateTime.UtcNow;
 
-                    // ✅ NEW: Lock permanently if 5+ attempts
+                    // ✅ Block account after 5 failed attempts
                     if (user.FailedLoginAttempts >= 5)
                     {
                         user.IsBlocked = true;
 
-                        // Optional: Notify admin or user
-                        string blockEmail = @"
-                    <p><strong>Security Notice:</strong><br/>
-                    Your account has been <strong>blocked</strong> after 5 failed login attempts.<br/>
-                    Please contact the system administrator to reactivate your account.</p>";
-                        await _emailService.SendEmailAsync(user.UserName, "🚫 Account Blocked", blockEmail);
+                        // Send account blocked email with enhanced template
+                        string blockEmailBody = $@"
+                            <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;'>
+                                <div style='background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 15px; margin-bottom: 20px;'>
+                                    <h3 style='color: #721c24; margin: 0 0 10px 0;'>🚫 Account Temporarily Locked</h3>
+                                    <p style='color: #721c24; margin: 0;'><strong>Security Notice:</strong> Your account has been locked after 5 failed login attempts.</p>
+                                </div>
+                    
+                                <p>Dear user,</p>
+                                <p>For your account security, we have temporarily locked your account due to multiple unsuccessful login attempts.</p>
+                    
+                                <div style='background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px; margin: 15px 0;'>
+                                    <h4 style='color: #0c5460; margin: 0 0 10px 0;'>⏰ Auto-Unlock Information:</h4>
+                                    <p style='color: #0c5460; margin: 0;'>Your account will be automatically unlocked after <strong>15 minutes</strong> from the last failed attempt.</p>
+                                    <p style='color: #0c5460; margin: 5px 0 0 0; font-size: 12px;'>Locked at: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC</p>
+                                </div>
+                    
+                                <p><strong>What you can do:</strong></p>
+                                <ul>
+                                    <li>Wait 15 minutes and try logging in again</li>
+                                    <li>Make sure you're using the correct password</li>
+                                    <li>Use the 'Forgot Password' feature if needed</li>
+                                    <li>Contact support if you continue having issues</li>
+                                </ul>
+                    
+                                <hr style='margin: 20px 0; border: none; border-top: 1px solid #e0e0e0;' />
+                                <p style='font-size: 12px; color: #6c757d;'>
+                                    Best regards,<br/>
+                                    PresCrypt Security Team<br/>
+                                    📧 prescrypt.health@gmail.com
+                                </p>
+                            </div>";
+
+                        await _emailService.SendEmailAsync(user.UserName, "🚫 Account Temporarily Locked - PresCrypt", blockEmailBody);
+
+                        _logger.LogWarning($"🚫 Account locked for {user.UserName} after 5 failed attempts");
                     }
                     else if (user.FailedLoginAttempts == 4)
                     {
+                        // Use your enhanced security alert template here
                         string emailBody = @"
-                    <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
-                        <p>Dear user,</p>
-                        <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
-                        <p>If you enter the wrong password one more time, your account will be <strong>locked</strong>.</p>
-                        <br/>
-                        <p>Best regards,<br/>PresCrypt Security Team</p>
-                    </div>";
-                        await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Failed Login Attempts", emailBody);
+                            <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                                <div style='background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin-bottom: 15px;'>
+                                    <p style='color: #856404; margin: 0;'><strong>⚠️ Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
+                                </div>
+                                <p>Dear user,</p>
+                                <p>We detected multiple failed login attempts on your account.</p>
+                                <p><strong style='color: #dc3545;'>Warning:</strong> If you enter the wrong password one more time, your account will be <strong>temporarily locked for 15 minutes</strong>.</p>
+                    
+                                <div style='background: #e8f4f8; border-left: 4px solid #008080; padding: 15px; margin: 15px 0;'>
+                                    <p style='margin: 0;'><strong>💡 Helpful Tips:</strong></p>
+                                    <ul style='margin: 10px 0 0 0;'>
+                                        <li>Double-check your password for typos</li>
+                                        <li>Ensure Caps Lock is not on</li>
+                                        <li>Use 'Forgot Password' if you're unsure</li>
+                                    </ul>
+                                </div>
+                    
+                                <br/>
+                                <p>Best regards,<br/>PresCrypt Security Team</p>
+                            </div>";
+                        await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Final Warning - PresCrypt", emailBody);
                     }
 
                     await _applicationDbContext.SaveChangesAsync();
@@ -681,7 +800,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 // ✅ Reset on successful login
                 user.FailedLoginAttempts = 0;
                 user.LastFailedLoginTime = null;
-                user.IsBlocked = false;
+                user.IsBlocked = false; // Ensure it's reset
 
                 // ✅ Set LastLogin in respective table
                 if (user.Role == "Admin")
@@ -709,7 +828,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     }
                 }
 
-
                 // Admin 2FA
                 if (user.Role == "Admin")
                 {
@@ -719,11 +837,85 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     await _applicationDbContext.SaveChangesAsync();
 
                     string verifyUrl = $"http://localhost:3000/Auth/Verify2FA?email={Uri.EscapeDataString(user.UserName)}";
-                    string emailBody = $@"
-                <p>Your 2FA code is: <strong>{code}</strong></p>
-                <p>This code will expire in 5 minutes.</p>
-                <p><a href='{verifyUrl}'>Click here to verify</a></p>";
-                    await _emailService.SendEmailAsync(user.UserName, "Your Admin 2FA Code", emailBody);
+
+                    // Use your enhanced 2FA template here
+                    string twoFAEmailBody = $@"
+                        <!DOCTYPE html>
+                        <html lang='en'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Your 2FA Verification Code - PresCrypt</title>
+                        </head>
+                        <body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+                            <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+                                <!-- Header -->
+                                <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 30px; text-align: center;'>
+                                    <div style='background: rgba(255,255,255,0.2); border-radius: 50%; width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                                        🔐
+                                    </div>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                                        Two-Factor Authentication
+                                    </h1>
+                                </div>
+        
+                                <!-- Content -->
+                                <div style='padding: 40px 30px; text-align: center;'>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 25px; line-height: 1.6;'>
+                                        Your verification code is ready! 🎯
+                                    </p>
+            
+                                    <!-- Code Box -->
+                                    <div style='background: linear-gradient(135deg, #f8fbff 0%, #e8f4f8 100%); border: 3px solid #008080; border-radius: 15px; padding: 30px; margin: 30px 0; display: inline-block;'>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #5a6c7d; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;'>
+                                            Your 2FA Code
+                                        </p>
+                                        <p style='font-family: Monaco, Consolas, monospace; font-size: 36px; font-weight: bold; color: #008080; margin: 0; letter-spacing: 8px; background: #ffffff; padding: 20px 30px; border-radius: 10px; border: 2px solid #e0e0e0; text-align: center; min-width: 200px;'>
+                                            {code}
+                                        </p>
+                                    </div>
+            
+                                    <!-- Timer Alert -->
+                                    <div style='background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;'>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #856404; margin: 0; font-weight: 600;'>
+                                            ⏰ <strong>Expires in 5 minutes</strong>
+                                        </p>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #856404; margin: 5px 0 0 0;'>
+                                            Enter this code quickly to complete your login
+                                        </p>
+                                    </div>
+            
+                                    <!-- Quick Action Button -->
+                                    <div style='margin: 35px 0;'>
+                                        <a href='{verifyUrl}' style='display: inline-block; background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 25px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,128,128,0.3);'>
+                                            🚀 Verify Now
+                                        </a>
+                                    </div>
+            
+                                    <!-- Instructions -->
+                                    <div style='background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: left;'>
+                                        <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #2c3e50; margin: 0 0 15px 0; font-size: 16px; text-align: center;'>
+                                            📱 How to Use This Code
+                                        </h3>
+                                        <ol style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #5a6c7d; margin: 0; padding-left: 20px; line-height: 1.8;'>
+                                            <li>Return to the PresCrypt login page</li>
+                                            <li>Enter the 6-digit code above</li>
+                                            <li>Click ""Verify"" to complete your login</li>
+                                        </ol>
+                                    </div>
+                                </div>
+        
+                                <!-- Footer -->
+                                <div style='background: #2c3e50; padding: 25px 30px; text-align: center;'>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0;'>
+                                        © 2025 PresCrypt Security • This code was generated for your account security
+                                    </p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
+
+                    await _emailService.SendEmailAsync(user.UserName, "🔐 Your Admin 2FA Code - PresCrypt", twoFAEmailBody);
 
                     return Ok(new
                     {
@@ -736,13 +928,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
                 // Generate JWT
                 var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-                //Response.Cookies.Append("authToken", token, new CookieOptions
-                //{
-                //    HttpOnly = true,
-                //    Secure = false,
-                //    SameSite = SameSiteMode.Strict,
-                //    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                //});
 
                 await _applicationDbContext.SaveChangesAsync();
                 _logger.LogInformation($"✅ Login successful for {user.UserName}");
@@ -772,8 +957,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 });
             }
         }
-
-
         [HttpPost]
         [Route("Verify2FA")]
         public IActionResult Verify2FA([FromBody] TwoFactorDTO model)
@@ -791,13 +974,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
 
-            //Response.Cookies.Append("token", token, new CookieOptions
-            //{
-            //    HttpOnly = true,
-            //    Secure = false, // Set to true in production with HTTPS
-            //    SameSite = SameSiteMode.Strict,
-            //    Expires = DateTimeOffset.UtcNow.AddHours(1)
-            //});
 
             _applicationDbContext.SaveChanges();
 
@@ -933,30 +1109,80 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         private async Task SendResetEmailAsync(string email, string resetLink)
         {
-            string emailBody = $@"
-            <div style='font-family: Arial, sans-serif; font-size: 15px; color: #333;'>
-                <h2>Password Reset Request</h2>
-                <p>Hi,</p>
-                <p>You recently requested to reset your password. Click the button below to proceed:</p>
-                <p>
-                    <a href='{resetLink}' style='
-                        display: inline-block;
-                        padding: 10px 20px;
-                        color: white;
-                        background-color: #007b5e;
-                        text-decoration: none;
-                        border-radius: 5px;
-                    '>Reset Password</a>
+            string passwordResetEmailBody = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Reset Your Password - PresCrypt</title>
+</head>
+<body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+    <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+        <!-- Header -->
+        <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 30px; text-align: center;'>
+            <div style='background: rgba(255,255,255,0.2); border-radius: 50%; width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                🔐
+            </div>
+            <h1 style='color: #ffffff; margin: 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                Password Reset Request
+            </h1>
+        </div>
+        
+        <!-- Content -->
+        <div style='padding: 40px 30px;'>
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 20px; line-height: 1.6;'>
+                Hello there! 👋
+            </p>
+            
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #5a6c7d; margin-bottom: 25px; line-height: 1.7;'>
+                We received a request to reset your PresCrypt account password. No worries – it happens to the best of us!
+            </p>
+            
+            <!-- Alert Box -->
+            <div style='background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0;'>
+                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #856404; margin: 0; font-weight: 600;'>
+                    ⏰ <strong>Time Sensitive:</strong> This reset link expires in 1 hour for your security.
                 </p>
-                <p>This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
-                <br/>
-                <p>Thanks,<br/>PresCrypt Team</p>
-            </div>";
+            </div>
+            
+            <!-- CTA Button -->
+            <div style='text-align: center; margin: 35px 0;'>
+                <a href='{resetLink}' style='display: inline-block; background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 25px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600; font-size: 18px; box-shadow: 0 4px 12px rgba(0,128,128,0.3); transition: all 0.3s ease;'>
+                    🔑 Reset My Password
+                </a>
+            </div>        
+            <!-- Security Notice -->
+            <div style='background: #e8f4f8; border: 1px solid #008080; border-radius: 8px; padding: 20px; margin: 30px 0;'>
+                <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #008080; margin: 0 0 10px 0; font-size: 16px;'>
+                    🛡️ Security Notice
+                </h3>
+                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #2c3e50; margin: 0; line-height: 1.6;'>
+                    If you didn't request this password reset, please ignore this email. Your account remains secure, and no action is needed.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style='background: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e9ecef;'>
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #6c757d; margin: 0 0 10px 0;'>
+                Best regards,<br><strong style='color: #008080;'>The PresCrypt Security Team</strong>
+            </p>
+        </div>
+        
+        <div style='background: #2c3e50; padding: 20px 30px; text-align: center;'>
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0;'>
+                © 2025 PresCrypt. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>";
 
             await _emailService.SendEmailAsync(
                 email,
                 "Reset Your Password",
-                emailBody
+                passwordResetEmailBody
             );
         }
         [HttpGet]
@@ -984,17 +1210,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         [Route("logout")]
         public IActionResult Logout()
         {
-            // If using cookie authentication  
-            //Response.Cookies.Delete("authToken", new CookieOptions
-            //{
-            //    HttpOnly = true,
-            //    Secure = true,
-            //    SameSite = SameSiteMode.Strict
-            //});
-
-            // Add a response header to notify the client to clear local storage  
-           // Response.Headers.Add("Clear-Local-Storage", "true");
-
             return Ok(new { message = "Logged out successfully" });
         }
 
