@@ -736,13 +736,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
                 // Generate JWT
                 var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-                Response.Cookies.Append("authToken", token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
-                });
+                //Response.Cookies.Append("authToken", token, new CookieOptions
+                //{
+                //    HttpOnly = true,
+                //    Secure = false,
+                //    SameSite = SameSiteMode.Strict,
+                //    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                //});
 
                 await _applicationDbContext.SaveChangesAsync();
                 _logger.LogInformation($"✅ Login successful for {user.UserName}");
@@ -791,13 +791,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
 
-            Response.Cookies.Append("token", token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // Set to true in production with HTTPS
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddHours(1)
-            });
+            //Response.Cookies.Append("token", token, new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Secure = false, // Set to true in production with HTTPS
+            //    SameSite = SameSiteMode.Strict,
+            //    Expires = DateTimeOffset.UtcNow.AddHours(1)
+            //});
 
             _applicationDbContext.SaveChanges();
 
@@ -985,15 +985,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         public IActionResult Logout()
         {
             // If using cookie authentication  
-            Response.Cookies.Delete("authToken", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict
-            });
+            //Response.Cookies.Delete("authToken", new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    Secure = true,
+            //    SameSite = SameSiteMode.Strict
+            //});
 
             // Add a response header to notify the client to clear local storage  
-            Response.Headers.Add("Clear-Local-Storage", "true");
+           // Response.Headers.Add("Clear-Local-Storage", "true");
 
             return Ok(new { message = "Logged out successfully" });
         }
