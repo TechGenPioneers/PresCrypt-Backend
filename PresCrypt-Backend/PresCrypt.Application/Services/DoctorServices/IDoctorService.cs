@@ -8,8 +8,5 @@
         Task<List<string>> GetAllDoctor();
 
         Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName);
-        
-        Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile file);
-
     }
 }
