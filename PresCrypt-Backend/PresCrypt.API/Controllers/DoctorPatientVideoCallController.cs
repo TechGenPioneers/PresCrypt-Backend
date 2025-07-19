@@ -55,10 +55,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 var doctorName = await _videoCallService.GetDoctorNameAsync(doctorId);
                 var patientName = await _videoCallService.GetPatientNameAsync(patientId);
 
+                // Extract just the fullName strings
                 return Ok(new
                 {
-                    DoctorName = doctorName,
-                    PatientName = patientName
+                    DoctorName = doctorName?.fullName,  // Just return the string
+                    PatientName = patientName?.fullName   // Just return the string
                 });
             }
             catch (KeyNotFoundException ex)
@@ -84,5 +85,22 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var url = await _videoCallService.GenerateAccessUrlAsync(roomId, role);
             return Ok(new { url });
         }
+
+        [HttpPost("start-call")]
+        public async Task<IActionResult> StartCall([FromQuery] string doctorId, [FromQuery] string patientId)
+        {
+            var roomUrl = await _videoCallService.CreateRoomAsync($"{doctorId}-{patientId}");
+            var doctorName = await _videoCallService.GetDoctorNameAsync(doctorId);
+            await _hubContext.Clients.Group(patientId).SendAsync("CallReceived", new
+            {
+                doctorId,
+                doctorName,
+                roomUrl
+            });
+
+
+            return Ok(new { roomUrl });
+        }
+
     }
 }
