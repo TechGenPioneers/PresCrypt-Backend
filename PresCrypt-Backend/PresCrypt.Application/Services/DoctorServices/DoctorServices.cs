@@ -61,6 +61,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                     Specialization = dh.doctor.Specialization,
                     HospitalName = dh.hospital.HospitalName,
                     Charge = dh.hospital.Charge, // Use hospital's charge
+                    Image = dh.doctor.DoctorImage,
 
                     // Availability details as lists
                     AvailableDay = new List<string> { dh.availability.AvailableDay },

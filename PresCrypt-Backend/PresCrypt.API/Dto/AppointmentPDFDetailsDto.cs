@@ -8,7 +8,7 @@
         public string AppointmentDate { get; set; }
         public string AppointmentTime { get; set; }
         public decimal TotalCharge { get; set; }
-
+        public string PaymentId { get; set; }
         public double DoctorCharge { get; set; }
         public double HospitalCharge { get; set; }
         public double PlatformCharge { get; set; }
