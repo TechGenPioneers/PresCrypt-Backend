@@ -65,6 +65,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest(new { message = "Passwords do not match." });
             }
 
+            // Validate gender
+            if (string.IsNullOrEmpty(patientRegDTO.Gender) ||
+                (patientRegDTO.Gender != "Male" && patientRegDTO.Gender != "Female"))
+            {
+                return BadRequest(new { message = "Gender must be either Male or Female." });
+            }
+
             string emailLower = patientRegDTO.Email.Trim().ToLower();
 
             if (_applicationDbContext.User.Any(x => x.UserName == emailLower))
@@ -108,6 +115,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         ContactNo = patientRegDTO.ContactNumber,
                         Address = patientRegDTO.Address,
                         DOB = patientRegDTO.DOB,
+                        Gender = patientRegDTO.Gender, // Added gender assignment
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
@@ -116,88 +124,87 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     _applicationDbContext.Patient.Add(newPatient);
                     _applicationDbContext.SaveChanges();
 
-                    // ✅ Send welcome email  
+                    // ✅ Send welcome email (your existing email logic)
                     string welcomeEmailBody = $@"
-                            <!DOCTYPE html>
-                            <html lang='en'>
-                            <head>
-                                <meta charset='UTF-8'>
-                                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                                <title>Welcome to PresCrypt</title>
-                            </head>
-                            <body style='margin: 0; padding: 0; background-color: #f8fbff;'>
-                                <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
-                                    <!-- Header -->
-                                    <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 40px 30px; text-align: center;'>
-                                        <h1 style='color: #ffffff; margin: 0; font-size: 28px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
-                                            Welcome to PresCrypt! 🎉
-                                        </h1>
-                                        <p style='color: #e6f7f7; margin: 10px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif;'>
-                                            Your Digital Healthcare Journey Begins
-                                        </p>
-                                    </div>
-        
-                                    <!-- Content -->
-                                    <div style='padding: 40px 30px;'>
-                                        <div style='text-align: center; margin-bottom: 30px;'>
-                                            <div style='width: 80px; height: 80px; background: linear-gradient(135deg, #008080, #00a3a3); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
-                                                👋
-                                            </div>
-                                        </div>
-            
-                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 20px; line-height: 1.6;'>
-                                            Hi <strong style='color: #008080;'>{newPatient.FirstName}</strong>,
-                                        </p>
-            
-                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #5a6c7d; margin-bottom: 25px; line-height: 1.7;'>
-                                            Welcome to <strong style='color: #008080;'>PresCrypt</strong> – your trusted digital healthcare platform. We're excited to have you join our community of users who prioritize secure and convenient healthcare management.
-                                        </p>
-            
+                    <!DOCTYPE html>
+                    <html lang='en'>
+                    <head>
+                        <meta charset='UTF-8'>
+                        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                        <title>Welcome to PresCrypt</title>
+                    </head>
+                    <body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+                        <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
+                            <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 40px 30px; text-align: center;'>
+                                <h1 style='color: #ffffff; margin: 0; font-size: 28px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                                    Welcome to PresCrypt! 🎉
+                                </h1>
+                                <p style='color: #e6f7f7; margin: 10px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, ""Segue UI"", Roboto, sans-serif;'>
+                                    Your Digital Healthcare Journey Begins
+                                </p>
+                            </div>
 
-            
-                                        <div style='background: #f8f9fa; border-left: 4px solid #008080; padding: 20px; margin: 25px 0; border-radius: 4px;'>
-                                            <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>
-                                                🚀 What's Next?
-                                            </h3>
-                                            <ul style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #5a6c7d; margin: 0; padding-left: 20px; line-height: 1.8;'>
-                                                <li>Log in to your secure account</li>
-                                                <li>Complete your health profile</li>
-                                                <li>Book your first appointment</li>
-                                                <li>Explore our digital health tools</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-        
-                                    <!-- Support Section -->
-                                    <div style='background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;'>
-                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #6c757d; margin: 0 0 15px 0;'>
-                                            Need assistance? Our support team is here to help!
-                                        </p>
-                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; margin: 0;'>
-                                            📧 <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none; font-weight: 600;'>prescrypt.health@gmail.com</a>
-                                            <span style='color: #dee2e6; margin: 0 10px;'>•</span>
-                                            📞 Support Hotline: +1 (555) 123-4567
-                                        </p>
-                                    </div>
-        
-                                    <!-- Footer -->
-                                    <div style='background: #2c3e50; padding: 25px 30px; text-align: center;'>
-                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0; line-height: 1.6;'>
-                                            © 2025 PresCrypt. All rights reserved.<br>
-                                            This is an automated email. Please do not reply to this message.
-                                        </p>
+                            <!-- Content -->
+                            <div style='padding: 40px 30px;'>
+                                <div style='text-align: center; margin-bottom: 30px;'>
+                                    <div style='width: 80px; height: 80px; background: linear-gradient(135deg, #008080, #00a3a3); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                                        👋
                                     </div>
                                 </div>
-                            </body>
-                            </html>";
+    
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 20px; line-height: 1.6;'>
+                                    Hi <strong style='color: #008080;'>{newPatient.FirstName}</strong>,
+                                </p>
+    
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #5a6c7d; margin-bottom: 25px; line-height: 1.7;'>
+                                    Welcome to <strong style='color: #008080;'>PresCrypt</strong> – your trusted digital healthcare platform. We're excited to have you join our community of users who prioritize secure and convenient healthcare management.
+                                </p>
+    
 
+    
+                                <div style='background: #f8f9fa; border-left: 4px solid #008080; padding: 20px; margin: 25px 0; border-radius: 4px;'>
+                                    <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>
+                                        🚀 What's Next?
+                                    </h3>
+                                    <ul style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #5a6c7d; margin: 0; padding-left: 20px; line-height: 1.8;'>
+                                        <li>Log in to your secure account</li>
+                                        <li>Complete your health profile</li>
+                                        <li>Book your first appointment</li>
+                                        <li>Explore our digital health tools</li>
+                                    </ul>
+                                </div>
+                            </div>
 
+                            <!-- Support Section -->
+                            <div style='background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;'>
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #6c757d; margin: 0 0 15px 0;'>
+                                    Need assistance? Our support team is here to help!
+                                </p>
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; margin: 0;'>
+                                    📧 <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none; font-weight: 600;'>prescrypt.health@gmail.com</a>
+                                    <span style='color: #dee2e6; margin: 0 10px;'>•</span>
+                                    📞 Support Hotline: +1 (555) 123-4567
+                                </p>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style='background: #2c3e50; padding: 25px 30px; text-align: center;'>
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0; line-height: 1.6;'>
+                                    © 2025 PresCrypt. All rights reserved.<br>
+                                    This is an automated email. Please do not reply to this message.
+                                </p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
 
                     await _emailService.SendEmailAsync(
                         newPatient.Email,
                         "🎉 Welcome to PresCrypt – Registration Successful",
                         welcomeEmailBody
                     );
+
                     transaction.Commit();
 
                     // ✅ Generate JWT token
@@ -209,7 +216,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         token = token,
                         role = "Patient",
                         username = newPatient.Email,
-                        patientId = newPatientId
+                        patientId = newPatientId,
+                        gender = newPatient.Gender // Include gender in response if needed
                     });
                 }
                 catch (Exception ex)
@@ -227,8 +235,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
             }
         }
-
-
 
 
         [HttpPost]
