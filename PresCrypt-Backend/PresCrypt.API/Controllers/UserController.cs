@@ -171,7 +171,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                                         <li>Log in to your secure account</li>
                                         <li>Complete your health profile</li>
                                         <li>Book your first appointment</li>
-                                        <li>Explore our digital health tools</li>
+                                        <li>Explore our digital health tools such as video chat options </li>
+                                        <li>Experience our AI powered chatbot</li>
                                     </ul>
                                 </div>
                             </div>
@@ -184,7 +185,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                                 <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; margin: 0;'>
                                     📧 <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none; font-weight: 600;'>prescrypt.health@gmail.com</a>
                                     <span style='color: #dee2e6; margin: 0 10px;'>•</span>
-                                    📞 Support Hotline: +1 (555) 123-4567
+
                                 </p>
                             </div>
 
