@@ -47,7 +47,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         [HttpPost]
         [Route("PatientRegistration")]
-        public IActionResult Registration([FromBody] PatientRegDTO patientRegDTO)
+        public async Task<IActionResult> Registration([FromBody] PatientRegDTO patientRegDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -111,15 +111,55 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
-
                     };
 
                     _applicationDbContext.Patient.Add(newPatient);
                     _applicationDbContext.SaveChanges();
 
+                    // ✅ Send welcome email  
+                    string emailBody = $@"
+<div style='font-family: Arial, sans-serif; padding: 30px; background-color: #ffffff; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px;'>
+    <h2 style='color: #008080;'>Welcome to PresCrypt 👋</h2>
+    
+    <p style='font-size: 16px;'>Hi <strong>{newPatient.FirstName}</strong>,</p>
+
+    <p style='font-size: 15px;'>Thank you for registering with <strong style='color: #008080;'>PresCrypt</strong>, your trusted digital healthcare platform.</p>
+
+    <p style='font-size: 15px;'>Your unique Patient ID is:</p>
+    <p style='font-size: 18px; font-weight: bold; color: #008080; margin-left: 15px;'>{newPatient.PatientId}</p>
+
+    <p style='font-size: 15px;'>You can now log in to your account and securely manage your health records, book appointments, and more.</p>
+
+    <br/>
+    
+    <p style='font-size: 14px;'>Need help? Contact our support team at  
+        <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none;'>support@prescrypt.com</a>.
+    </p>
+
+    <hr style='margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;' />
+
+    <p style='font-size: 12px; color: #999;'>This is an automated email from PresCrypt. Please do not reply to this message.</p>
+</div>";
+
+
+                    await _emailService.SendEmailAsync(
+                        newPatient.Email,
+                        "🎉 Welcome to PresCrypt – Registration Successful",
+                        emailBody
+                    );
                     transaction.Commit();
 
-                    return Ok(new { message = "Patient registered successfully", patientId = newPatientId });
+                    // ✅ Generate JWT token
+                    var token = _jwtService.GenerateToken(newPatientId, newPatient.Email, "Patient");
+
+                    // ✅ Send token, role, and username to frontend
+                    return Ok(new
+                    {
+                        token = token,
+                        role = "Patient",
+                        username = newPatient.Email,
+                        patientId = newPatientId
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -542,154 +582,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        //[HttpPost]
-        //[Route("Login")]
-        //public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
-        //        {
-        //            return BadRequest(new { message = "Email and password are required." });
-        //        }
-
-        //        string inputEmail = loginDTO.Email.Trim().ToLower();
-
-        //        var user = _applicationDbContext.User.FirstOrDefault(u => u.UserName.ToLower() == inputEmail);
-
-        //        if (user == null)
-        //        {
-        //            return BadRequest(new { success = false, message = "Invalid email or password." });
-        //        }
-
-        //        if (user.Role == "DoctorPending")
-        //        {
-        //            return BadRequest(new
-        //            {
-        //                success = false,
-        //                message = "Your doctor account is pending approval. Please wait for confirmation."
-        //            });
-        //        }
-        //        else if (!user.EmailVerified)
-        //        {
-        //            return BadRequest(new { success = false, message = "Please verify your email before logging in." });
-        //        }
-
-        //        // Check for lockout
-        //        // Check and reset if 15 minutes have passed since last failed attempt
-        //        if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue)
-        //        {
-        //            if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
-        //            {
-        //                // Reset the lockout
-        //                user.FailedLoginAttempts = 0;
-        //                user.LastFailedLoginTime = null;
-        //                await _applicationDbContext.SaveChangesAsync();
-        //            }
-        //            else
-        //            {
-        //                return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
-        //            }
-        //        }
-
-
-        //        var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
-
-        //        if (result != PasswordVerificationResult.Success)
-        //        {
-        //            user.FailedLoginAttempts += 1;
-        //            user.LastFailedLoginTime = DateTime.UtcNow;
-        //            if (user.FailedLoginAttempts == 4)
-        //            {
-        //                string emailBody = @"
-        //<div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
-        //    <p>Dear user,</p>
-
-        //    <p><strong>Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
-
-        //    <p>If you enter the wrong password one more time, your account will be <strong>temporarily locked</strong> for <strong>15 minutes</strong>.</p>
-
-        //    <p>If this wasn't you, we recommend changing your password immediately or contacting support.</p>
-
-        //    <br/>
-        //    <p>Best regards,<br/>Security Team - PresCrypt</p>
-        //</div>";
-
-        //                await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Failed Login Attempts", emailBody);
-        //            }
-
-
-        //            await _applicationDbContext.SaveChangesAsync();
-
-        //            return BadRequest(new { success = false, message = "Invalid email or password." });
-        //        }
-
-        //        // Reset failed attempts after successful login
-        //        user.FailedLoginAttempts = 0;
-        //        user.LastFailedLoginTime = null;
-
-        //        // 🔐 ADMIN ONLY 2FA
-        //        if (user.Role == "Admin")
-        //        {
-        //            string code = new Random().Next(100000, 999999).ToString();
-        //            user.TwoFactorCode = code;
-        //            user.TwoFactorExpiry = DateTime.UtcNow.AddMinutes(5);
-        //            await _applicationDbContext.SaveChangesAsync();
-
-        //            string verifyUrl = $"http://localhost:3000/Auth/Verify2FA?email={Uri.EscapeDataString(user.UserName)}";
-        //            string emailBody = $@"
-        //                <p>Your 2FA code is: <strong>{code}</strong></p>
-        //                <p>This code will expire in 5 minutes.</p>
-        //                <p>Please <a href='{verifyUrl}'>click here to verify your 2FA code</a> or copy and paste this link into your browser:</p>
-
-        //                <br/>
-        //                <p>If you did not request this login, please ignore this email.</p>";
-
-
-        //            await _emailService.SendEmailAsync(user.UserName, "Your Admin 2FA Code", emailBody);
-
-        //            return Ok(new
-        //            {
-        //                success = true,
-        //                message = "2FA code sent to your email.",
-        //                twoFactorRequired = true,
-        //                email = user.UserName
-        //            });
-        //        }
-
-        //        // For other roles, return token directly
-        //        var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-        //        Response.Cookies.Append("authToken", token, new CookieOptions
-        //        {
-        //            HttpOnly = true,
-        //            Secure = false, // Set to true in production with HTTPS
-        //            SameSite = SameSiteMode.Strict,
-        //            Expires = DateTimeOffset.UtcNow.AddHours(1)
-        //        });
-
-        //        await _applicationDbContext.SaveChangesAsync();
-        //        _logger.LogInformation($"Successful login for {user.UserName}");
-
-        //        return Ok(new
-        //        {
-        //            success = true,
-        //            message = $"{user.Role} login successful",
-        //            token = token,
-        //            user = new
-        //            {
-        //                id = user.UserId,
-        //                username = user.UserName,
-        //                role = user.Role
-        //            }
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Login error: {ex.Message}", ex);
-        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
-        //    }
-        //}
-
+      
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
@@ -789,6 +682,33 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 user.FailedLoginAttempts = 0;
                 user.LastFailedLoginTime = null;
                 user.IsBlocked = false;
+
+                // ✅ Set LastLogin in respective table
+                if (user.Role == "Admin")
+                {
+                    var admin = await _applicationDbContext.Admin.FirstOrDefaultAsync(a => a.Email == user.UserName);
+                    if (admin != null)
+                    {
+                        admin.LastLogin = DateTime.UtcNow;
+                    }
+                }
+                else if (user.Role == "Doctor")
+                {
+                    var doctor = await _applicationDbContext.Doctor.FirstOrDefaultAsync(d => d.Email == user.UserName);
+                    if (doctor != null)
+                    {
+                        doctor.LastLogin = DateTime.UtcNow;
+                    }
+                }
+                else if (user.Role == "Patient")
+                {
+                    var patient = await _applicationDbContext.Patient.FirstOrDefaultAsync(p => p.Email == user.UserName);
+                    if (patient != null)
+                    {
+                        patient.LastLogin = DateTime.UtcNow;
+                    }
+                }
+
 
                 // Admin 2FA
                 if (user.Role == "Admin")

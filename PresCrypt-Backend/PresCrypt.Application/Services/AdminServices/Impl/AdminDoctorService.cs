@@ -36,7 +36,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 .Select(d => new HospitalDto
                 {
                     HospitalId = d.HospitalId,
-                    HospitalName = d.HospitalName
+                    HospitalName = d.HospitalName,
+                    City=d.City
                 })
                 .ToListAsync();
             return hospitals;

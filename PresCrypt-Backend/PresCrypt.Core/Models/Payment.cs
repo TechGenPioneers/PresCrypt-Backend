@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace PresCrypt_Backend.PresCrypt.Core.Models
 {
@@ -13,6 +14,10 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string PaymentMethod { get; set; }
 
         public string PaymentStatus { get; set; }
+
+        public bool ? IsRefunded { get; set; } = false;
+
+        public string? PayHereObjectId { get; set; }
 
 
     }

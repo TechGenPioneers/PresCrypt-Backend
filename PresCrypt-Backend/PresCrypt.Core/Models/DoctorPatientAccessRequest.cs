@@ -19,8 +19,6 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
         public string Status { get; set; } = "Pending"; // Approved, Rejected
         public DateTime AccessExpiry { get; set; } = DateTime.Now.AddHours(1); // Default expiry time of 1 hour
         public DateTime GrantedAt { get; set; }
-
-
         public Doctor Doctor { get; set; }
         public Patient Patient { get; set; }
     }
