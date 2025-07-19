@@ -70,6 +70,9 @@ builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddHostedService<AppointmentStatusUpdater>();
+builder.Services.AddHostedService<AppointmentStatusUpdater>();
+
 
 // Common services
 builder.Services.AddHttpClient();

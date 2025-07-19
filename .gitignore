@@ -150,6 +150,4 @@ PresCryptChatbot-Backend/.env
 appsettings.json
 appsettings.*.json
 
-
 PresCrypt-Backend/PresCrypt.API/appsettings.json
-

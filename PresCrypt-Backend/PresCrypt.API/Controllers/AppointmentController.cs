@@ -122,11 +122,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         public async Task<ActionResult<List<PatientAppointmentListDto>>> GetAppointmentsByPatientId(string patientId)
         {
             var result = await _appointmentService.GetAppointmentsByPatientIdAsync(patientId);
-            if (result == null || result.Count == 0)
-                return NotFound("No appointments found for the given patient ID.");
 
-            return Ok(result);
+            if (result == null)
+                return NotFound("Patient not found.");
+
+            return Ok(result); 
         }
+
 
 
         [HttpGet("available-hospitals")]

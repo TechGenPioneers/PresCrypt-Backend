@@ -17,6 +17,6 @@
     public List<String> AvailableDay { get; set; }
     public List<TimeSpan> AvailableTime { get; set; } // TimeSpan instead of DateTime
 
-    public byte[] Id { get; set; }  // Image stored as a byte array
+    public byte[] Image { get; set; }  
 
 }
