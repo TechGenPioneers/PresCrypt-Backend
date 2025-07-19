@@ -22,7 +22,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
       .Select(contact => new AdminContactUsDto
       {
           InquiryId = contact.InquiryId,
-          PatientId = contact.UserId,
+          UserId = contact.UserId,
           FirstName = contact.FirstName,
           LastName = contact.LastName,
           Email = contact.Email,
@@ -31,14 +31,11 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
           ReplyMessage = contact.ReplyMessage,
           IsRead = contact.IsRead,
           Description = contact.Description,
+          SenderType = contact.Role
       })
       .ToListAsync();
 
 
-                foreach (var message in messages)
-                {
-                    message.SenderType = "patient";
-                }
                 return messages;
 
             }
@@ -60,7 +57,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         (contact, patient) => new AdminContactUsDto
                         {
                             InquiryId = contact.InquiryId,
-                            PatientId = contact.UserId,
+                            UserId = contact.UserId,
                             FirstName = contact.FirstName,
                             LastName = contact.LastName,
                             Email = contact.Email,
@@ -69,14 +66,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                             ReplyMessage = contact.ReplyMessage,
                             IsRead = contact.IsRead,
                             Description = contact.Description,
-                            ProfileImage = patient.ProfileImage
-                            
+                            ProfileImage = patient.ProfileImage,
+                            SenderType = contact.Role
+
                         }
                     )
                     .FirstOrDefaultAsync(m => m.InquiryId == inquiryId);
 
 
-                message.SenderType = "patient";
                 return message;
             }
             catch (Exception)
@@ -120,7 +117,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     LastName = message.LastName,
                     Email = message.Email,
                     ReplyMessage = adminContactUsDto.ReplyMessage,
-                    SenderType = "patient",
+                    SenderType = message.Role
+                    ,
                 };
 
                 try
