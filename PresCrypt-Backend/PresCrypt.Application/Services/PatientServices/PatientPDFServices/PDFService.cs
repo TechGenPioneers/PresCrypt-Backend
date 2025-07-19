@@ -84,7 +84,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
                     row.RelativeColumn().Text($"Issued To: {details.PatientId}").WrapAnywhere();
                     row.RelativeColumn().AlignRight().Column(col =>
                     {
-                        col.Item().Text($"Payment ID: 01234");
+                        col.Item().Text($"Payment ID: {details.PaymentId}");
                         col.Item().Text($"Date: {DateTime.Now:dd.MM.yyyy}");
                     });
                 });
