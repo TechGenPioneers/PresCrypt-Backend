@@ -133,72 +133,59 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
 
         private string BuildEmailBody(AppointmentRescheduleEmailDto request, string baseUrl, string frontendUrl)
         {
-            var confirmationLink = $"{baseUrl}/api/appointments/reschedule-confirm?appointmentId={request.AppointmentId}";
-            var rescheduleLink = $"{frontendUrl}/appointments/book?appointmentId={request.AppointmentId}";
-
             return $@"
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;'>
                 <div style='background-color: #094A4D; padding: 20px; text-align: center;'>
                     <h1 style='color: white; margin: 0;'>Appointment Rescheduled</h1>
                 </div>
-        
+
                 <div style='padding: 20px;'>
                     <p>Dear {request.Name},</p>
-            
+    
                     <p>We wanted to inform you about a change to your upcoming appointment:</p>
-            
+    
                     <div style='background-color: #f8f9fa; border-left: 4px solid #094A4D; padding: 12px; margin: 16px 0;'>
                         <p style='margin: 4px 0;'><strong>Original Date:</strong></p>
                         <p style='margin: 4px 0; font-size: 1.1em;'>
                             {request.OldDateTime:dddd, MMMM dd, yyyy} at {request.OldDateTime:h:mm tt}
                         </p>
                     </div>
-            
+    
                     <div style='background-color: #f0f8ff; border-left: 4px solid #4CAF50; padding: 12px; margin: 16px 0;'>
                         <p style='margin: 4px 0;'><strong>New Date:</strong></p>
                         <p style='margin: 4px 0; font-size: 1.1em; font-weight: bold; color: #094A4D;'>
                             {request.NewDateTime:dddd, MMMM dd, yyyy} at {request.NewDateTime:h:mm tt}
                         </p>
                     </div>
-            
+    
                     <p>Please confirm if this new time works for you:</p>
-            
+    
                     <div style='margin: 24px 0; text-align: center;'>
-                        <a href='{confirmationLink}' style='
-                            background-color: #094A4D;
-                            color: white;
-                            padding: 12px 24px;
-                            text-align: center;
-                            text-decoration: none;
-                            display: inline-block;
-                            border-radius: 8px;
-                            font-weight: bold;
-                            margin-right: 16px;
-                            transition: background-color 0.3s;'>
-                            Confirm This Time
-                        </a>
-                
-                        <a href='{rescheduleLink}' style='
-                            background-color: #6c757d;
-                            color: white;
-                            padding: 12px 24px;
-                            text-align: center;
-                            text-decoration: none;
-                            display: inline-block;
-                            border-radius: 8px;
-                            font-weight: bold;
-                            transition: background-color 0.3s;'>
-                            Choose Different Time
+                        <a href='http://localhost:3000/Reschedule?id={request.AppointmentId}' 
+                           style='background-color: #094A4D;
+                                  color: white;
+                                  padding: 12px 24px;
+                                  text-align: center;
+                                  text-decoration: none;
+                                  display: inline-block;
+                                  border-radius: 8px;
+                                  font-weight: bold;
+                                  margin-right: 16px;
+                                  border: none;
+                                  cursor: pointer;
+                                  transition: background-color 0.3s;'>
+                            Confirm Your Appointment
                         </a>
                     </div>
-            
-                    <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-            
+
+                    <p>If you have any questions, please contact our support team.</p>
+    
                     <p>Best regards,<br/>
                     <strong>The PresCrypt Team</strong></p>
                 </div>
             </div>";
         }
+
 
         private string BuildAppointmentConfirmEmailBody(string title, string message, string logoContentId)
         {
@@ -233,8 +220,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Patient
                 </div>
             </div>";
         }
-
-
 
         public void SendOtpEmail(PatientOtpEmailDto request)
         {
