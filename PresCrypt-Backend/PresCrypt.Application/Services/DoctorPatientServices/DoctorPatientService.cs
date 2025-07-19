@@ -18,9 +18,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
         }
 
         public async Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(
-    string doctorId,
-    string type = "past",
-    string? hospitalName = null)
+        string doctorId,
+        string type = "past",
+        string? hospitalName = null)
         {
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
             var currentTime = TimeOnly.FromDateTime(DateTime.Now);

@@ -4,6 +4,10 @@ using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.IO;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 {
@@ -15,7 +19,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
         {
             _context = context;
         }
-
+     
         public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName, string name)
         {
             var query = _context.Doctor
@@ -114,6 +118,23 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                 .ToListAsync();
 
             return data;
+        }
+
+        public async Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile file)
+        {
+            var doctor = await _context.Doctor.FindAsync(doctorId);
+            if (doctor == null || file == null)
+                return (false, null);
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            doctor.DoctorImage = ms.ToArray();
+
+            _context.Doctor.Update(doctor);
+            await _context.SaveChangesAsync();
+
+            string base64Image = $"data:image/png;base64,{Convert.ToBase64String(doctor.DoctorImage)}";
+            return (true, base64Image);
         }
 
     }
