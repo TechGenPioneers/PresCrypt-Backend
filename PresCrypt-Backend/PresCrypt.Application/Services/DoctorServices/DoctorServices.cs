@@ -119,5 +119,23 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
             return data;
         }
+
+        public async Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile file)
+        {
+            var doctor = await _context.Doctor.FindAsync(doctorId);
+            if (doctor == null || file == null)
+                return (false, null);
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            doctor.DoctorImage = ms.ToArray();
+
+            _context.Doctor.Update(doctor);
+            await _context.SaveChangesAsync();
+
+            string base64Image = $"data:image/png;base64,{Convert.ToBase64String(doctor.DoctorImage)}";
+            return (true, base64Image);
+        }
+
     }
 }
