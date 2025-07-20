@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
 {
@@ -39,6 +41,56 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
             return messages;
         }
 
+        public async Task<ReceiverDetailsDto> GetUserDetails(string userId, string receiverId)
+        {
+            var details = new ReceiverDetailsDto();
+
+            bool isDoctor = userId.StartsWith("D");
+            bool isPatient = userId.StartsWith("P");
+
+            if (isDoctor)
+            {
+                var doctor = await _context.Doctor
+                    .SingleOrDefaultAsync(d => d.DoctorId == userId);
+
+                if (doctor != null)
+                {
+                    details.DoctorStatus = doctor.Status;
+                    details.Specialization = doctor.Specialization;
+                    details.Description = doctor.Description;
+                    details.Gender = doctor.Gender;
+                }
+            }
+            else if (isPatient)
+            {
+                var patient = await _context.Patient
+                    .SingleOrDefaultAsync(p => p.PatientId == userId);
+
+                if (patient != null)
+                {
+                    details.PatientStatus = patient.Status;
+                    details.Gender = patient.Gender;
+                    details.PatientPhoneNumber = patient.ContactNo;
+                }
+            }
+
+            // Common appointment logic
+            var appointment = await _context.Appointments
+                .Where(a =>
+                    (isDoctor && a.DoctorId == userId && a.PatientId == receiverId) ||
+                    (isPatient && a.DoctorId == receiverId && a.PatientId == userId)
+                )
+                .OrderByDescending(a => a.Date)
+                .FirstOrDefaultAsync();
+
+            if (appointment != null)
+            {
+                details.LastAppointmentStatus = appointment.Status;
+                details.LastAppointmentDate = appointment.Date;
+            }
+
+            return details;
+        }
 
 
         public async Task SendMessage(ChatDto chatDto)
