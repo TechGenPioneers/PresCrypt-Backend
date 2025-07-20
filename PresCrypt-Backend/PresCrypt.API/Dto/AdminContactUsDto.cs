@@ -8,7 +8,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
     {
         public string InquiryId { get; set; }
 
-        public string? PatientId { get; set; }
+        public string? UserId { get; set; }
 
         public string? FirstName { get; set; }
 

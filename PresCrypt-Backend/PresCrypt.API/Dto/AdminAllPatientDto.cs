@@ -12,13 +12,7 @@
 
         public string Gender { get; set; }
 
-        public string? LastAppointmentDoctorName {get;set;}
-
-        public string? LastAppointmentDoctorID { get; set; }
-
-        public string? LastAppointmentDate { get; set; }
-
-        public string? Status { get; set; }
+        public string Status { get; set; }
 
         public byte[] ProfileImage { get; set; }
 
