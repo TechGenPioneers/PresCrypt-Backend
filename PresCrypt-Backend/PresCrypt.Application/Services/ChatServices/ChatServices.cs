@@ -140,7 +140,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                         {
                             ReceiverId = d.PatientId,
                             FullName = d.FirstName + " " + d.LastName,
-                            Image = d.ProfileImage
+                            ProfileImage = d.ProfileImage
                         })
                         .FirstOrDefaultAsync();
 
@@ -195,7 +195,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                         {
                             ReceiverId = d.DoctorId,
                             FullName = "Dr. "+d.FirstName + " " + d.LastName,
-                            Image = d.DoctorImage
+                            ProfileImage = d.DoctorImage
                         })
                         .FirstOrDefaultAsync();
 
@@ -211,16 +211,21 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                                 m.Text,
                                 m.IsRead,
                                 m.SenderId,
-                                m.SendAt
+                                m.SendAt,
+                                m.Image,
+                                m.IsReceived
+                                
                             })
                             .FirstOrDefaultAsync();
 
                         if (lastMessage != null)
                         {
                             doctor.LastMessage = lastMessage.Text;
+                            doctor.Image = lastMessage.Image;
                             doctor.IsRead = lastMessage.IsRead;
                             doctor.LastMessageSenderId=lastMessage.SenderId;
                             doctor.SendAt=lastMessage.SendAt;
+                            doctor.IsReceived=lastMessage.IsReceived;
                         }
 
                         chatUsers.Add(doctor);

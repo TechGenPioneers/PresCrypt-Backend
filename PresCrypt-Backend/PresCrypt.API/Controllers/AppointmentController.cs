@@ -314,6 +314,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(appointments);
         }
+
         [HttpPost("{appointmentId}/reschedule-confirm")]
         public async Task<IActionResult> ConfirmAppointment(string appointmentId)
         {
