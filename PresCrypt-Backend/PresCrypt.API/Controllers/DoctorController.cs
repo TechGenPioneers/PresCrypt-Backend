@@ -110,5 +110,17 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(new { doctorId = doctor.DoctorId });
         }
+
+        [HttpPost("upload-image")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadImage([FromForm] DoctorImageUploadDto dto)
+        {
+            var (success, base64Image) = await _doctorServices.UploadProfileImageAsync(dto.DoctorId, dto.DoctorImage);
+
+            if (!success)
+                return BadRequest("Invalid doctor or file.");
+
+            return Ok(new { image = base64Image });
+        }
     }
 }

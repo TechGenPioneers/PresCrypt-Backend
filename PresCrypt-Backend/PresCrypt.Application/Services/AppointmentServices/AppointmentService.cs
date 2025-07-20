@@ -38,9 +38,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             _logger = logger;
         }
 
-        public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null)
+        public async Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(
+        string doctorId,
+        DateOnly? date = null,
+        string hospitalName = null,
+        string status = null)
         {
-           
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
 
             var query = _context.Appointments
@@ -49,7 +52,24 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Include(a => a.Hospital)
                 .Where(a => a.DoctorId == doctorId);
 
-            // Apply date filter if specified, otherwise get future appointments
+            // Filter by appointment status if provided
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(a => a.Status == status);
+            }
+            else
+            {
+                // Default to pending if no status is specified
+                query = query.Where(a => a.Status == "Pending");
+            }
+
+            // Filter by hospital name if provided
+            if (!string.IsNullOrEmpty(hospitalName))
+            {
+                query = query.Where(a => a.Hospital.HospitalName.Contains(hospitalName));
+            }
+
+            // Filter by date or get future appointments
             query = date.HasValue
                 ? query.Where(a => a.Date == date.Value)
                 : query.Where(a => a.Date >= currentDate);
@@ -61,15 +81,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Select(a => new AppointmentDisplayDto
                 {
                     AppointmentId = a.AppointmentId,
-                    Date = a.Date,  
-                    Time = a.Time, 
+                    Date = a.Date,
+                    Time = a.Time,
                     Status = a.Status,
                     PatientId = a.Patient.PatientId,
                     HospitalId = a.HospitalId,
                     HospitalName = a.Hospital.HospitalName,
                     PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
                     Gender = a.Patient.Gender,
-                    DOB = a.Patient.DOB, 
+                    DOB = a.Patient.DOB,
                     ProfileImage = a.Patient.ProfileImage
                 })
                 .ToListAsync();
@@ -359,9 +379,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .Include(a => a.Doctor)
                 .Include(a => a.Hospital)
                 .Where(a => appointmentIds.Contains(a.AppointmentId) &&
-                           a.Status != "Cancelled" &&
-                           a.Status != "Rescheduled" &&
-                           a.Status != "Completed")
+                           a.Status == "Pending")
                 .ToListAsync();
 
             foreach (var appointment in appointments)
