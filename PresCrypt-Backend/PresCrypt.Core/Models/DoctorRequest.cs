@@ -52,7 +52,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public bool EmailVerified { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? CheckedAt { get; set; }
 

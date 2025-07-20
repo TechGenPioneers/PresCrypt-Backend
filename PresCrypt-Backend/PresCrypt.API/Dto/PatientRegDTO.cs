@@ -25,6 +25,10 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         public string Status { get; set; }
 
         [Required]
+        [RegularExpression("^(Male|Female)$", ErrorMessage = "Gender must be either Male or Female.")]
+        public string Gender { get; set; }
+
+        [Required]
         [Phone]
         public string ContactNumber { get; set; }
        

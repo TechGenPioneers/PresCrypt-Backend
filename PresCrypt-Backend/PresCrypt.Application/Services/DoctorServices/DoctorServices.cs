@@ -4,6 +4,10 @@ using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.IO;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 {
@@ -15,7 +19,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
         {
             _context = context;
         }
-
+     
         public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName, string name)
         {
             var query = _context.Doctor
@@ -61,6 +65,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                     Specialization = dh.doctor.Specialization,
                     HospitalName = dh.hospital.HospitalName,
                     Charge = dh.hospital.Charge, // Use hospital's charge
+                    Image = dh.doctor.DoctorImage,
 
                     // Availability details as lists
                     AvailableDay = new List<string> { dh.availability.AvailableDay },
@@ -114,6 +119,5 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
             return data;
         }
-
     }
 }

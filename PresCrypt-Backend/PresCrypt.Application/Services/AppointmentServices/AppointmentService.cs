@@ -331,9 +331,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             };
         }
 
-
-
-
         public async Task<List<AppointmentRescheduleDto>> GetAvailableHospitalsByDateAsync(DateTime date, string doctorId)
         {
             var dayOfWeek = date.DayOfWeek.ToString();
@@ -602,9 +599,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 })
                 .ToListAsync();
         }
-
-
-
 
     }
 }

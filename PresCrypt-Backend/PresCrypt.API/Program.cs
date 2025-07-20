@@ -57,6 +57,7 @@ builder.Services.AddScoped<IPatientEmailService, PatientEmailService>();
 builder.Services.AddScoped<IDoctorNotificationService, DoctorNotificationService>();
 builder.Services.AddScoped<IDoctorDashboardService, DoctorDashboardService>();
 builder.Services.AddScoped<IAdminContactUsService, AdminContactUsService>();
+builder.Services.AddScoped<IAdminHospital, AdminHospitalService>();
 builder.Services.AddScoped<DoctorReportService>();
 
 
@@ -70,6 +71,9 @@ builder.Services.AddScoped<IPDFService, PDFService>();
 builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddHostedService<AppointmentStatusUpdater>();
+builder.Services.AddHostedService<AppointmentStatusUpdater>();
+
 
 builder.Services.AddHttpClient<IOpenMrsObsService, OpenMrsObsService>();
 builder.Services.AddHttpClient<OpenMrsAttachmentService>();
