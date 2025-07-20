@@ -24,6 +24,7 @@ using PresCrypt_Backend.PresCrypt.Application.Services.ChatServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.HospitalServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.PaymentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.EmailServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.OpenMrsServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -73,6 +74,11 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddHostedService<AppointmentStatusUpdater>();
 builder.Services.AddHostedService<AppointmentStatusUpdater>();
 
+
+builder.Services.AddHttpClient<IOpenMrsObsService, OpenMrsObsService>();
+builder.Services.AddHttpClient<OpenMrsAttachmentService>();
+builder.Services.AddScoped<IOpenMrsPatientCreateService, OpenMrsPatientCreateService>();
+builder.Services.AddScoped<IOpenMrsService, OpenMrsService>();
 
 // Common services
 builder.Services.AddHttpClient();
