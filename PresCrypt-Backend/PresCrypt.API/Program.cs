@@ -74,6 +74,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddHttpClient<IOpenMrsObsService, OpenMrsObsService>();
 builder.Services.AddHttpClient<OpenMrsAttachmentService>();
 builder.Services.AddScoped<IOpenMrsPatientCreateService, OpenMrsPatientCreateService>();
+builder.Services.AddScoped<IOpenMrsService, OpenMrsService>();
 
 // Common services
 builder.Services.AddHttpClient();
