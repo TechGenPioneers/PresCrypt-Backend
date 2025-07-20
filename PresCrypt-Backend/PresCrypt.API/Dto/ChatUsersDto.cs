@@ -9,6 +9,7 @@
         public byte[] ProfileImage { get; set; }
         public DateTime SendAt { get; set; }
         public string LastMessage { get; set; }
+        public string AppointmentStatus { get; set; }
         public Boolean IsRead { get; set; }
         public Boolean IsReceived { get; set; }
     }
