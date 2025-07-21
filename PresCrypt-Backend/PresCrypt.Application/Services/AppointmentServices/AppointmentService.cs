@@ -618,5 +618,23 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
                 .ToListAsync();
         }
 
+        public async Task<bool> CompleteTodayPendingAppointmentAsync(string patientId)
+        {
+            var today = DateTime.Today;
+
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a =>
+                    a.PatientId == patientId &&
+                    a.Status == "Pending" &&
+                    a.Date == DateOnly.FromDateTime(DateTime.Today)
+                );
+
+            if (appointment == null)
+                return false;
+
+            appointment.Status = "Completed";
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
