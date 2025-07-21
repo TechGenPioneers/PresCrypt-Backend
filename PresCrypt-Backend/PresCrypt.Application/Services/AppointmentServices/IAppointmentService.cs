@@ -7,7 +7,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
     public interface IAppointmentService
     {
         Task<IEnumerable<AvailabilityDisplayDto>> GetAvailabilityByDateAsync(string day, string doctorId);
-        Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null);
+        Task<IEnumerable<AppointmentDisplayDto>> GetAppointmentsAsync(string doctorId, DateOnly? date = null, string hospitalName = null, string status = null);
         Task<Appointment> CreateAppointmentAsync(AppointmentSave dto);
 
         //for prescription page to get recent appointments

@@ -22,7 +22,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
       .Select(contact => new AdminContactUsDto
       {
           InquiryId = contact.InquiryId,
+
           UserId = contact.UserId,
+
           FirstName = contact.FirstName,
           LastName = contact.LastName,
           Email = contact.Email,
@@ -57,7 +59,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         (contact, patient) => new AdminContactUsDto
                         {
                             InquiryId = contact.InquiryId,
+
+
                             UserId = contact.UserId,
+
                             FirstName = contact.FirstName,
                             LastName = contact.LastName,
                             Email = contact.Email,

@@ -10,5 +10,6 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
         public Task MarkMessagesAsRead(string senderId, string receiverId);
         public Task<List<ChatUsersDto>> GetAllUsers(string senderId);
         public Task DeleteMessage(string messageId);
+        public Task<ReceiverDetailsDto> GetUserDetails(string userId, string receiverId);
     }
 }

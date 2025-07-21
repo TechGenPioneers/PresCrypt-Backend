@@ -40,7 +40,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         [HttpGet("by-doctor/{doctorId}")]
-        public async Task<IActionResult> GetAppointments(string doctorId, [FromQuery] string date = null)
+        public async Task<IActionResult> GetAppointments(
+        [FromRoute] string doctorId,
+        [FromQuery] string date = null,
+        [FromQuery] string hospitalName = null,
+        [FromQuery] string status = null)
         {
             try
             {
@@ -50,11 +54,14 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     dateFilter = parsedDate;
                 }
 
-                var appointments = await _appointmentService.GetAppointmentsAsync(doctorId, dateFilter);
+                var appointments = await _appointmentService.GetAppointmentsAsync(
+                    doctorId, dateFilter, hospitalName, status);
+
                 return Ok(appointments);
             }
             catch (Exception ex)
             {
+                // Optionally log ex.Message
                 return StatusCode(500, "An error occurred while fetching appointments");
             }
         }
@@ -81,9 +88,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             var appointment = await _appointmentService.CreateAppointmentAsync(dto);
             return Ok(appointment);
         }
-
-
-
 
         [HttpGet("recent-by-doctor/{doctorId}")]
         public async Task<IActionResult> GetRecentAppointmentsByDoctor(string doctorId)
