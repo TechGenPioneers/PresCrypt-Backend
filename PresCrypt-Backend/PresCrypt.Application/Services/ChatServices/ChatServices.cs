@@ -135,11 +135,18 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
             // Send notification if receiver is a patient
             if (message.ReceiverId.StartsWith("P"))
             {
+                var doctor = await _context.Doctor
+                .Where(d => d.DoctorId == message.SenderId)
+                  .Select(d => new { d.FirstName, d.LastName })
+                  .FirstOrDefaultAsync();
+
+
+
                 var PatientNotification = new PatientNotifications
                 {
                     PatientId = message.ReceiverId,
                     Title = "New Message",
-                    Message = "You have new message",
+                    Message = $"Message from Dr. {doctor.FirstName} {doctor.LastName}.",
                     IsRead = false,
                     Type = "Appointment",
                     CreatedAt = DateTime.UtcNow
@@ -163,7 +170,16 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
 
             if (message.ReceiverId.StartsWith("D"))
             {
-                await _doctorNotificationService.CreateAndSendNotificationAsync(message.ReceiverId, "You Have New Message", "NewMessage", "Message");
+                var patient = await _context.Patient
+             .Where(d => d.PatientId == message.SenderId)
+             .Select(d => new { d.FirstName, d.LastName })
+             .FirstOrDefaultAsync();
+
+                var title = "New Patient Message";
+                var notificationMessage = $"Message from {patient.FirstName} {patient.LastName}.";
+
+
+                await _doctorNotificationService.CreateAndSendNotificationAsync(message.ReceiverId, notificationMessage, title , "Message");
             }
         }
 
