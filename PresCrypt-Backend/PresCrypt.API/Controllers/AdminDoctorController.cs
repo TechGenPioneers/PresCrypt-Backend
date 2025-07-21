@@ -118,5 +118,22 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpPatch("Pay")]
+        public async Task<IActionResult> PayAmount([FromBody] PayAmountDto payAmountDto)
+        {
+
+            try
+            {
+                await _adminDoctorServices.PayAmount(payAmountDto);
+                return Ok("Payment recorded successfully.");
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e);
+            }
+
+            
+        }
     }
 }

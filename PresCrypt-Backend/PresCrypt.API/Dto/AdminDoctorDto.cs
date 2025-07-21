@@ -21,7 +21,7 @@
         public string? UpdatedAt { get; set; }
         public string? LastLogin  { get; set; }
         public string ContactNumber { get; set; }
-       
+        public double TotalAmtToPay { get; set; }
 
         public override string ToString()
         {
