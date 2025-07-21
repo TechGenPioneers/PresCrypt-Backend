@@ -86,6 +86,28 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        [HttpGet("GetUserDetails")]
+        public async Task<ActionResult<ReceiverDetailsDto>> GetUserDetails(string userId, string receiverId)
+        {
+            try
+            {
+                var details = await _chatServices.GetUserDetails(userId, receiverId);
+
+                if (details == null)
+                {
+                    return NotFound("No details found.");
+                }
+
+                return Ok(details);
+            }
+            catch (Exception e)
+            {
+                return BadRequest($"An error occurred while retrieving user details: {e.Message}");
+            }
+        }
+
+
+
         [HttpDelete]
         public async Task<IActionResult> DeleteMessage(string messageId)
         {

@@ -120,6 +120,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
             return data;
         }
 
+
         public async Task<Doctor> AddChargeAsync(string doctorId, double chargeToAdd)
         {
             var doctor = await _context.Doctor.FirstOrDefaultAsync(d => d.DoctorId == doctorId);
@@ -128,11 +129,23 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
             doctor.TotalAmtToPay += chargeToAdd;
             doctor.UpdatedAt = DateTime.UtcNow;
-
-            _context.Doctor.Update(doctor);
-            await _context.SaveChangesAsync();
-
             return doctor;
         }
+
+        public async Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile file)
+        {
+            var doctor = await _context.Doctor.FindAsync(doctorId);
+            if (doctor == null || file == null)
+                return (false, null);
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            doctor.DoctorImage = ms.ToArray();
+            _context.Doctor.Update(doctor);
+            await _context.SaveChangesAsync();
+            string base64Image = $"data:image/png;base64,{Convert.ToBase64String(doctor.DoctorImage)}";
+            return (true, base64Image);
+        }
+
     }
 }

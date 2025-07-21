@@ -9,6 +9,10 @@
 
         Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName);
 
+
         Task<Doctor> AddChargeAsync(string doctorId, double chargeToAdd);
+
+        Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile doctorImage);
+
     }
 }

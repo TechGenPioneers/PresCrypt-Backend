@@ -96,8 +96,10 @@ StyleCopReport.xml
 # NuGet Packages
 *.nupkg
 *.snupkg
+
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
+
 *.nuget.props
 *.nuget.targets
 
@@ -141,7 +143,9 @@ project.nuget.cache
 PresCryptChatbot-Backend/venv/
 
 # Python cache
+
 PresCryptChatbot-Backend/__pycache__/
+
 
 # Secrets
 PresCryptChatbot-Backend/.env
@@ -152,3 +156,4 @@ appsettings.*.json
 
 
 PresCrypt-Backend/PresCrypt.API/appsettings.json
+

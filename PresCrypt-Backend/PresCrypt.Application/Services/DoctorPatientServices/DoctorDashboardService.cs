@@ -20,32 +20,56 @@ public class DoctorDashboardService : IDoctorDashboardService
         var today = DateOnly.FromDateTime(DateTime.Today);
         var now = TimeOnly.FromDateTime(DateTime.Now);
 
-        // Get both counts in a single database query for better performance
-        var appointmentCounts = await _context.Appointments
-            .Where(a => a.DoctorId == doctorId &&
-                       (a.Date > today || (a.Date == today && a.Time > now)))
-            .GroupBy(a => a.Status)
-            .Select(g => new
-            {
-                Status = g.Key,
-                Count = g.Count()
-            })
-            .ToListAsync();
+        // 1. Get today's upcoming and cancelled appointment counts for the doctor
+        var upcomingCount = await _context.Appointments
+            .CountAsync(a => a.DoctorId == doctorId && a.Date == today && a.Status == "Pending" && a.Time > now);
 
-        // Get count of unique patients with upcoming appointments
+        var cancelledCount = await _context.Appointments
+            .CountAsync(a => a.DoctorId == doctorId && a.Date == today && a.Status == "Cancelled");
+
+        // 2. Get all-time unique patients who had any appointment with this doctor
         var bookedPatientsCount = await _context.Appointments
-            .Where(a => a.DoctorId == doctorId &&
-                       (a.Date > today || (a.Date == today && a.Time > now)) &&
-                       a.Status == "Pending" || a.Status == "Completed")
+            .Where(a => a.DoctorId == doctorId)
             .Select(a => a.PatientId)
             .Distinct()
             .CountAsync();
 
+        // 3. Get all hospitals where the doctor has had appointments historically
+        var doctorHospitalList = await _context.Appointments
+            .Where(a => a.DoctorId == doctorId)
+            .Select(a => new { a.HospitalId, a.Hospital.HospitalName })
+            .Distinct()
+            .ToListAsync();
+
+        // 4. Get today’s pending appointments grouped by hospital
+        var todayHospitalCounts = await _context.Appointments
+            .Where(a => a.DoctorId == doctorId && a.Date == today && a.Status == "Pending" && a.Time > now)
+            .GroupBy(a => new { a.HospitalId, a.Hospital.HospitalName })
+            .Select(g => new
+            {
+                g.Key.HospitalId,
+                g.Key.HospitalName,
+                Count = g.Count()
+            })
+            .ToListAsync();
+
+        // 5. Merge to include hospitals with zero appointments
+        var hospitalAppointmentCounts = doctorHospitalList
+            .Select(h => new HospitalAppointmentDto
+            {
+                HospitalId = h.HospitalId,
+                HospitalName = h.HospitalName,
+                AppointmentCount = todayHospitalCounts.FirstOrDefault(x => x.HospitalId == h.HospitalId)?.Count ?? 0
+            })
+            .ToList();
+
+        // 6. Return the final DTO
         return new DoctorDashboardDto
         {
-            UpcomingAppointments = appointmentCounts.FirstOrDefault(x => x.Status == "Pending")?.Count ?? 0,
-            CancelledAppointments = appointmentCounts.FirstOrDefault(x => x.Status == "Cancelled")?.Count ?? 0,
-            BookedPatients = bookedPatientsCount
+            UpcomingAppointments = upcomingCount,
+            CancelledAppointments = cancelledCount,
+            BookedPatients = bookedPatientsCount,
+            HospitalAppointments = hospitalAppointmentCounts
         };
     }
 
