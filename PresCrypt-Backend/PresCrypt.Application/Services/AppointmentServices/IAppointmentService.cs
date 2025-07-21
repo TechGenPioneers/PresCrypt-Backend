@@ -27,6 +27,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
         Task CancelAppointmentAsync(string appointmentId, string patientId);
 
         Task<IEnumerable<AppointmentViewDialogDto>> GetAppointmentsByPatientIdAndDateAsync(string patientId, DateTime date);
+        Task<bool> CompleteTodayPendingAppointmentAsync(string patientId);
     }
 
 }

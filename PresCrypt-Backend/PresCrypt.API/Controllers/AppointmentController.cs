@@ -338,5 +338,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok("Appointment confirmed successfully.");
         }
 
+        [HttpPut("complete-today/{patientId}")]
+        public async Task<IActionResult> CompleteTodayAppointment(string patientId)
+        {
+            var result = await _appointmentService.CompleteTodayPendingAppointmentAsync(patientId);
+
+            if (!result)
+                return NotFound(new { message = "No pending appointment for today found for the given patient ID." });
+
+            return Ok(new { message = "Today's appointment marked as complete." });
+        }
     }
 }
