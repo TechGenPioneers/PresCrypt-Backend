@@ -8,5 +8,7 @@
         Task<List<string>> GetAllDoctor();
 
         Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName);
+
+        Task<Doctor> AddChargeAsync(string doctorId, double chargeToAdd);
     }
 }

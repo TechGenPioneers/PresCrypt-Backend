@@ -61,6 +61,8 @@ public class Doctor
 
     public DateTime UpdatedAt { get; set; }
 
+    public double TotalAmtToPay { get; set; }
+
     [Required]
     public bool Status { get; set; }
 

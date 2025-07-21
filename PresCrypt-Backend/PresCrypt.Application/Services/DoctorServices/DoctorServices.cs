@@ -119,5 +119,20 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 
             return data;
         }
+
+        public async Task<Doctor> AddChargeAsync(string doctorId, double chargeToAdd)
+        {
+            var doctor = await _context.Doctor.FirstOrDefaultAsync(d => d.DoctorId == doctorId);
+            if (doctor == null)
+                throw new ArgumentException($"Doctor with ID {doctorId} not found.");
+
+            doctor.TotalAmtToPay += chargeToAdd;
+            doctor.UpdatedAt = DateTime.UtcNow;
+
+            _context.Doctor.Update(doctor);
+            await _context.SaveChangesAsync();
+
+            return doctor;
+        }
     }
 }
