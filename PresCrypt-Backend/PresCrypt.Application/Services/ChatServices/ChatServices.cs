@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
+using Org.BouncyCastle.Ocsp;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections.Generic;
 using System.Numerics;
+using static QuestPDF.Helpers.Colors;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
 {
@@ -13,10 +16,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<ChatHub> _hubContext;
-        public ChatServices(ApplicationDbContext context, IHubContext<ChatHub> hubContext)
+        private readonly IHubContext<PatientNotificationHub> _hubContext1;
+        IDoctorNotificationService _doctorNotificationService;
+        public ChatServices(ApplicationDbContext context, IHubContext<ChatHub> hubContext, IHubContext<PatientNotificationHub> hubContext1, IDoctorNotificationService doctorNotificationService)
         {
             _context = context;
             _hubContext = hubContext;
+            _hubContext1=hubContext1;
+            _doctorNotificationService=doctorNotificationService;
+
         }
         public async Task<List<ChatDto>> GetAllMessages(string senderId, string receiverId)
         {
@@ -107,6 +115,13 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
                 IsRead = false
             };
 
+            var notification = new ChatMessageNotificationDto
+            {
+                Title = "New Message",
+                Message="You have new Message",
+                Type = "Appointment",
+            };
+
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
@@ -116,6 +131,40 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.ChatServices
 
             await _hubContext.Clients.Group(message.ReceiverId.ToString())
                 .SendAsync("ReceiveMessage", message);
+
+            // Send notification if receiver is a patient
+            if (message.ReceiverId.StartsWith("P"))
+            {
+                var PatientNotification = new PatientNotifications
+                {
+                    PatientId = message.ReceiverId,
+                    Title = "New Message",
+                    Message = "You have new message",
+                    IsRead = false,
+                    Type = "Appointment",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.PatientNotifications.Add(PatientNotification);
+                await _context.SaveChangesAsync();
+
+                // Send notification via SignalR
+                await _hubContext1.Clients.User(message.ReceiverId).SendAsync("ReceiveNotification", new
+                {
+                    id = PatientNotification.Id,
+                    title = PatientNotification.Title,
+                    message = PatientNotification.Message,
+                    date = PatientNotification.CreatedAt,
+                    isRead = PatientNotification.IsRead,
+                    type = PatientNotification.Type,
+                    patientId = PatientNotification.PatientId
+                });
+            }
+
+            if (message.ReceiverId.StartsWith("D"))
+            {
+                await _doctorNotificationService.CreateAndSendNotificationAsync(message.ReceiverId, "You Have New Message", "NewMessage", "Message");
+            }
         }
 
 
