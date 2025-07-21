@@ -111,6 +111,23 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(new { doctorId = doctor.DoctorId });
         }
 
+
+        [HttpPost("AddCharge")]
+        public async Task<IActionResult> AddCharge([FromBody] DoctorChargeDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var updatedDoctor = await _doctorServices.AddChargeAsync(dto.DoctorId, dto.ChargeToAdd);
+                return Ok(new { updatedDoctor.DoctorId, updatedDoctor.TotalAmtToPay });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+
         [HttpPost("upload-image")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadImage([FromForm] DoctorImageUploadDto dto)
@@ -121,6 +138,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest("Invalid doctor or file.");
 
             return Ok(new { image = base64Image });
+
         }
     }
 }

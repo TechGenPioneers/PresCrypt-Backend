@@ -80,6 +80,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
                         Title = $"Dr. {doctor?.FirstName + " "+ doctor.LastName?? "A doctor"} wants to access your prescription.",
                         Message = "Please respond to the access request by reviewing carefully.",
                         notification.CreatedAt,
+                        notification.IsResponded,
                         notification.IsRead,
                         notification.Type,
                         notification.DoctorId
@@ -93,6 +94,7 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
                         Title = notification.Title,
                         Message = notification.Message,
                         notification.CreatedAt,
+                        notification.IsResponded,
                         notification.IsRead,
                         notification.Type
                     });
@@ -113,6 +115,18 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+        [HttpPost("mark-as-responded")]
+        public async Task<IActionResult> MarkAsResponded([FromBody] string id)
+        {
+            var notification = await _context.PatientNotifications.FindAsync(id);
+            if (notification == null) return NotFound();
+
+            notification.IsResponded = true;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
     }
 }
 
