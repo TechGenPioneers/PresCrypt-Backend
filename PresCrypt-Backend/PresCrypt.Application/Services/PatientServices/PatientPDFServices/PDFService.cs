@@ -43,7 +43,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
 
         private static Action<IContainer> BuildHeader(byte[] logoBytes) => container =>
         {
-            container.Background("#094A4D").Padding(10).Row(row =>
+            container.Background("#0d9488").Padding(10).Row(row =>
             {
                 row.ConstantColumn(100).Image(logoBytes, ImageScaling.FitWidth);
 
@@ -59,7 +59,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
 
         private static Action<IContainer> BuildFooter(byte[] logoBytes) => container =>
         {
-            container.Background("#094A4D").Padding(10).Column(col =>
+            container.Background("#0d9488").Padding(10).Column(col =>
             {
                 col.Item().Row(row =>
                 {
@@ -201,7 +201,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
 
         private static Action<IContainer> BuildListHeader(byte[] logoBytes) => container =>
         {
-            container.Background("#094A4D").Padding(10).Row(row =>
+            container.Background("#0d9488").Padding(10).Row(row =>
             {
                 row.ConstantColumn(100).Image(logoBytes, ImageScaling.FitWidth);
 
@@ -215,7 +215,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices.Patie
 
         private static Action<IContainer> BuildListFooter(byte[] logoBytes) => container =>
         {
-            container.Background("#094A4D").Padding(10).Column(col =>
+            container.Background("#0d9488").Padding(10).Column(col =>
             {
                 col.Item().Row(row =>
                 {

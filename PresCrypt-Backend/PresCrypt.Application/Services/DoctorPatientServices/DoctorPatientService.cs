@@ -18,21 +18,16 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
         }
 
         public async Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(
-        string doctorId,
-        string type = "past",
-        string? hospitalName = null)
+            string doctorId,
+            string type = "past",
+            string? hospitalName = null)
         {
             var currentDate = DateOnly.FromDateTime(DateTime.Now);
             var currentTime = TimeOnly.FromDateTime(DateTime.Now);
 
-            // Base query filtered by doctor and type
+            // Base query filtered by doctor
             var query = _context.Appointments
-                .Where(a => a.DoctorId == doctorId)
-                .Where(a =>
-                    type == "past"
-                        ? a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime)
-                        : a.Date > currentDate || (a.Date == currentDate && a.Time > currentTime)
-                );
+                .Where(a => a.DoctorId == doctorId);
 
             // Filter by Hospital Name if provided
             if (!string.IsNullOrEmpty(hospitalName))
@@ -58,17 +53,35 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
                     HospitalName = a.Hospital.HospitalName
                 });
 
-            // Group by patient and get latest appointment
-            var latestAppointments = await projectedQuery
+            // Group by patient
+            var groupedAppointments = await projectedQuery
                 .GroupBy(a => a.PatientId)
-                .Select(g => g
-                    .OrderByDescending(a => a.Date)
-                    .ThenByDescending(a => a.Time)
-                    .FirstOrDefault())
                 .ToListAsync();
 
+            var filteredAppointments = new List<dynamic>();
+
+            foreach (var group in groupedAppointments)
+            {
+                var hasPastAppointment = group.Any(a =>
+                    a.Date < currentDate || (a.Date == currentDate && a.Time <= currentTime));
+
+                if ((type == "past" && hasPastAppointment) ||
+                    (type == "new" && !hasPastAppointment))
+                {
+                    var latestAppointment = group
+                        .OrderByDescending(a => a.Date)
+                        .ThenByDescending(a => a.Time)
+                        .FirstOrDefault();
+
+                    if (latestAppointment != null)
+                    {
+                        filteredAppointments.Add(latestAppointment);
+                    }
+                }
+            }
+
             // Map to DTO
-            return latestAppointments.Select(a => new DoctorPatientDto
+            return filteredAppointments.Select(a => new DoctorPatientDto
             {
                 AppointmentId = a.AppointmentId,
                 Date = a.Date.ToDateTime(TimeOnly.MinValue),
@@ -83,6 +96,5 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
                 ProfileImage = a.ProfileImage
             });
         }
-
     }
 }

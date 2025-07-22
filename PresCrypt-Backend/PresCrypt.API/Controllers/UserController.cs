@@ -161,6 +161,19 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                                     Welcome to <strong style='color: #008080;'>PresCrypt</strong> – your trusted digital healthcare platform. We're excited to have you join our community of users who prioritize secure and convenient healthcare management.
                                 </p>
     
+                                <!-- Patient ID Card -->
+                                <div style='background: linear-gradient(135deg, #f8fbff 0%, #e8f4f8 100%); border: 2px solid #008080; border-radius: 12px; padding: 25px; margin: 30px 0; text-align: center;'>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #5a6c7d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;'>
+                                        Your Patient ID
+                                    </p>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 20px; font-weight: bold; color: #008080; margin: 0; letter-spacing: 2px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;'>
+                                        {newPatient.PatientId}
+                                    </p>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #7f8c8d; margin: 10px 0 0 0;'>
+                                        💡 Save this ID for future reference
+                                    </p>
+                                </div>
+    
 
     
                                 <div style='background: #f8f9fa; border-left: 4px solid #008080; padding: 20px; margin: 25px 0; border-radius: 4px;'>
