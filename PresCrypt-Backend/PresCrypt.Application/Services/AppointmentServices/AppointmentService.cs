@@ -636,5 +636,52 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<AppointmentSummaryDashboardDto> GetAppointmentSummaryAsync(string patientId)
+        {
+            var now = DateTime.Now;
+            var today = DateOnly.FromDateTime(now.Date);
+
+            // Fetch all relevant appointments once and process in memory
+            var appointments = await _context.Appointments
+                .Where(a => a.PatientId == patientId)
+                .ToListAsync(); // bring data into memory
+
+            // Nearest pending appointment
+            var nearestPending = appointments
+                .Where(a => a.Status.ToLower() == "pending" &&
+                            a.Date.ToDateTime(a.Time) >= now)
+                .OrderBy(a => a.Date)
+                .ThenBy(a => a.Time)
+                .FirstOrDefault();
+
+            // Latest completed appointment
+            var latestCompleted = appointments
+                .Where(a => a.Status.ToLower() == "completed" &&
+                            a.Date.ToDateTime(a.Time) <= now)
+                .OrderByDescending(a => a.Date)
+                .ThenByDescending(a => a.Time)
+                .FirstOrDefault();
+
+            // Total appointments today
+            var todayCount = appointments
+               .Count(a => a.Date < today && a.Status.ToLower() == "completed");
+
+
+            return new AppointmentSummaryDashboardDto
+            {
+                NearestPendingAppointmentDate = nearestPending != null
+                    ? nearestPending.Date.ToString("yyyy-MM-dd")
+                    : null,
+
+                LatestCompletedAppointmentDate = latestCompleted != null
+                    ? latestCompleted.Date.ToString("yyyy-MM-dd")
+                    : null,
+
+                TodayAppointmentCount = todayCount
+            };
+        }
+
+
     }
 }

@@ -348,5 +348,12 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(new { message = "Today's appointment marked as complete." });
         }
+
+        [HttpGet("summary/{patientId}")]
+        public async Task<IActionResult> GetAppointmentSummary(string patientId)
+        {
+            var summary = await _appointmentService.GetAppointmentSummaryAsync(patientId);
+            return Ok(summary);
+        }
     }
 }
