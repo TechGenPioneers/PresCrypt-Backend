@@ -204,7 +204,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl
 
                 var htmlBody = $@"
                         <div style='font-family: Arial, sans-serif; padding: 20px;'>
-                         <h2 style='color: #4CAF50;'>Registration Request Rejected</h2>
+                        <h2 style=""color: #FF0000;"">Registration Request Rejected</h2>
 
                          <p>Dear {adminEmailDto.FirstName} {adminEmailDto.LastName},</p>
 
