@@ -72,7 +72,7 @@ builder.Services.AddScoped<IHospitalService, HospitalService>();
 builder.Services.AddSingleton<IUserIdProvider, QueryStringPatientIdProvider>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddHostedService<AppointmentStatusUpdater>();
-builder.Services.AddHostedService<AppointmentStatusUpdater>();
+
 
 
 builder.Services.AddHttpClient<IOpenMrsObsService, OpenMrsObsService>();
@@ -84,7 +84,7 @@ builder.Services.AddScoped<IOpenMrsService, OpenMrsService>();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-
+builder.Services.AddSignalR();
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -141,8 +141,8 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"Connection string: {connectionString}");
 // Add SignalR with detailed errors
-builder.Services.AddSignalR();
-builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+//builder.Services.AddSignalR();
+//builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
 
 

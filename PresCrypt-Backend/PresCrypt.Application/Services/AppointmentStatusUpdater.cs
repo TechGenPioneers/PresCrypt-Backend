@@ -29,18 +29,19 @@ public class AppointmentStatusUpdater : IHostedService
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            var appointmentsToUpdate = db.Appointments
+            var appointmentsToCancel = db.Appointments
                 .Where(a => a.Status == "Pending" && a.Date < today)
                 .ToList();
 
-            foreach (var appt in appointmentsToUpdate)
+            foreach (var appt in appointmentsToCancel)
             {
-                appt.Status = "Completed";
+                appt.Status = "Cancelled";
             }
 
             db.SaveChanges();
         }
     }
+
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
