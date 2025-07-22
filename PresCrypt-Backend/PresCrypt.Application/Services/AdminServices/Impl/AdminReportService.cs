@@ -523,28 +523,31 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 if(reportDetails.Patient != "")
                 {
                     var patientActivity = await _context.Patient
-                    .Select(patient => new AdminUserActivityDto
-                      {
-                         UserId = patient.PatientId,
-                        UserName = patient.FirstName + " " + patient.LastName,
-                        CreatedAt = patient.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                         UpdatedAt = patient.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                          LastLogin = patient.LastLogin.HasValue ? patient.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                    .Where(p => p.PatientId == reportDetails.Patient)
+                 .Select(patient => new AdminUserActivityDto
+                 {
+                     UserId = patient.PatientId,
+                      UserName = patient.FirstName + " " + patient.LastName,
+                       CreatedAt = patient.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                      UpdatedAt = patient.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                         LastLogin = patient.LastLogin.HasValue
+                           ? patient.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                         : null,
 
-                         // Latest appointment details
-                          LastAppointmentCreatedAt = _context.Appointments
-                            .Where(a => a.PatientId == patient.PatientId)
-                            .OrderByDescending(a => a.CreatedAt) // sort by created date
-                            .Select(a => a.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"))
-                           .FirstOrDefault(),
+                     // Latest appointment details
+                       LastAppointmentCreatedAt = _context.Appointments
+                         .Where(a => a.PatientId == patient.PatientId)
+                          .OrderByDescending(a => a.CreatedAt)
+                          .Select(a => a.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"))
+                          .FirstOrDefault(),
 
-                          LastAppointmentStatus = _context.Appointments
-                           .Where(a => a.PatientId == patient.PatientId)
-                        .OrderByDescending(a => a.CreatedAt)
-                        .Select(a => a.Status)
-                        .FirstOrDefault(),
-                      })
-                      .FirstOrDefaultAsync();
+                             LastAppointmentStatus = _context.Appointments
+                              .Where(a => a.PatientId == patient.PatientId)
+                            .OrderByDescending(a => a.CreatedAt)
+                           .Select(a => a.Status)
+                           .FirstOrDefault()
+                         })
+                        .FirstOrDefaultAsync();
 
 
                     adminReportDetails.UserActivity=patientActivity;
@@ -553,6 +556,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 if (reportDetails.Doctor != "")
                 {
                     var patientActivity = await _context.Doctor
+                    .Where(p => p.DoctorId == reportDetails.Doctor)
                     .Select(doctor => new AdminUserActivityDto
                     {
                         UserId = doctor.DoctorId,
