@@ -100,6 +100,33 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             return patient;
         }
 
+        public async Task UpdateCancelStatusAsync(string patientId)
+        {
+            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.PatientId == patientId);
+            if (patient == null)
+                throw new ArgumentException("Patient not found");
+
+            var now = DateTime.UtcNow;
+
+            if (patient.LastCancelledDate.HasValue)
+            {
+                var last = patient.LastCancelledDate.Value;
+                var daysSinceLastCancel = (now - last).TotalDays;
+
+                if (daysSinceLastCancel <= 14)
+                {
+                    patient.Status = "Inactive";
+                }
+            }
+
+            // Always update LastCancelledDate to current time
+            patient.LastCancelledDate = now;
+            patient.UpdatedAt = now;
+
+            await _context.SaveChangesAsync();
+        }
+
+
 
 
 

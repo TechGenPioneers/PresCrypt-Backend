@@ -44,11 +44,11 @@ namespace PresCrypt_Backend.PresCrypt.Core.Controllers
             };
 
             _context.PatientNotifications.Add(notification);
-            await _context.SaveChangesAsync(); // Save to DB -> Now notification.Id is populated
+            await _context.SaveChangesAsync();
 
             await _hub.Clients.User(req.PatientId).SendAsync("ReceiveNotification", new
             {
-                id = notification.Id,         // Include id!
+                id = notification.Id,        
                 title = notification.Title,
                 message = notification.Message
             });

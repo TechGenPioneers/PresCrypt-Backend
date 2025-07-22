@@ -49,6 +49,9 @@ namespace PresCrypt_Backend.PresCrypt.Core.Models
 
         public string? OpenMrsId { get; set; }
 
+        public DateTime? LastCancelledDate { get; set; }
+
+
         public ICollection<Appointment> Appointments { get; set; }
         public ICollection<PatientNotifications> Notifications { get; set; }
     }
