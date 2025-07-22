@@ -130,6 +130,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
+        }
+
         [HttpPost("upload-image")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadImage([FromForm] DoctorImageUploadDto dto)

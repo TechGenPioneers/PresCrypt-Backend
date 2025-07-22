@@ -28,6 +28,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices
 
         Task<IEnumerable<AppointmentViewDialogDto>> GetAppointmentsByPatientIdAndDateAsync(string patientId, DateTime date);
         Task<bool> CompleteTodayPendingAppointmentAsync(string patientId);
+
+        Task<AppointmentSummaryDashboardDto> GetAppointmentSummaryAsync(string patientId);
+
     }
 
 }
