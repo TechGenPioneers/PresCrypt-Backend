@@ -100,6 +100,25 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(patientInfo);
         }
 
+        [HttpPost("update-cancel-status/{patientId}")]
+        public async Task<IActionResult> UpdateCancelStatus(string patientId)
+        {
+            try
+            {
+                await _patientService.UpdateCancelStatusAsync(patientId);
+                return Ok(new { message = "Patient cancel status updated" });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Something went wrong", details = ex.Message });
+            }
+        }
+
+
 
     }
 }
