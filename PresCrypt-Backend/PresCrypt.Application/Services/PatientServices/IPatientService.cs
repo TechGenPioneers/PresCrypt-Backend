@@ -12,7 +12,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
 
         Task AddInquiryAsync(PatientContactUsDto dto);
 
-        Task<string?> GetPatientIdByEmailAsync(string email);
+        Task<PatientIdStatusDto?> GetPatientIdAndStatusByEmailAsync(string email);
+
+        Task UpdateCancelStatusAsync(string patientId);
+
 
     }
 }

@@ -86,11 +86,47 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.PatientServices
             _context.PatientContactUs.Add(entity);
             await _context.SaveChangesAsync();
         }
-        public async Task<string?> GetPatientIdByEmailAsync(string email)
+        public async Task<PatientIdStatusDto?> GetPatientIdAndStatusByEmailAsync(string email)
         {
-            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.Email == email);
-            return patient?.PatientId;
+            var patient = await _context.Patient
+                .Where(p => p.Email == email)
+                .Select(p => new PatientIdStatusDto
+                {
+                    PatientId = p.PatientId,
+                    Status = p.Status
+                })
+                .FirstOrDefaultAsync();
+
+            return patient;
         }
+
+        public async Task UpdateCancelStatusAsync(string patientId)
+        {
+            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.PatientId == patientId);
+            if (patient == null)
+                throw new ArgumentException("Patient not found");
+
+            var now = DateTime.UtcNow;
+
+            if (patient.LastCancelledDate.HasValue)
+            {
+                var last = patient.LastCancelledDate.Value;
+                var daysSinceLastCancel = (now - last).TotalDays;
+
+                if (daysSinceLastCancel <= 14)
+                {
+                    patient.Status = "Inactive";
+                }
+            }
+
+            // Always update LastCancelledDate to current time
+            patient.LastCancelledDate = now;
+            patient.UpdatedAt = now;
+
+            await _context.SaveChangesAsync();
+        }
+
+
 
 
 

@@ -1,17 +1,18 @@
-﻿using PresCrypt_Backend.PresCrypt.API.Dto;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Reflection.Metadata.Ecma335;
-using PresCrypt_Backend.PresCrypt.Core.Models;
-using System.Diagnostics;
-using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
-using System.Linq;
-using Azure.Core;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
+using PresCrypt_Backend.PresCrypt.Core.Models;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -237,7 +238,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                     UpdatedAt = d.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                     LastLogin = d.LastLogin.HasValue ? d.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-
+                    TotalAmtToPay=d.TotalAmtToPay,
                     ContactNumber = d.ContactNumber
                 })
                 .FirstOrDefaultAsync();
@@ -445,6 +446,15 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             }
         }
 
+        public async Task PayAmount(PayAmountDto payAmountDto)
+        {
+            var doctor = await _context.Doctor.FirstOrDefaultAsync(d => d.DoctorId == payAmountDto.DoctorId);
+
+            doctor.TotalAmtToPay -= payAmountDto.PayAmount;
+
+            await _context.SaveChangesAsync();
+
+        }
 
     }
 }

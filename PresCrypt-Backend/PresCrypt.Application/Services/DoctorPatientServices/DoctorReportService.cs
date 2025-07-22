@@ -266,11 +266,17 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
                 {
                     var page = document.AddPage();
                     var gfx = XGraphics.FromPdfPage(page);
+
+                    // Add logo and get its height
+                    double logoHeight = await AddLogoToPdf(gfx, page);
+
+                    // Calculate starting Y position after logo
+                    double yPos = 30 + logoHeight + 20; // Y (30) + logoHeight + 20px gap
                     var fontTitle = new XFont("Arial", 16, XFontStyle.Bold);
                     var fontHeader = new XFont("Arial", 12, XFontStyle.Bold);
                     var fontNormal = new XFont("Arial", 10, XFontStyle.Regular);
 
-                    double yPos = 50;
+                    //double yPos = 50;
 
                     // Report title
                     string reportTitle = request.Patient == "all"
