@@ -1,45 +1,42 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-namespace PresCrypt_Backend.PresCrypt.Application.Services.AuthServices
+public interface IEmailService
 {
-    public class EmailService : IEmailService  // ✅ Implement the interface
+    Task SendEmailAsync(string toEmail, string subject, string body);
+}
+
+public class EmailService : IEmailService
+{
+    private readonly IConfiguration _configuration;
+
+    public EmailService(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+    }
 
-        public EmailService(IConfiguration configuration)
+    public async Task SendEmailAsync(string toEmail, string subject, string body)
+    {
+        var fromEmail = _configuration["EmailSettings:FromEmail"];
+        var password = _configuration["EmailSettings:AppPassword"];
+
+        var smtpClient = new SmtpClient("smtp.gmail.com")
         {
-            _configuration = configuration;
-        }
+            Port = 587,
+            Credentials = new NetworkCredential(fromEmail, password),
+            EnableSsl = true
+        };
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        var mailMessage = new MailMessage
         {
-            var smtpServer = _configuration["EmailSettings:SmtpServer"];
-            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-            var smtpUsername = _configuration["EmailSettings:SmtpUsername"];
-            var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-            var enableSsl = bool.Parse(_configuration["EmailSettings:EnableSsl"]);
+            From = new MailAddress(fromEmail),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
 
-            var smtpClient = new SmtpClient(smtpServer)
-            {
-                Port = smtpPort,
-                Credentials = new NetworkCredential(smtpUsername, smtpPassword),
-                EnableSsl = enableSsl
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(smtpUsername),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-
-            mailMessage.To.Add(toEmail);
-
-            await smtpClient.SendMailAsync(mailMessage);
-        }
+        mailMessage.To.Add(toEmail);
+        await smtpClient.SendMailAsync(mailMessage);
     }
 }

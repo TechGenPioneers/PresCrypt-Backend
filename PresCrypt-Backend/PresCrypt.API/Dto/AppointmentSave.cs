@@ -14,6 +14,8 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         public double Charge { get; set; }
         public string Status { get; set; }
         public string TypeOfAppointment { get; set; }
+
+        public string PaymentId { get; set; }
     }
 
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
@@ -9,6 +10,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Admin")]
     public class AdminDoctorRequestController : ControllerBase
     {
         private readonly IAdminDoctorRequestService _adminDoctorRequestService;
@@ -17,6 +19,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _adminDoctorRequestService = adminDoctorRequestService;
         }
 
+        //get all doctor requests
         [HttpGet("getAllDoctorRequest")]
         public async Task<IActionResult> GetAllPendingRequest()
         {
@@ -26,10 +29,15 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(doctorRequests);
         }
 
-        //get doctor by id
+        //get doctor Request by id
         [HttpGet("{requestId}")]
         public async Task<IActionResult> GetDoctorByID(string requestId)
         {
+            if(requestId == null)
+            {
+                return BadRequest();
+            }
+
             var getRequestAndAvailability = await _adminDoctorRequestService.getRequestByID(requestId);
 
             if (getRequestAndAvailability == null)
@@ -38,6 +46,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             return Ok(getRequestAndAvailability);
         }
 
+        // update doctor request
         [HttpPatch]
         public async Task<IActionResult> UpdateDoctor([FromBody] DoctorRequestRejectDto rejected)
         {

@@ -5,7 +5,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices
 {
     public interface IDoctorPatientService
     {
-        Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(string doctorId, string type = "past");
+        Task<IEnumerable<DoctorPatientDto>> GetPatientDetailsAsync(
+            string doctorId,
+            string type = "past",
+            string? hospitalName = null);
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Admin")]
     public class AdminDoctorController : ControllerBase
     {
         private readonly IAdminDoctorService _adminDoctorServices;
@@ -33,15 +35,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 return BadRequest("Doctor and availability details are required.");
             }
 
-            //Debug.WriteLine(newDoctor.Doctor);
-
-            //foreach (var slot in newDoctor.Availability)
-            //{
-            //    Debug.WriteLine($"Day: {slot.Day}, Start Time: {slot.StartTime}, End Time: {slot.EndTime}, Hospital: {slot.HospitalId}");
-            //}
-
             var savedDoctor = await _adminDoctorServices.SaveDoctor(newDoctor);
-            //Debug.WriteLine($"save : {savedDoctor}");
 
             if (savedDoctor == "Success")
             {
@@ -53,6 +47,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        //update doctor
         [HttpPatch]
         public async Task<IActionResult> UpdateDoctor([FromBody] DoctorAvailabilityDto updatedDoctor)
         {
@@ -105,18 +100,40 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         }
 
+        //delete Doctor by id
         [HttpDelete ("{doctorId}")]
         public async Task<IActionResult> deleteDoctorById(string doctorId)
         {
             if(doctorId != null)
             {
                 var deleted = await _adminDoctorServices.deleteDoctorById(doctorId);
-                return Ok(deleted);
+                if(deleted== "Success")
+                {
+                    return Ok(deleted);
+                }
+                return BadRequest(deleted);
             }
             else
             {
                 return BadRequest();
             }
+        }
+
+        [HttpPatch("Pay")]
+        public async Task<IActionResult> PayAmount([FromBody] PayAmountDto payAmountDto)
+        {
+
+            try
+            {
+                await _adminDoctorServices.PayAmount(payAmountDto);
+                return Ok("Payment recorded successfully.");
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e);
+            }
+
+            
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices;
@@ -8,6 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "Admin")]
     public class AdminPatientController : ControllerBase
     {
         private readonly IAdminPatientService _adminPatientService;
@@ -16,6 +18,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             _adminPatientService = adminPatientService;
         }
 
+        //get all patients details
         [HttpGet("GetAllPatients")]
         public async Task<IActionResult> GetAllPatients()
         {
@@ -36,6 +39,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        //get patient details by id
         [HttpGet("{patientId}")]
         public async Task<IActionResult> GetPatientByID(string patientId)
         {
@@ -53,6 +57,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             }
         }
 
+        //update patient
         [HttpPatch]
         public async Task<IActionResult> UpdatePatient([FromBody] AdminUpdatePatientDto adminUpdatePatientDto)
         {

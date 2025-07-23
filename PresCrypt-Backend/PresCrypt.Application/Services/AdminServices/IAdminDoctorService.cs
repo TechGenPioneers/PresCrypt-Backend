@@ -10,6 +10,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices
         public Task<DoctorAvailabilityDto> getDoctorById(string doctorID);
         public Task<string> UpdateDoctor(DoctorAvailabilityDto dto);
         public Task<string> deleteDoctorById(string doctorId);
+        public Task PayAmount(PayAmountDto payAmountDto);
 
 
     }
