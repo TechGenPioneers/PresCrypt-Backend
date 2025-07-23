@@ -131,8 +131,28 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 _context.Patient.Update(patient);
                 int result = await _context.SaveChangesAsync();
 
+               
+
                 if (result > 0)
                 {
+                    
+                    if (updatePatient.Status=="Active")
+                    {
+                        var user = _context.User.FirstOrDefault(a => a.UserName == updatePatient.Email);
+                        if (user != null)
+                        {
+                            user.ResetToken = null;
+                            user.ResetTokenExpire = null;
+                            user.FailedLoginAttempts = 0;
+                            user.LastFailedLoginTime = null;
+                            user.IsBlocked = false;
+
+                            _context.User.Update(user);
+                            await _context.SaveChangesAsync();
+                        }
+
+                    }
+
                     return "Success";
                 }
                 else

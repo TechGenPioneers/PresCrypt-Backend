@@ -130,7 +130,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        }
+        
 
         [HttpPost("upload-image")]
         [Consumes("multipart/form-data")]

@@ -354,6 +354,26 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 result =  await _context.SaveChangesAsync();
                 if (result>0)
                 {
+
+                    if (dto.Doctor.Status==true)
+                    {
+                        var user = _context.User.FirstOrDefault(a => a.UserName == dto.Doctor.Email);
+                        if (user != null)
+                        {
+                            user.ResetToken = null;
+                            user.ResetTokenExpire = null;
+                            user.FailedLoginAttempts = 0;
+                            user.LastFailedLoginTime = null;
+                            user.IsBlocked = false;
+
+                            _context.User.Update(user);
+                            await _context.SaveChangesAsync();
+                        }
+
+                    }
+
+
+
                     // Prepare notification details
                     var message = $"{dto.Doctor.DoctorId} {dto.Doctor.FirstName} {dto.Doctor.LastName} details successfully updated by Admin.";
                     var notificationDto = new AdminNotificationDto
