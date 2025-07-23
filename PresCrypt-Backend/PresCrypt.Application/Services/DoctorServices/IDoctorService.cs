@@ -2,6 +2,17 @@
 {
     public interface IDoctorService
     {
-        Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName);
+        Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName, string name);
+        Task<List<string>> GetAllSpecializationsAsync();
+
+        Task<List<string>> GetAllDoctor();
+
+        Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName);
+
+
+        Task<Doctor> AddChargeAsync(string doctorId, double chargeToAdd);
+
+        Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile doctorImage);
+
     }
 }

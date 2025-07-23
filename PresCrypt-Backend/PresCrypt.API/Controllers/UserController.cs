@@ -16,6 +16,9 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using Hospital = PresCrypt_Backend.PresCrypt.Core.Models.Hospital;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Cryptography;
+using System.Web;
+using static System.Net.WebRequestMethods;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
@@ -27,9 +30,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly ILogger<UserController> _logger;
         private readonly IEmailService _emailService;
-       
+
         private readonly IJwtService _jwtService;
-     
+
 
 
 
@@ -44,7 +47,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
         [HttpPost]
         [Route("PatientRegistration")]
-        public IActionResult Registration([FromBody] PatientRegDTO patientRegDTO)
+        public async Task<IActionResult> Registration([FromBody] PatientRegDTO patientRegDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -60,6 +63,13 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             if (patientRegDTO.Password != patientRegDTO.ConfirmPassword)
             {
                 return BadRequest(new { message = "Passwords do not match." });
+            }
+
+            // Validate gender
+            if (string.IsNullOrEmpty(patientRegDTO.Gender) ||
+                (patientRegDTO.Gender != "Male" && patientRegDTO.Gender != "Female"))
+            {
+                return BadRequest(new { message = "Gender must be either Male or Female." });
             }
 
             string emailLower = patientRegDTO.Email.Trim().ToLower();
@@ -105,18 +115,124 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         ContactNo = patientRegDTO.ContactNumber,
                         Address = patientRegDTO.Address,
                         DOB = patientRegDTO.DOB,
+                        Gender = patientRegDTO.Gender, // Added gender assignment
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Status = patientRegDTO.Status,
-                        PasswordHash = hashedPassword
                     };
 
                     _applicationDbContext.Patient.Add(newPatient);
                     _applicationDbContext.SaveChanges();
 
+                    // ✅ Send welcome email (your existing email logic)
+                    string welcomeEmailBody = $@"
+                    <!DOCTYPE html>
+                    <html lang='en'>
+                    <head>
+                        <meta charset='UTF-8'>
+                        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                        <title>Welcome to PresCrypt</title>
+                    </head>
+                    <body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+                        <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
+                            <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 40px 30px; text-align: center;'>
+                                <h1 style='color: #ffffff; margin: 0; font-size: 28px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                                    Welcome to PresCrypt! 🎉
+                                </h1>
+                                <p style='color: #e6f7f7; margin: 10px 0 0 0; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, ""Segue UI"", Roboto, sans-serif;'>
+                                    Your Digital Healthcare Journey Begins
+                                </p>
+                            </div>
+
+                            <!-- Content -->
+                            <div style='padding: 40px 30px;'>
+                                <div style='text-align: center; margin-bottom: 30px;'>
+                                    <div style='width: 80px; height: 80px; background: linear-gradient(135deg, #008080, #00a3a3); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                                        👋
+                                    </div>
+                                </div>
+    
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 20px; line-height: 1.6;'>
+                                    Hi <strong style='color: #008080;'>{newPatient.FirstName}</strong>,
+                                </p>
+    
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #5a6c7d; margin-bottom: 25px; line-height: 1.7;'>
+                                    Welcome to <strong style='color: #008080;'>PresCrypt</strong> – your trusted digital healthcare platform. We're excited to have you join our community of users who prioritize secure and convenient healthcare management.
+                                </p>
+    
+                                <!-- Patient ID Card -->
+                                <div style='background: linear-gradient(135deg, #f8fbff 0%, #e8f4f8 100%); border: 2px solid #008080; border-radius: 12px; padding: 25px; margin: 30px 0; text-align: center;'>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #5a6c7d; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;'>
+                                        Your Patient ID
+                                    </p>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 20px; font-weight: bold; color: #008080; margin: 0; letter-spacing: 2px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;'>
+                                        {newPatient.PatientId}
+                                    </p>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #7f8c8d; margin: 10px 0 0 0;'>
+                                        💡 Save this ID for future reference
+                                    </p>
+                                </div>
+    
+
+    
+                                <div style='background: #f8f9fa; border-left: 4px solid #008080; padding: 20px; margin: 25px 0; border-radius: 4px;'>
+                                    <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>
+                                        🚀 What's Next?
+                                    </h3>
+                                    <ul style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #5a6c7d; margin: 0; padding-left: 20px; line-height: 1.8;'>
+                                        <li>Log in to your secure account</li>
+                                        <li>Complete your health profile</li>
+                                        <li>Book your first appointment</li>
+                                        <li>Explore our digital health tools such as video chat options </li>
+                                        <li>Experience our AI powered chatbot</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Support Section -->
+                            <div style='background: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;'>
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #6c757d; margin: 0 0 15px 0;'>
+                                    Need assistance? Our support team is here to help!
+                                </p>
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; margin: 0;'>
+                                    📧 <a href='mailto:prescrypt.health@gmail.com' style='color: #008080; text-decoration: none; font-weight: 600;'>prescrypt.health@gmail.com</a>
+                                    <span style='color: #dee2e6; margin: 0 10px;'>•</span>
+
+                                </p>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style='background: #2c3e50; padding: 25px 30px; text-align: center;'>
+                                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0; line-height: 1.6;'>
+                                    © 2025 PresCrypt. All rights reserved.<br>
+                                    This is an automated email. Please do not reply to this message.
+                                </p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
+
+                    await _emailService.SendEmailAsync(
+                        newPatient.Email,
+                        "🎉 Welcome to PresCrypt – Registration Successful",
+                        welcomeEmailBody
+                    );
+
                     transaction.Commit();
 
-                    return Ok(new { message = "Patient registered successfully", patientId = newPatientId });
+                    // ✅ Generate JWT token
+                    var token = _jwtService.GenerateToken(newPatientId, newPatient.Email, "Patient");
+
+                    // ✅ Send token, role, and username to frontend
+                    return Ok(new
+                    {
+                        token = token,
+                        role = "Patient",
+                        username = newPatient.Email,
+                        patientId = newPatientId,
+                        gender = newPatient.Gender // Include gender in response if needed
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -133,8 +249,6 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                 }
             }
         }
-
-
 
 
         [HttpPost]
@@ -539,67 +653,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        //[HttpPost]
-        //[Route("Login")]
-        //public IActionResult Login([FromBody] LoginDTO loginDTO)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrEmpty(loginDTO.Email) || string.IsNullOrEmpty(loginDTO.Password))
-        //        {
-        //            return BadRequest(new { message = "Username and password are required." });
-        //        }
-
-        //        string inputUsername = loginDTO.Email.Trim().ToLower();
-
-        //        var user = _applicationDbContext.User
-        //            .FirstOrDefault(u => u.UserName.ToLower() == inputUsername);
-
-        //        if (user == null)
-        //        {
-        //            return BadRequest(new { success = false, message = "Invalid username or password." });
-        //        }
-
-        //        if (user.Role == "DoctorPending")
-        //        {
-        //            return BadRequest(new
-        //            {
-        //                success = false,
-        //                message = "Your doctor account is pending approval. Please wait for confirmation."
-        //            });
-        //        }
-
-        //        var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
-
-        //        if (result != PasswordVerificationResult.Success)
-        //        {
-        //            return BadRequest(new { success = false, message = "Invalid username or password." });
-        //        }
-
-        //        var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
-
-        //        return Ok(new
-        //        {
-        //            success = true,
-        //            message = $"{user.Role} login successful",
-        //            token = token,
-        //            user = new
-        //            {
-        //                id = user.UserId,
-        //                username = user.UserName,
-        //                role = user.Role
-        //            }
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Login error: {ex.Message}", ex);
-        //        return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
-        //    }
-        //}
         [HttpPost]
         [Route("Login")]
-        public IActionResult Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             try
             {
@@ -617,6 +673,75 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
+                // ✅ FIXED: Auto-unlock logic - Check FIRST before manual block check
+                if (user.IsBlocked && user.LastFailedLoginTime.HasValue)
+                {
+                    // Check if 15 minutes have passed since last failed attempt
+                    if (user.LastFailedLoginTime.Value.AddMinutes(15) <= DateTime.UtcNow)
+                    {
+                        // Auto-unlock the account
+                        user.IsBlocked = false;
+                        user.FailedLoginAttempts = 0;
+                        user.LastFailedLoginTime = null;
+                        // 🔄 Update status for Doctor or Patient
+                        if (user.Role == "Doctor")
+                        {
+                            var doctor = await _applicationDbContext.Doctor.FirstOrDefaultAsync(d => d.Email == user.UserName);
+                            if (doctor != null)
+                            {
+                                doctor.Status = true; // Active
+                            }
+                        }
+                        else if (user.Role == "Patient")
+                        {
+                            var patient = await _applicationDbContext.Patient.FirstOrDefaultAsync(p => p.Email == user.UserName);
+                            if (patient != null)
+                            {
+                                patient.Status = "Active";
+                            }
+                        }
+
+                        await _applicationDbContext.SaveChangesAsync();
+
+                        _logger.LogInformation($"🔓 Account auto-unlocked for {user.UserName} after 15 minutes");
+
+                        // Send auto-unlock notification email
+                        string unlockEmailBody = $@"
+                            <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                                <p>Dear user,</p>
+                                <p><strong>Good News!</strong> We have observed that you have logged in successfully again once after your account has been now unlocked.</p>
+                    
+                                <p>For your security, please ensure you're using the correct password.</p>
+                                <br/>
+                                <p>Best regards,<br/>PresCrypt Security Team</p>
+                            </div>";
+                        await _emailService.SendEmailAsync(user.UserName, "✅ Account Unlocked - PresCrypt", unlockEmailBody);
+                    }
+                    else
+                    {
+                        // Still within 15-minute lockout period
+                        var remainingTime = user.LastFailedLoginTime.Value.AddMinutes(15) - DateTime.UtcNow;
+                        int remainingMinutes = (int)Math.Ceiling(remainingTime.TotalMinutes);
+
+                        return BadRequest(new
+                        {
+                            success = false,
+                            message = $"🚫 Account is temporarily locked. Please try again in {remainingMinutes} minute(s).",
+                            remainingMinutes = remainingMinutes
+                        });
+                    }
+                }
+
+                // ✅ Check if account is still manually blocked (this should rarely happen now)
+                if (user.IsBlocked)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "🚫 Your account is blocked. Please contact admin to unlock it."
+                    });
+                }
+
                 if (user.Role == "DoctorPending")
                 {
                     return BadRequest(new
@@ -630,34 +755,238 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     return BadRequest(new { success = false, message = "Please verify your email before logging in." });
                 }
 
-                // Check for lockout
-                if (user.FailedLoginAttempts >= 5 && user.LastFailedLoginTime.HasValue &&
-                    user.LastFailedLoginTime.Value.AddMinutes(15) > DateTime.UtcNow)
-                {
-                    return BadRequest(new { message = "Account locked due to too many failed attempts. Try again later." });
-                }
-
                 var result = _passwordHasher.VerifyHashedPassword(null, user.PasswordHash, loginDTO.Password);
 
                 if (result != PasswordVerificationResult.Success)
                 {
-                    // Update failed attempt count
                     user.FailedLoginAttempts += 1;
                     user.LastFailedLoginTime = DateTime.UtcNow;
-                    _applicationDbContext.SaveChanges();
 
+                    // ✅ Block account after 5 failed attempts
+                    if (user.FailedLoginAttempts >= 5)
+                    {
+                        user.IsBlocked = true;
+                        // 🔄 Update status for Doctor or Patient
+                        if (user.Role == "Doctor")
+                        {
+                            var doctor = await _applicationDbContext.Doctor.FirstOrDefaultAsync(d => d.Email == user.UserName);
+                            if (doctor != null)
+                            {
+                                doctor.Status = false; // Inactive
+                            }
+                        }
+                        else if (user.Role == "Patient")
+                        {
+                            var patient = await _applicationDbContext.Patient.FirstOrDefaultAsync(p => p.Email == user.UserName);
+                            if (patient != null)
+                            {
+                                patient.Status = "Inactive";
+                            }
+                        }
+
+
+                        // Send account blocked email with enhanced template
+                        string blockEmailBody = $@"
+                            <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;'>
+                                <div style='background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 15px; margin-bottom: 20px;'>
+                                    <h3 style='color: #721c24; margin: 0 0 10px 0;'>🚫 Account Temporarily Locked</h3>
+                                    <p style='color: #721c24; margin: 0;'><strong>Security Notice:</strong> Your account has been locked after 5 failed login attempts.</p>
+                                </div>
+                    
+                                <p>Dear user,</p>
+                                <p>For your account security, we have temporarily locked your account due to multiple unsuccessful login attempts.</p>
+                    
+                                <div style='background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px; margin: 15px 0;'>
+                                    <h4 style='color: #0c5460; margin: 0 0 10px 0;'>⏰ Auto-Unlock Information:</h4>
+                                    <p style='color: #0c5460; margin: 0;'>Your account will be automatically unlocked after <strong>15 minutes</strong> from the last failed attempt.</p>
+                                    <p style='color: #0c5460; margin: 5px 0 0 0; font-size: 12px;'>Locked at: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC</p>
+                                </div>
+                    
+                                <p><strong>What you can do:</strong></p>
+                                <ul>
+                                    <li>Wait 15 minutes and try logging in again</li>
+                                    <li>Make sure you're using the correct password</li>
+                                    <li>Use the 'Forgot Password' feature if needed</li>
+                                    <li>Contact support if you continue having issues</li>
+                                </ul>
+                    
+                                <hr style='margin: 20px 0; border: none; border-top: 1px solid #e0e0e0;' />
+                                <p style='font-size: 12px; color: #6c757d;'>
+                                    Best regards,<br/>
+                                    PresCrypt Security Team<br/>
+                                    📧 prescrypt.health@gmail.com
+                                </p>
+                            </div>";
+
+                        await _emailService.SendEmailAsync(user.UserName, "🚫 Account Temporarily Locked - PresCrypt", blockEmailBody);
+
+                        _logger.LogWarning($"🚫 Account locked for {user.UserName} after 5 failed attempts");
+                    }
+                    else if (user.FailedLoginAttempts == 4)
+                    {
+                        // Use your enhanced security alert template here
+                        string emailBody = @"
+                            <div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'>
+                                <div style='background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin-bottom: 15px;'>
+                                    <p style='color: #856404; margin: 0;'><strong>⚠️ Security Alert:</strong> You have entered an incorrect password <strong>4 times</strong>.</p>
+                                </div>
+                                <p>Dear user,</p>
+                                <p>We detected multiple failed login attempts on your account.</p>
+                                <p><strong style='color: #dc3545;'>Warning:</strong> If you enter the wrong password one more time, your account will be <strong>temporarily locked for 15 minutes</strong>.</p>
+                    
+                                <div style='background: #e8f4f8; border-left: 4px solid #008080; padding: 15px; margin: 15px 0;'>
+                                    <p style='margin: 0;'><strong>💡 Helpful Tips:</strong></p>
+                                    <ul style='margin: 10px 0 0 0;'>
+                                        <li>Double-check your password for typos</li>
+                                        <li>Ensure Caps Lock is not on</li>
+                                        <li>Use 'Forgot Password' if you're unsure</li>
+                                    </ul>
+                                </div>
+                    
+                                <br/>
+                                <p>Best regards,<br/>PresCrypt Security Team</p>
+                            </div>";
+                        await _emailService.SendEmailAsync(user.UserName, "⚠️ Security Alert: Final Warning - PresCrypt", emailBody);
+                    }
+
+                    await _applicationDbContext.SaveChangesAsync();
                     return BadRequest(new { success = false, message = "Invalid email or password." });
                 }
 
-                // Reset failed attempts after successful login
+                // ✅ Reset on successful login
                 user.FailedLoginAttempts = 0;
                 user.LastFailedLoginTime = null;
-                _applicationDbContext.SaveChanges();
+                user.IsBlocked = false; // Ensure it's reset
 
+                // ✅ Set LastLogin in respective table
+                if (user.Role == "Admin")
+                {
+                    var admin = await _applicationDbContext.Admin.FirstOrDefaultAsync(a => a.Email == user.UserName);
+                    if (admin != null)
+                    {
+                        admin.LastLogin = DateTime.UtcNow;
+                    }
+                }
+                else if (user.Role == "Doctor")
+                {
+                    var doctor = await _applicationDbContext.Doctor.FirstOrDefaultAsync(d => d.Email == user.UserName);
+                    if (doctor != null)
+                    {
+                        doctor.LastLogin = DateTime.UtcNow;
+                    }
+                }
+                else if (user.Role == "Patient")
+                {
+                    var patient = await _applicationDbContext.Patient.FirstOrDefaultAsync(p => p.Email == user.UserName);
+                    if (patient != null)
+                    {
+                        patient.LastLogin = DateTime.UtcNow;
+                    }
+                }
+
+                // Admin 2FA
+                if (user.Role == "Admin")
+                {
+                    string code = new Random().Next(100000, 999999).ToString();
+                    user.TwoFactorCode = code;
+                    user.TwoFactorExpiry = DateTime.UtcNow.AddMinutes(5);
+                    await _applicationDbContext.SaveChangesAsync();
+
+                    string verifyUrl = $"http://localhost:3000/Auth/Verify2FA?email={Uri.EscapeDataString(user.UserName)}";
+
+                    // Use your enhanced 2FA template here
+                    string twoFAEmailBody = $@"
+                        <!DOCTYPE html>
+                        <html lang='en'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Your 2FA Verification Code - PresCrypt</title>
+                        </head>
+                        <body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+                            <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+                                <!-- Header -->
+                                <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 30px; text-align: center;'>
+                                    <div style='background: rgba(255,255,255,0.2); border-radius: 50%; width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                                        🔐
+                                    </div>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                                        Two-Factor Authentication
+                                    </h1>
+                                </div>
+        
+                                <!-- Content -->
+                                <div style='padding: 40px 30px; text-align: center;'>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 25px; line-height: 1.6;'>
+                                        Your verification code is ready! 🎯
+                                    </p>
+            
+                                    <!-- Code Box -->
+                                    <div style='background: linear-gradient(135deg, #f8fbff 0%, #e8f4f8 100%); border: 3px solid #008080; border-radius: 15px; padding: 30px; margin: 30px 0; display: inline-block;'>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #5a6c7d; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;'>
+                                            Your 2FA Code
+                                        </p>
+                                        <p style='font-family: Monaco, Consolas, monospace; font-size: 36px; font-weight: bold; color: #008080; margin: 0; letter-spacing: 8px; background: #ffffff; padding: 20px 30px; border-radius: 10px; border: 2px solid #e0e0e0; text-align: center; min-width: 200px;'>
+                                            {code}
+                                        </p>
+                                    </div>
+            
+                                    <!-- Timer Alert -->
+                                    <div style='background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;'>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #856404; margin: 0; font-weight: 600;'>
+                                            ⏰ <strong>Expires in 5 minutes</strong>
+                                        </p>
+                                        <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #856404; margin: 5px 0 0 0;'>
+                                            Enter this code quickly to complete your login
+                                        </p>
+                                    </div>
+            
+                                    <!-- Quick Action Button -->
+                                    <div style='margin: 35px 0;'>
+                                        <a href='{verifyUrl}' style='display: inline-block; background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 25px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,128,128,0.3);'>
+                                            🚀 Verify Now
+                                        </a>
+                                    </div>
+            
+                                    <!-- Instructions -->
+                                    <div style='background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: left;'>
+                                        <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #2c3e50; margin: 0 0 15px 0; font-size: 16px; text-align: center;'>
+                                            📱 How to Use This Code
+                                        </h3>
+                                        <ol style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #5a6c7d; margin: 0; padding-left: 20px; line-height: 1.8;'>
+                                            <li>Return to the PresCrypt login page</li>
+                                            <li>Enter the 6-digit code above</li>
+                                            <li>Click ""Verify"" to complete your login</li>
+                                        </ol>
+                                    </div>
+                                </div>
+        
+                                <!-- Footer -->
+                                <div style='background: #2c3e50; padding: 25px 30px; text-align: center;'>
+                                    <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0;'>
+                                        © 2025 PresCrypt Security • This code was generated for your account security
+                                    </p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
+
+                    await _emailService.SendEmailAsync(user.UserName, "🔐 Your Admin 2FA Code - PresCrypt", twoFAEmailBody);
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "2FA code sent to your email.",
+                        twoFactorRequired = true,
+                        email = user.UserName
+                    });
+                }
+
+                // Generate JWT
                 var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
 
-                // Log successful login
-                _logger.LogInformation($"Successful login for {user.UserName}");
+                await _applicationDbContext.SaveChangesAsync();
+                _logger.LogInformation($"✅ Login successful for {user.UserName}");
 
                 return Ok(new
                 {
@@ -675,10 +1004,48 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Login error: {ex.Message}", ex);
-                return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+
+                return StatusCode(500, new
+                {
+                    message = "An unexpected error occurred. Please try again later.",
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
         }
+        [HttpPost]
+        [Route("Verify2FA")]
+        public IActionResult Verify2FA([FromBody] TwoFactorDTO model)
+        {
+            var user = _applicationDbContext.User.FirstOrDefault(u => u.UserName.ToLower() == model.Email.ToLower());
 
+            if (user == null || user.TwoFactorCode != model.Code || user.TwoFactorExpiry < DateTime.UtcNow)
+            {
+                return Unauthorized(new { message = "Invalid or expired 2FA code." });
+            }
+
+            // Clear the code after successful use
+            user.TwoFactorCode = null;
+            user.TwoFactorExpiry = null;
+
+            var token = _jwtService.GenerateToken(user.UserId, user.UserName, user.Role);
+
+
+            _applicationDbContext.SaveChanges();
+
+            return Ok(new
+            {
+                success = true,
+                message = "2FA verified successfully",
+                token = token,
+                user = new
+                {
+                    id = user.UserId,
+                    username = user.UserName,
+                    role = user.Role
+                }
+            });
+        }
 
 
 
@@ -701,7 +1068,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        [Authorize(Roles = "Admin")]
+
         [HttpGet]
         [Route("GetAllUsers")]
         public IActionResult GetUsers()
@@ -730,87 +1097,176 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
 
-        [HttpPost]
-        [Route("ForgotPassword")]
+        [HttpPost("ForgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO model)
         {
-            if (string.IsNullOrEmpty(model.Email))
-            {
-                return BadRequest(new { message = "Email is required." });
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            // Normalize email
-            string emailLower = model.Email.Trim().ToLower();
+            // Normalize and find user
+            var normalizedEmail = model.Email.Trim().ToLower();
+            var user = await _applicationDbContext.User
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == normalizedEmail);
 
-            // Check User table
-            var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName.ToLower() == emailLower);
+            // Security: Always return success to prevent email enumeration
             if (user == null)
-            {
-                return NotFound(new { message = "User not found." });
-            }
+                return Ok(new { message = "If this email exists, a reset link was sent." });
 
-            // Generate a URL-safe token
-            user.ResetToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+            // Generate cryptographically secure token
+            user.ResetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
+                .Replace('+', '-').Replace('/', '_').Replace("=", "");
             user.ResetTokenExpire = DateTime.UtcNow.AddHours(1);
-            _applicationDbContext.SaveChanges();
 
-            // Send email with reset link
-            string resetLink = $"https://localhost:3000/reset-password?token={user.ResetToken}&email={model.Email}";
+            // Create secure reset link
+            string resetLink = $"http://localhost:3000/Auth/ResetPassword?" +
+                $"token={HttpUtility.UrlEncode(user.ResetToken)}&" +
+                $"email={HttpUtility.UrlEncode(user.UserName)}";
 
-            await _emailService.SendEmailAsync(user.UserName, "Reset Password",
-                $"Click the link to reset your password: {resetLink}");
+            // Send email
+            await SendResetEmailAsync(user.UserName, resetLink);
 
-            return Ok(new { message = "Password reset link sent to your email." });
+            await _applicationDbContext.SaveChangesAsync();
+            return Ok(new { message = "If this email exists, a reset link was sent." });
         }
 
-
-        [HttpPost]
-        [Route("ResetPassword")]
+        [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
         {
-            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Token) || string.IsNullOrWhiteSpace(model.NewPassword))
-            {
-                return BadRequest(new { message = "Email, token, and new password are required." });
-            }
 
-            // Normalize email
-            string emailLower = model.Email.Trim().ToLower();
-            var user = _applicationDbContext.User.FirstOrDefault(x => x.UserName == emailLower);
+            if (string.IsNullOrWhiteSpace(model.Email))
+                return BadRequest("Email is required");
 
-            if (user == null)
-            {
-                return BadRequest(new { message = "Invalid email or token." });
-            }
+            if (string.IsNullOrWhiteSpace(model.Token))
+                return BadRequest("Token is required");
 
-            // Check if token is valid and not expired
-            if (user.ResetToken != model.Token || user.ResetTokenExpire < DateTime.UtcNow)
-            {
-                return BadRequest(new { message = "Invalid or expired reset token." });
-            }
+            if (string.IsNullOrWhiteSpace(model.NewPassword))
+                return BadRequest("NewPassword is required");
 
-            // Validate new password
-            var passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$";
-            if (!Regex.IsMatch(model.NewPassword, passwordPattern))
-            {
-                return BadRequest(new { message = "Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a digit, and a special character." });
-            }
+            // Find user
+            var normalizedEmail = model.Email.Trim().ToLower();
+            var user = await _applicationDbContext.User
+                .FirstOrDefaultAsync(u => u.UserName.ToLower() == normalizedEmail);
 
-            // Hash and update password
-            user.PasswordHash = _passwordHasher.HashPassword(null, model.NewPassword);
+            // Validate token
+            if (user == null || user.ResetToken != model.Token)
+                return BadRequest(new { message = "Invalid token." });
 
-            // Remove token after reset
+            if (user.ResetTokenExpire < DateTime.UtcNow)
+                return BadRequest(new { message = "Token expired." });
+
+            // Update password
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
             user.ResetToken = null;
             user.ResetTokenExpire = null;
 
-            _applicationDbContext.SaveChanges();
-
-            return Ok(new { message = "Password reset successful. You can now log in with your new password." });
+            await _applicationDbContext.SaveChangesAsync();
+            return Ok(new { message = "Password reset successful." });
         }
+
+        private async Task SendResetEmailAsync(string email, string resetLink)
+        {
+            string passwordResetEmailBody = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Reset Your Password - PresCrypt</title>
+</head>
+<body style='margin: 0; padding: 0; background-color: #f8fbff;'>
+    <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>
+        <!-- Header -->
+        <div style='background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); padding: 30px; text-align: center;'>
+            <div style='background: rgba(255,255,255,0.2); border-radius: 50%; width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px;'>
+                🔐
+            </div>
+            <h1 style='color: #ffffff; margin: 0; font-size: 24px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600;'>
+                Password Reset Request
+            </h1>
+        </div>
+        
+        <!-- Content -->
+        <div style='padding: 40px 30px;'>
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 18px; color: #2c3e50; margin-bottom: 20px; line-height: 1.6;'>
+                Hello there! 👋
+            </p>
+            
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 16px; color: #5a6c7d; margin-bottom: 25px; line-height: 1.7;'>
+                We received a request to reset your PresCrypt account password. No worries – it happens to the best of us!
+            </p>
+            
+            <!-- Alert Box -->
+            <div style='background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0;'>
+                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #856404; margin: 0; font-weight: 600;'>
+                    ⏰ <strong>Time Sensitive:</strong> This reset link expires in 1 hour for your security.
+                </p>
+            </div>
+            
+            <!-- CTA Button -->
+            <div style='text-align: center; margin: 35px 0;'>
+                <a href='{resetLink}' style='display: inline-block; background: linear-gradient(135deg, #008080 0%, #00a3a3 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 25px; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-weight: 600; font-size: 18px; box-shadow: 0 4px 12px rgba(0,128,128,0.3); transition: all 0.3s ease;'>
+                    🔑 Reset My Password
+                </a>
+            </div>        
+            <!-- Security Notice -->
+            <div style='background: #e8f4f8; border: 1px solid #008080; border-radius: 8px; padding: 20px; margin: 30px 0;'>
+                <h3 style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; color: #008080; margin: 0 0 10px 0; font-size: 16px;'>
+                    🛡️ Security Notice
+                </h3>
+                <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #2c3e50; margin: 0; line-height: 1.6;'>
+                    If you didn't request this password reset, please ignore this email. Your account remains secure, and no action is needed.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style='background: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e9ecef;'>
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 14px; color: #6c757d; margin: 0 0 10px 0;'>
+                Best regards,<br><strong style='color: #008080;'>The PresCrypt Security Team</strong>
+            </p>
+        </div>
+        
+        <div style='background: #2c3e50; padding: 20px 30px; text-align: center;'>
+            <p style='font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, sans-serif; font-size: 12px; color: #bdc3c7; margin: 0;'>
+                © 2025 PresCrypt. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>";
+
+            await _emailService.SendEmailAsync(
+                email,
+                "Reset Your Password",
+                passwordResetEmailBody
+            );
+        }
+        [HttpGet]
+        [Route("GetUserRole")]
+        [Authorize]
+        public IActionResult GetUserRole()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(role))
+            {
+                return Unauthorized(new { message = "Role not found." });
+            }
+            return Ok(new { role });
+        }
+
+
         [HttpGet]
         [Route("GetAllHospitals")]
         public IActionResult GetHospitals()
         {
             return Ok(_applicationDbContext.Hospitals.ToList());
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public IActionResult Logout()
+        {
+            return Ok(new { message = "Logged out successfully" });
         }
 
     }

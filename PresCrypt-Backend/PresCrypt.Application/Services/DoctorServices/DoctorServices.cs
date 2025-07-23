@@ -4,6 +4,10 @@ using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.IO;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
 {
@@ -15,11 +19,10 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
         {
             _context = context;
         }
-
-        public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName)
+     
+        public async Task<List<DoctorSearchDto>> GetDoctorAsync(string specialization, string hospitalName, string name)
         {
-
-            var doctors = await _context.Doctor
+            var query = _context.Doctor
                 .Join(
                     _context.DoctorAvailability,
                     doctor => doctor.DoctorId,
@@ -31,23 +34,117 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.DoctorServices
                     da => da.availability.HospitalId,
                     hospital => hospital.HospitalId,
                     (da, hospital) => new { da.doctor, da.availability, hospital }
-                )
-                .Where(dh =>
+                );
+
+            // Priority logic — name has higher priority
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(dh =>
+                    (dh.doctor.FirstName + " " + dh.doctor.LastName).Contains(name) ||
+                    dh.doctor.FirstName.Contains(name) ||
+                    dh.doctor.LastName.Contains(name)
+                );
+            }
+            else
+            {
+                // Apply specialization and hospital filters only if name is not provided
+                query = query.Where(dh =>
                     (string.IsNullOrEmpty(specialization) || dh.doctor.Specialization.Contains(specialization)) &&
                     (string.IsNullOrEmpty(hospitalName) || dh.hospital.HospitalName.Contains(hospitalName))
-                )
+                );
+            }
+
+            // Project into DTO
+            var result = await query
                 .Select(dh => new DoctorSearchDto
                 {
                     DoctorId = dh.doctor.DoctorId,
+                    HospitalId = dh.hospital.HospitalId,
                     FirstName = dh.doctor.FirstName,
                     LastName = dh.doctor.LastName,
+                    Specialization = dh.doctor.Specialization,
+                    HospitalName = dh.hospital.HospitalName,
+                    Charge = dh.hospital.Charge, // Use hospital's charge
+                    Image = dh.doctor.DoctorImage,
+
+                    // Availability details as lists
                     AvailableDay = new List<string> { dh.availability.AvailableDay },
-                    AvailableTime = new List<TimeSpan> { dh.availability.AvailableStartTime.ToTimeSpan() },
-                    Charge = dh.hospital.Charge // Include the hospital's charge here
+                    AvailableTime = new List<TimeSpan> { dh.availability.AvailableStartTime.ToTimeSpan() }
                 })
                 .ToListAsync();
 
-            return doctors;
+            return result;
+        }
+
+        public async Task<List<string>> GetAllSpecializationsAsync()
+        {
+            return await _context.Doctor
+                .AsNoTracking()//uses not to track object by .net
+                .Where(d => !string.IsNullOrWhiteSpace(d.Specialization))
+                .Select(d => d.Specialization.Trim())
+                .Distinct()
+                .OrderBy(s => s)
+                .ToListAsync();
+        }
+
+        public async Task<List<string>> GetAllDoctor()
+        {
+            return await _context.Doctor
+                .AsNoTracking()
+                .Select(d => d.FirstName + " " + d.LastName)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<object>> GetDoctorAvailabilityByNameAsync(string doctorName)
+        {
+            if (string.IsNullOrWhiteSpace(doctorName))
+                return Enumerable.Empty<object>();
+
+            var lowerName = doctorName.ToLower();
+
+            var data = await _context.Doctor
+                .Where(d => (d.FirstName + " " + d.LastName).ToLower().Contains(lowerName))
+                .Include(d => d.Availabilities)
+                    .ThenInclude(a => a.Hospital)
+                .SelectMany(d => d.Availabilities.Select(a => new
+                {
+                    DoctorName = d.FirstName + " " + d.LastName,
+                    a.AvailableDay,
+                    a.AvailableStartTime,
+                    a.AvailableEndTime,
+                    HospitalName = a.Hospital.HospitalName
+                }))
+                .ToListAsync();
+
+            return data;
+        }
+
+
+        public async Task<Doctor> AddChargeAsync(string doctorId, double chargeToAdd)
+        {
+            var doctor = await _context.Doctor.FirstOrDefaultAsync(d => d.DoctorId == doctorId);
+            if (doctor == null)
+                throw new ArgumentException($"Doctor with ID {doctorId} not found.");
+
+            doctor.TotalAmtToPay += chargeToAdd;
+            doctor.UpdatedAt = DateTime.UtcNow;
+            return doctor;
+        }
+
+        public async Task<(bool Success, string Base64Image)> UploadProfileImageAsync(string doctorId, IFormFile file)
+        {
+            var doctor = await _context.Doctor.FindAsync(doctorId);
+            if (doctor == null || file == null)
+                return (false, null);
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            doctor.DoctorImage = ms.ToArray();
+            _context.Doctor.Update(doctor);
+            await _context.SaveChangesAsync();
+            string base64Image = $"data:image/png;base64,{Convert.ToBase64String(doctor.DoctorImage)}";
+            return (true, base64Image);
         }
 
     }

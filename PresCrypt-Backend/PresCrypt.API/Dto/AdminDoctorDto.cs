@@ -12,6 +12,7 @@
         public string Email { get; set; }
         public string Specialization { get; set; }
         public string SlmcLicense { get; set; }
+        public byte[]? slmcIdImage { get; set; }
         public string NIC { get; set; }
         public string? Description { get; set; }
         public bool? EmailVerified { get; set; }
@@ -20,7 +21,7 @@
         public string? UpdatedAt { get; set; }
         public string? LastLogin  { get; set; }
         public string ContactNumber { get; set; }
-       
+        public double TotalAmtToPay { get; set; }
 
         public override string ToString()
         {

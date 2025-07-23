@@ -1,13 +1,18 @@
-﻿using PresCrypt_Backend.PresCrypt.API.Dto;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Reflection.Metadata.Ecma335;
+using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.API.Hubs;
+using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
+using PresCrypt_Backend.PresCrypt.Application.Services.AppointmentServices;
+using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
 using PresCrypt_Backend.PresCrypt.Core.Models;
 using System.Diagnostics;
-using PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util;
 using System.Linq;
-using Azure.Core;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
@@ -17,11 +22,14 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
         private readonly ApplicationDbContext _context;
         private readonly AdminDoctorUtil _adminDoctorUtil;
         private readonly IAdminDoctorRequestService _adminDoctorRequestService;
-        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil,IAdminDoctorRequestService adminDoctorRequestService)
+        private readonly IAdminDashboardService _adminDashboardService;
+
+        public AdminDoctorService(ApplicationDbContext context,AdminDoctorUtil adminDoctorUtil,IAdminDoctorRequestService adminDoctorRequestService, IAdminDashboardService adminDashboardService)
         {
             _context = context;
             _adminDoctorUtil = adminDoctorUtil;
             _adminDoctorRequestService = adminDoctorRequestService;
+            _adminDashboardService = adminDashboardService;
         }
         public async Task<List<HospitalDto>> getAllHospitals()
         {
@@ -29,7 +37,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 .Select(d => new HospitalDto
                 {
                     HospitalId = d.HospitalId,
-                    HospitalName = d.HospitalName
+                    HospitalName = d.HospitalName,
+                    City=d.City
                 })
                 .ToListAsync();
             return hospitals;
@@ -142,6 +151,16 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     if (result > 0)
                     {
                         allResult = await _adminDoctorRequestService.ApprovRequest(newDoctorDto.Doctor.RequestID);
+
+
+                        // change user role ( doctorPending --> doctor )
+
+                        var user = await _context.User.FirstAsync(u => u.UserName == newDoctorDto.Doctor.Email);
+                        Debug.WriteLine(user.Role);
+                        user.Role = "Doctor";
+                        user.EmailVerified=true;
+                        await _context.SaveChangesAsync();
+
                     }
                     else
                     {
@@ -153,7 +172,30 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     if (result > 0)
                     {
                         allResult = "Success";
-                    }else
+
+                        // Prepare notification details
+                        var message = $"{newDoctorDto.Doctor.DoctorId} {newDoctorDto.Doctor.FirstName} {newDoctorDto.Doctor.LastName}  successfully registered.";
+                        var notificationDto = new AdminNotificationDto
+                        {
+                            DoctorId = newDoctorId,
+                            Message = message,
+                            Title = "New Doctor Registered",
+                            Type = "Alert"
+                        };
+
+                        
+
+                        try
+                        {
+                            //call the notification service
+                            await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                        }
+                        catch (Exception ex)
+                        {
+                            return $"Unexpected error: {ex.Message}";
+                        }
+                    }
+                    else
                     {
                         allResult = "Error";
                     }
@@ -187,6 +229,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     Email = d.Email,
                     Specialization = d.Specialization,
                     SlmcLicense = d.SLMCRegId,
+                    slmcIdImage = d.SLMCIdImage,
                     NIC = d.NIC,
                     Charge=d.Charge,
                     Description = d.Description,
@@ -195,7 +238,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                     UpdatedAt = d.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                     LastLogin = d.LastLogin.HasValue ? d.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-
+                    TotalAmtToPay=d.TotalAmtToPay,
                     ContactNumber = d.ContactNumber
                 })
                 .FirstOrDefaultAsync();
@@ -309,16 +352,58 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 
                 }
                 result =  await _context.SaveChangesAsync();
+                if (result>0)
+                {
+
+                    if (dto.Doctor.Status==true)
+                    {
+                        var user = _context.User.FirstOrDefault(a => a.UserName == dto.Doctor.Email);
+                        if (user != null)
+                        {
+                            user.ResetToken = null;
+                            user.ResetTokenExpire = null;
+                            user.FailedLoginAttempts = 0;
+                            user.LastFailedLoginTime = null;
+                            user.IsBlocked = false;
+
+                            _context.User.Update(user);
+                            await _context.SaveChangesAsync();
+                        }
+
+                    }
+
+
+
+                    // Prepare notification details
+                    var message = $"{dto.Doctor.DoctorId} {dto.Doctor.FirstName} {dto.Doctor.LastName} details successfully updated by Admin.";
+                    var notificationDto = new AdminNotificationDto
+                    {
+                        DoctorId = dto.Doctor.DoctorId,
+                        Message = message,
+                        Title = "Doctor Updated",
+                        Type = "Alert"
+                    };
+
+                    try
+                    {
+                        //call the notification service
+                        await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Unexpected error: {ex.Message}";
+                    }
+                }
                 return result > 0 ? "Success" : "Error";
-    }
-    catch (DbUpdateException ex)
-    {
-        return $"Database update error: {ex.Message} \nStackTrace: {ex.StackTrace}";
-    }
-    catch (Exception e)
-    {
-        return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
-    }
+                 }
+                   catch (DbUpdateException ex)
+                 {
+                     return $"Database update error: {ex.Message} \nStackTrace: {ex.StackTrace}";
+                    }
+                    catch (Exception e)
+                     {
+                        return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+                     }
 }
 
         public async Task<string> deleteDoctorById(string doctorId)
@@ -339,23 +424,56 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                     return "Doctor not found";
                 }
 
-                // Remove doctor from the database
-                _context.Doctor.Remove(doctor);
+                var fullName = $"{doctor.FirstName} {doctor.LastName}";
 
                 // Remove related doctor availability records
-                var doctorAvailabilities = _context.DoctorAvailability
-                    .Where(a => a.DoctorId == doctorId);
+                var doctorAvailabilities = await _context.DoctorAvailability
+                    .Where(a => a.DoctorId == doctorId)
+                    .ToListAsync();
+
                 _context.DoctorAvailability.RemoveRange(doctorAvailabilities);
+                _context.Doctor.Remove(doctor);
 
-                // Save changes
-                await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync();
 
-                return "Doctor deleted successfully";
+                if (result > 0)
+                {
+                    var message = $"{doctorId} {fullName} details successfully removed by Admin.";
+                    var notificationDto = new AdminNotificationDto
+                    {
+                        Message = message,
+                        Title = "Doctor Removed",
+                        Type = "Alert"
+                    };
+
+                    try
+                    {
+                        await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Unexpected error: {ex.Message}";
+                    }
+
+                    return "Success";
+                }
+
+                return "No changes were saved";
             }
             catch (Exception e)
             {
-                return $"Unexpected error: {e.Message} \nStackTrace: {e.StackTrace}";
+                return $"Unexpected error: {e.Message}";
             }
+        }
+
+        public async Task PayAmount(PayAmountDto payAmountDto)
+        {
+            var doctor = await _context.Doctor.FirstOrDefaultAsync(d => d.DoctorId == payAmountDto.DoctorId);
+
+            doctor.TotalAmtToPay -= payAmountDto.PayAmount;
+
+            await _context.SaveChangesAsync();
+
         }
 
     }

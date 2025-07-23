@@ -22,7 +22,11 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
         [Required]
-        public bool Status { get; set; }
+        public string Status { get; set; }
+
+        [Required]
+        [RegularExpression("^(Male|Female)$", ErrorMessage = "Gender must be either Male or Female.")]
+        public string Gender { get; set; }
 
         [Required]
         [Phone]

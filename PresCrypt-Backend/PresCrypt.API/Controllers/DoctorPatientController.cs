@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PresCrypt_Backend.PresCrypt.API.Dto;
 using PresCrypt_Backend.PresCrypt.Application.Services.DoctorPatientServices;
@@ -8,6 +9,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+   // [Authorize(Roles = "Doctor")]
     public class DoctorPatientController : ControllerBase
     {
         private readonly IDoctorPatientService _doctorPatientService;
@@ -18,9 +20,9 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
         }
 
         [HttpGet("patient-details/{doctorId}")]
-        public async Task<IActionResult> GetPatientDetails(string doctorId, string type = "past")
+        public async Task<IActionResult> GetPatientDetails(string doctorId, string type = "past", string? hospitalName = null)
         {
-            var patients = await _doctorPatientService.GetPatientDetailsAsync(doctorId, type);
+            var patients = await _doctorPatientService.GetPatientDetailsAsync(doctorId, type, hospitalName);
 
             if (patients == null || !patients.Any())
             {
@@ -29,6 +31,5 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
 
             return Ok(patients);
         }
-
     }
 }

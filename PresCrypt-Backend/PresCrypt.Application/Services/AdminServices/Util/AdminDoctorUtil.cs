@@ -27,6 +27,23 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Util
             return $"D{(lastNumber + 1):D3}"; // Format as D001, D002, etc.
         }
 
+        public async Task<string> GenerateHospitalId()
+        {
+           
+            var lastHospital = await _context.Hospitals
+                .OrderByDescending(d => d.HospitalId)
+                .FirstOrDefaultAsync();
+
+            if (lastHospital == null)
+                return "H001"; 
+
+            
+            int lastNumber = int.Parse(lastHospital.HospitalId.Substring(1));
+
+           
+            return $"H{(lastNumber + 1):D3}"; 
+        }
+
         public async Task<string> GenerateAvailabilityId()
         {
             // Get the last inserted Availability ID

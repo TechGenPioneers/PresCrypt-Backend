@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PresCrypt_Backend.PresCrypt.API.Dto;
+using PresCrypt_Backend.PresCrypt.Core.Models;
 
 namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
 {
@@ -15,39 +16,21 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             try
             {
                 var patients = await _context.Patient
-                    .Select(patient => new
-                    {
-                        Patient = patient,
-                        LastAppointment = _context.Appointments
-                            .Where(a => a.PatientId == patient.PatientId)
-                            .OrderByDescending(a => a.Date)
-                            .Select(a => new
-                            {
-                                a.DoctorId,
-                                a.Date,
-                                a.Status
-                            })
-                            .FirstOrDefault()
-                    })
-                    .Join(
-                        _context.Doctor,
-                        x => x.LastAppointment.DoctorId,
-                        doctor => doctor.DoctorId,
-                        (x, doctor) => new AdminAllPatientDto
-                        {
-                            PatientId = x.Patient.PatientId,
-                            FirstName = x.Patient.FirstName,
-                            LastName = x.Patient.LastName,
-                            DOB = x.Patient.DOB.ToString("yyyy-MM-dd"),
-                            Gender = x.Patient.Gender,
-                            LastAppointmentDoctorName = doctor.FirstName + " " + doctor.LastName,
-                            LastAppointmentDoctorID = doctor.DoctorId,
-                            LastAppointmentDate = x.LastAppointment.Date.ToString("yyyy-MM-dd"),
-                            Status = x.LastAppointment.Status,
-                            LastLogin = x.Patient.LastLogin.HasValue ? x.Patient.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss") : null
-                        }
-                    )
-                    .ToListAsync();
+                     .Select(p => new AdminAllPatientDto
+                         {
+                           PatientId = p.PatientId,
+                           FirstName = p.FirstName,
+                           LastName = p.LastName,
+                          DOB = p.DOB.ToString("yyyy-MM-dd"),
+                           Gender = p.Gender,
+                               ProfileImage = p.ProfileImage,
+                                 Status = p.Status,
+                           LastLogin = p.LastLogin.HasValue
+                            ? p.LastLogin.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                              : null
+                        })
+                     .ToListAsync();
+
 
                 return patients;
             }
@@ -55,9 +38,9 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
             {
                 throw;
             }
-
-
         }
+
+
 
         public async Task<AdminPatientAppointmentsDto> GetPatientById(string patientId)
         {
@@ -73,8 +56,8 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                         DOB = d.DOB.ToString("yyyy-MM-dd"),
                         Gender = d.Gender,
                         Email = d.Email,
-                        BloodGroup = d.BloodGroup,
                         NIC = d.NIC,
+                        PhoneNumber=d.ContactNo,
                         ProfileImage = d.ProfileImage,
                         CreatedAt = d.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                         UpdatedAt = d.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -87,27 +70,27 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 {
 
                     var appointments = await (
-         from a in _context.Appointments
-         join d in _context.Doctor on a.DoctorId equals d.DoctorId
-         join h in _context.Hospitals on a.HospitalId equals h.HospitalId
-         where a.PatientId == patientId
-         select new AdminAllAppointmentsDto
-         {
-             AppointmentId = a.AppointmentId,
-             DoctorId = a.DoctorId,
-             DoctorName = d.FirstName + " " + d.LastName,
-             HospitalId = a.HospitalId,
-             HospitalName = h.HospitalName,
-             Date = a.Date.ToString("yyyy-MM-dd"),
-             Time = a.Time.ToString("HH:mm"),
-             Charge = a.Charge,
-             Status = a.Status,
-             SpecialNote = a.SpecialNote,
-             TypeOfAppointment = a.TypeOfAppointment,
-             CreatedAt = a.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-             UpdatedAt = a.UpdatedAt.HasValue ? a.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-         })
-         .ToListAsync();
+                       from a in _context.Appointments
+                        join d in _context.Doctor on a.DoctorId equals d.DoctorId
+                        join h in _context.Hospitals on a.HospitalId equals h.HospitalId
+                        where a.PatientId == patientId
+                        select new AdminAllAppointmentsDto
+                        {
+                          AppointmentId = a.AppointmentId,
+                          DoctorId = a.DoctorId,
+                           DoctorName = d.FirstName + " " + d.LastName,
+                           HospitalId = a.HospitalId,
+                           HospitalName = h.HospitalName,
+                           Date = a.Date.ToString("yyyy-MM-dd"),
+                            Time = a.Time.ToString("HH:mm"),
+                            Charge = a.Charge,
+                             Status = a.Status,
+                            SpecialNote = a.SpecialNote,
+                           TypeOfAppointment = a.TypeOfAppointment,
+                          CreatedAt = a.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                             UpdatedAt = a.UpdatedAt.HasValue ? a.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                          })
+                        .ToListAsync();
 
                     // Combine doctor details and availability
                     var patientAndAppointments = new AdminPatientAppointmentsDto()
@@ -148,8 +131,28 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                 _context.Patient.Update(patient);
                 int result = await _context.SaveChangesAsync();
 
+               
+
                 if (result > 0)
                 {
+                    
+                    if (updatePatient.Status=="Active")
+                    {
+                        var user = _context.User.FirstOrDefault(a => a.UserName == updatePatient.Email);
+                        if (user != null)
+                        {
+                            user.ResetToken = null;
+                            user.ResetTokenExpire = null;
+                            user.FailedLoginAttempts = 0;
+                            user.LastFailedLoginTime = null;
+                            user.IsBlocked = false;
+
+                            _context.User.Update(user);
+                            await _context.SaveChangesAsync();
+                        }
+
+                    }
+
                     return "Success";
                 }
                 else

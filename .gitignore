@@ -96,12 +96,12 @@ StyleCopReport.xml
 # NuGet Packages
 *.nupkg
 *.snupkg
+
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
+
 *.nuget.props
 *.nuget.targets
-
-
 
 # Microsoft Azure Build Output
 csx/
@@ -139,25 +139,21 @@ FodyWeavers.xsd
 project.assets.json
 project.nuget.cache
 /obj
+# Python virtualenv
+PresCryptChatbot-Backend/venv/
+
+# Python cache
+
+PresCryptChatbot-Backend/__pycache__/
 
 
+# Secrets
+PresCryptChatbot-Backend/.env
+
+# Ignore sensitive app settingsvv
+appsettings.json
+appsettings.*.json
 
 
-# NuGet-generated files
-*.nuget.dgspec.json
-*.nuget.g.props
-*.nuget.g.targets
-project.assets.json
-project.nuget.cache
-/obj
+PresCrypt-Backend/PresCrypt.API/appsettings.json
 
-
-
-
-# NuGet-generated files
-*.nuget.dgspec.json
-*.nuget.g.props
-*.nuget.g.targets
-project.assets.json
-project.nuget.cache
-/obj

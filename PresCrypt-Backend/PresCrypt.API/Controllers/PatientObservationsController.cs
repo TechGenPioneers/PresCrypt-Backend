@@ -1,62 +1,39 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
-using System;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
-
-using PresCrypt_Backend.PresCrypt.Application.Services.OpenMrs_Services;
-
-using PresCrypt_Backend.PresCrypt.Application.Services;
-
-
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PresCrypt_Backend.PresCrypt.Application.Services.OpenMrsServices;
 
 namespace PresCrypt_Backend.PresCrypt.API.Controllers
 {
-    [ApiController]
+
     [Route("api/[controller]")]
+    [ApiController]
     public class PatientObservationsController : ControllerBase
     {
-        private readonly OPatientService _patientService;
-        private readonly ILogger<PatientObservationsController> _logger;
+        private readonly ApplicationDbContext _context;
+        private readonly IOpenMrsObsService _obsService;
 
-        public PatientObservationsController(
-            OPatientService OpatientService,
-            ILogger<PatientObservationsController> logger)
+        public PatientObservationsController(ApplicationDbContext context, IOpenMrsObsService obsService)
         {
-            _patientService = OpatientService;
-            _logger = logger;
+            _context = context;
+            _obsService = obsService;
         }
 
         [HttpGet("{patientId}")]
-        public async Task<IActionResult> GetPatientObservations(Guid patientId)
+        public async Task<IActionResult> GetObservations(string patientId)
         {
-            try
-            {
-                var observationsData = await _patientService.GetPatientObservations(patientId);
-                return Ok(observationsData);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "Error communicating with OpenMRS API");
-                return StatusCode(502, "Error communicating with OpenMRS API");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error retrieving patient observations");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.PatientId == patientId);
+
+            if (patient == null)
+                return NotFound("Patient not found");
+
+            if (string.IsNullOrWhiteSpace(patient.OpenMrsId))
+                return BadRequest("Patient does not have a linked OpenMRS ID");
+
+            var observationsJson = await _obsService.GetObservationsByPatientIdAsync(patient.OpenMrsId);
+
+            return Ok(new { data = observationsJson }); // Or deserialize if needed
         }
     }
 }
+
