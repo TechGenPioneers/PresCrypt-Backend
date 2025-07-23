@@ -683,6 +683,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                         user.IsBlocked = false;
                         user.FailedLoginAttempts = 0;
                         user.LastFailedLoginTime = null;
+                        // 🔄 Update status for Doctor or Patient
+                        if (user.Role == "Doctor")
+                        {
+                            var doctor = await _applicationDbContext.Doctor.FirstOrDefaultAsync(d => d.Email == user.UserName);
+                            if (doctor != null)
+                            {
+                                doctor.Status = true; // Active
+                            }
+                        }
+                        else if (user.Role == "Patient")
+                        {
+                            var patient = await _applicationDbContext.Patient.FirstOrDefaultAsync(p => p.Email == user.UserName);
+                            if (patient != null)
+                            {
+                                patient.Status = "Active";
+                            }
+                        }
+
                         await _applicationDbContext.SaveChangesAsync();
 
                         _logger.LogInformation($"🔓 Account auto-unlocked for {user.UserName} after 15 minutes");
@@ -748,6 +766,24 @@ namespace PresCrypt_Backend.PresCrypt.API.Controllers
                     if (user.FailedLoginAttempts >= 5)
                     {
                         user.IsBlocked = true;
+                        // 🔄 Update status for Doctor or Patient
+                        if (user.Role == "Doctor")
+                        {
+                            var doctor = await _applicationDbContext.Doctor.FirstOrDefaultAsync(d => d.Email == user.UserName);
+                            if (doctor != null)
+                            {
+                                doctor.Status = false; // Inactive
+                            }
+                        }
+                        else if (user.Role == "Patient")
+                        {
+                            var patient = await _applicationDbContext.Patient.FirstOrDefaultAsync(p => p.Email == user.UserName);
+                            if (patient != null)
+                            {
+                                patient.Status = "Inactive";
+                            }
+                        }
+
 
                         // Send account blocked email with enhanced template
                         string blockEmailBody = $@"
