@@ -109,7 +109,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl
 
                          <p>Thank you for reaching out to us.</p>
 
-                         <p>We have reviewed your message regarding: 
+                         <p>We have reviewed your message. 
                            <strong style='color: #4CAF50;'>{adminContactUsDto.Topic}</strong></p>
 
                           <p><strong>Our response:</strong></p>
@@ -134,7 +134,7 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.EmailServices.Impl
                           <p style='margin: 16px 0;'>Dear Dr. {adminContactUsDto.FirstName} {adminContactUsDto.LastName},</p>
 
                              <p style='margin: 16px 0;'>
-                           We have received your inquiry regarding 
+                           We have received your inquiry. 
                            <strong style='color: #4CAF50;'>{adminContactUsDto.Topic}</strong>, and here is our response:
                               </p>
 

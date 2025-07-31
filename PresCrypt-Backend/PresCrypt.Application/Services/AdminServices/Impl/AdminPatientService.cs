@@ -7,9 +7,12 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
     public class AdminPatientService : IAdminPatientService
     {
         private readonly ApplicationDbContext _context;
-        public AdminPatientService(ApplicationDbContext context)
+
+        private readonly IAdminDashboardService _adminDashboardService;
+        public AdminPatientService(ApplicationDbContext context, IAdminDashboardService adminDashboardService)
         {
             _context = context;
+            _adminDashboardService=adminDashboardService;
         }
         public async Task<List<AdminAllPatientDto>> GetAllPatients()
         {
@@ -151,6 +154,25 @@ namespace PresCrypt_Backend.PresCrypt.Application.Services.AdminServices.Impl
                             await _context.SaveChangesAsync();
                         }
 
+                    }
+
+                    var message = $"{patient.PatientId} {patient.FirstName} {patient.LastName}  successfully {patient.Status} by Admin.";
+                    var notificationDto = new AdminNotificationDto
+                    {
+                        PatientId = patient.PatientId,
+                        Message = message,
+                        Title = "Patient Status Updated",
+                        Type = "Alert"
+                    };
+
+                    try
+                    {
+                        //call the notification service
+                        await _adminDashboardService.CreateAndSendNotification(notificationDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Unexpected error: {ex.Message}";
                     }
 
                     return "Success";
