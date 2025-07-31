@@ -8,6 +8,7 @@ namespace PresCrypt_Backend.PresCrypt.API.Dto
         public string? Id { get; set; }
         public string? DoctorId { get; set; }
         public string? PatientId { get; set; }
+        public string? AdminId { get; set; }
         public string? RequestId { get; set; }
         public string Type { get; set; }  // e.g., "Signup", "Request", "Alert"
         public string Title { get; set; }
